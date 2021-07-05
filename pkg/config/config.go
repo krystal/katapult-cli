@@ -24,6 +24,7 @@ func New() *Config {
 
 	c.SetDefault("api_url", Defaults.APIURL)
 	c.BindEnv("url")
+	// TODO: Propagate error upwards
 
 	c.SetDefault("api_key", Defaults.APIKey)
 	c.BindEnv("api_key")
