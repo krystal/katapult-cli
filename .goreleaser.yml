@@ -18,8 +18,10 @@ dockers:
     goarch: amd64
     dockerfile: Dockerfile
     image_templates:
-      - "ghcr.io/krystal/katapult-cli/cli:{{ .Tag }}"
-      - "ghcr.io/krystal/katapult-cli/cli:latest"
+      - "ghcr.io/krystal/katapult-cli:alpine-{{ .Tag }}"
+      - "ghcr.io/krystal/katapult-cli:alpine"
+      - "ghcr.io/krystal/katapult-cli:{{ .Tag }}"
+      - "ghcr.io/krystal/katapult-cli:latest"
 
 archives:
   - replacements:
