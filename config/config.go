@@ -17,19 +17,22 @@ var Defaults = &Config{
 	APIKey: "",
 }
 
-func New() *Config {
+func New() (*Config, error) {
 	c := &Config{
 		viper: newViper(),
 	}
 
 	c.SetDefault("api_url", Defaults.APIURL)
-	c.BindEnv("url")
-	// TODO: Propagate error upwards
+	if err := c.BindEnv("url"); err != nil {
+		return nil, err
+	}
 
 	c.SetDefault("api_key", Defaults.APIKey)
-	c.BindEnv("api_key")
+	if err := c.BindEnv("api_key"); err != nil {
+		return nil, err
+	}
 
-	return c
+	return c, nil
 }
 
 func (c *Config) Load() error {
