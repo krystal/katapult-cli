@@ -14,6 +14,8 @@ var (
 	Date    string
 )
 
+const unknownPlaceholder = "undefined"
+
 type versionInfo struct {
 	Version   string
 	Commit    string
@@ -29,13 +31,13 @@ func (v *versionInfo) Populate() {
 	if Version != "" {
 		v.Version = Version
 	} else {
-		v.Version = "undefined"
+		v.Version = unknownPlaceholder
 	}
 
 	if Commit != "" {
 		v.Commit = Commit
 	} else {
-		v.Commit = "undefined"
+		v.Commit = unknownPlaceholder
 	}
 
 	if Date != "" {
@@ -45,7 +47,7 @@ func (v *versionInfo) Populate() {
 		}
 	}
 	if v.Date == "" {
-		v.Date = "undefined"
+		v.Date = unknownPlaceholder
 	}
 
 	v.populated = true
@@ -67,5 +69,6 @@ func versionCommand() *cobra.Command {
 			fmt.Printf("BuildDate: %s\n", prettyVersion.Date)
 		},
 	}
+
 	return versionCmd
 }

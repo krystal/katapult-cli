@@ -39,6 +39,7 @@ func networksCmd(client *katapult.Client) *cobra.Command {
 					fmt.Printf(" - %s [%s]\n", net.Name, net.ID)
 				}
 			}
+
 			return nil
 		},
 	}

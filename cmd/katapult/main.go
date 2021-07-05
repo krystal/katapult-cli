@@ -17,12 +17,15 @@ func run() error {
 		configAPIKey   string
 	)
 
-	conf := config.New()
+	conf, err := config.New()
+	if err != nil {
+		return err
+	}
 	if configFileFlag != "" {
 		conf.SetConfigFile(configFileFlag)
 	}
 
-	err := conf.Load()
+	err = conf.Load()
 	if err != nil {
 		return err
 	}
@@ -69,7 +72,7 @@ func run() error {
 func main() {
 	err := run()
 	if err != nil {
-		log.Printf("A fatal error occured: %s", err)
+		log.Printf("A fatal error occurred: %s", err)
 		os.Exit(1)
 	}
 }

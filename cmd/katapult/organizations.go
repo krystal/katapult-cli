@@ -30,6 +30,7 @@ func organizationsCmd(client *katapult.Client) *cobra.Command {
 			for _, org := range orgs {
 				fmt.Printf(" - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
 			}
+
 			return nil
 		},
 	}

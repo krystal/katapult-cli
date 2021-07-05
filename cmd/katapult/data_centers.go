@@ -47,13 +47,14 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dc, resp, err := client.DataCenters.Get(cmd.Context(), args[0])
 			if err != nil {
-				if resp.StatusCode != 404 {
+				if resp == nil || resp.StatusCode != 404 {
 					return err
-				} else {
-					dc, _, err = client.DataCenters.GetByPermalink(cmd.Context(), args[0])
-					if err != nil && resp.StatusCode != 404 {
-						return err
-					}
+				}
+
+				dc, _, err = client.DataCenters.GetByPermalink(
+					cmd.Context(), args[0])
+				if err != nil && resp.StatusCode != 404 {
+					return err
 				}
 			}
 
