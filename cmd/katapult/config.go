@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/krystal/katapult-cli/pkg/config"
+	"github.com/krystal/katapult-cli/config"
 	"log"
 
 	"github.com/spf13/cobra"

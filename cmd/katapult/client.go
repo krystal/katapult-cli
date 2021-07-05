@@ -1,4 +1,4 @@
-package client
+package main
 
 import (
 	"context"
@@ -6,11 +6,12 @@ import (
 	"net/url"
 
 	"github.com/krystal/go-katapult"
-	"github.com/krystal/katapult-cli/pkg/config"
+	"github.com/krystal/katapult-cli/config"
 	"golang.org/x/oauth2"
 )
 
-func New(ctx context.Context, conf *config.Config) *katapult.Client {
+// Create a new Katapult client.
+func newClient(ctx context.Context, conf *config.Config) *katapult.Client {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: conf.APIKey},
 	)

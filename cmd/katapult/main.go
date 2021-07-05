@@ -6,8 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/krystal/katapult-cli/internal/client"
-	"github.com/krystal/katapult-cli/pkg/config"
+	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +28,7 @@ func run() error {
 	}
 
 	ctx := context.Background()
-	cl := client.New(ctx, conf)
+	cl := newClient(ctx, conf)
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
@@ -60,6 +59,8 @@ func run() error {
 		versionCommand(),
 		configCommand(conf),
 		dataCentersCmd(cl),
+		networksCmd(cl),
+		organizationsCmd(cl),
 	)
 
 	return rootCmd.Execute()
