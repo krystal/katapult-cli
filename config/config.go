@@ -6,10 +6,10 @@ import (
 )
 
 type Config struct {
+	viper *viper.Viper
+
 	APIURL string `mapstructure:"api_url"`
 	APIKey string `mapstructure:"api_key"`
-
-	viper *viper.Viper
 }
 
 var Defaults = &Config{
@@ -17,18 +17,22 @@ var Defaults = &Config{
 	APIKey: "",
 }
 
-func New() *Config {
+func New() (*Config, error) {
 	c := &Config{
 		viper: newViper(),
 	}
 
 	c.SetDefault("api_url", Defaults.APIURL)
-	c.BindEnv("url")
+	if err := c.BindEnv("url"); err != nil {
+		return nil, err
+	}
 
 	c.SetDefault("api_key", Defaults.APIKey)
-	c.BindEnv("api_key")
+	if err := c.BindEnv("api_key"); err != nil {
+		return nil, err
+	}
 
-	return c
+	return c, nil
 }
 
 func (c *Config) Load() error {

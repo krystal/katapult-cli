@@ -8,9 +8,9 @@ import (
 
 func TestNew(t *testing.T) {
 	tests := []struct {
-		name string
 		want *Config
 		kind interface{}
+		name string
 	}{
 		{
 			name: "returns *Config struct",
@@ -19,7 +19,10 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			c := New()
+			c, err := New()
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			if tt.kind != nil {
 				assert.IsType(t, tt.kind, c)

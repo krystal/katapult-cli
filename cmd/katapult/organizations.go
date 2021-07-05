@@ -3,35 +3,38 @@ package main
 import (
 	"fmt"
 
+	"github.com/krystal/go-katapult"
+
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(organizationsCmd)
-	organizationsCmd.AddCommand(organizationsListCmd)
-}
-
-var (
-	organizationsCmd = &cobra.Command{
+func organizationsCmd(client *katapult.Client) *cobra.Command {
+	cmd := &cobra.Command{
 		Use:     "org",
 		Aliases: []string{"orgs", "organization", "organizations"},
 		Short:   "Manage organizations",
 		Long:    "Get information about and manage organizations.",
 	}
-	organizationsListCmd = &cobra.Command{
+
+	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "Get list of organizations",
 		Long:    "Get list of organizations.",
-		Run: func(cmd *cobra.Command, args []string) {
-			orgs, _, err := cl.Organizations.List(ctx)
+		RunE: func(cmd *cobra.Command, args []string) error {
+			orgs, _, err := client.Organizations.List(cmd.Context())
 			if err != nil {
-				er(err)
+				return err
 			}
 
 			for _, org := range orgs {
 				fmt.Printf(" - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
 			}
+
+			return nil
 		},
 	}
-)
+	cmd.AddCommand(list)
+
+	return cmd
+}

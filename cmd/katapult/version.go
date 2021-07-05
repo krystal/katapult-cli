@@ -8,9 +8,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(versionCmd)
-}
+var (
+	Version string
+	Commit  string
+	Date    string
+)
+
+const unknownPlaceholder = "undefined"
 
 type versionInfo struct {
 	Version   string
@@ -27,13 +31,13 @@ func (v *versionInfo) Populate() {
 	if Version != "" {
 		v.Version = Version
 	} else {
-		v.Version = "undefined"
+		v.Version = unknownPlaceholder
 	}
 
 	if Commit != "" {
 		v.Commit = Commit
 	} else {
-		v.Commit = "undefined"
+		v.Commit = unknownPlaceholder
 	}
 
 	if Date != "" {
@@ -43,19 +47,15 @@ func (v *versionInfo) Populate() {
 		}
 	}
 	if v.Date == "" {
-		v.Date = "undefined"
+		v.Date = unknownPlaceholder
 	}
 
 	v.populated = true
 }
 
-var (
-	Version string
-	Commit  string
-	Date    string
-
-	prettyVersion = &versionInfo{}
-	versionCmd    = &cobra.Command{
+func versionCommand() *cobra.Command {
+	prettyVersion := &versionInfo{}
+	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print the version",
 		Long:  `Print the version number of katapult CLI tool.`,
@@ -69,4 +69,6 @@ var (
 			fmt.Printf("BuildDate: %s\n", prettyVersion.Date)
 		},
 	}
-)
+
+	return versionCmd
+}

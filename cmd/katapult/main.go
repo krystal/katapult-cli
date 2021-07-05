@@ -3,39 +3,40 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
-	"github.com/krystal/go-katapult"
-	"github.com/krystal/katapult-cli/internal/client"
-	"github.com/krystal/katapult-cli/pkg/config"
+	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
 
-type contextKey int
+func run() error {
+	var (
+		configFileFlag string
+		configURLFlag  string
+		configAPIKey   string
+	)
 
-const (
-	ctxKey contextKey = iota
-)
+	conf, err := config.New()
+	if err != nil {
+		return err
+	}
+	if configFileFlag != "" {
+		conf.SetConfigFile(configFileFlag)
+	}
 
-var (
-	// flags
-	configFileFlag string
-	configURLFlag  string
-	configAPIKey   string
+	err = conf.Load()
+	if err != nil {
+		return err
+	}
 
-	ctx context.Context
-	cl  *katapult.Client
-
-	conf    = config.New()
-	rootCmd = &cobra.Command{
+	ctx := context.Background()
+	cl := newClient(ctx, conf)
+	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
 		Long:  `katapult is a CLI tool for the katapult.io hosting platform.`,
 	}
-)
-
-func init() {
-	cobra.OnInitialize(initConfig, initClient)
 
 	rootFlags := rootCmd.PersistentFlags()
 
@@ -45,32 +46,33 @@ func init() {
 	rootFlags.StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
 		"URL for Katapult API (default: %s)", config.Defaults.APIURL,
 	))
-	conf.BindPFlag("api_url", rootFlags.Lookup("api-url"))
-
+	err = conf.BindPFlag("api_url", rootFlags.Lookup("api-url"))
+	if err != nil {
+		return err
+	}
 	rootFlags.StringVar(&configAPIKey, "api-key", "", fmt.Sprintf(
 		"Katapult API Key (default: %s)", config.Defaults.APIKey,
 	))
-	conf.BindPFlag("api_key", rootFlags.Lookup("api-key"))
-}
-
-func er(msg interface{}) {
-	fmt.Fprintln(os.Stderr, "Error:", msg)
-	os.Exit(1)
-}
-
-func initConfig() {
-	if configFileFlag != "" {
-		conf.SetConfigFile(configFileFlag)
+	err = conf.BindPFlag("api_key", rootFlags.Lookup("api-key"))
+	if err != nil {
+		return err
 	}
 
-	_ = conf.Load()
-}
+	rootCmd.AddCommand(
+		versionCommand(),
+		configCommand(conf),
+		dataCentersCmd(cl),
+		networksCmd(cl),
+		organizationsCmd(cl),
+	)
 
-func initClient() {
-	ctx = context.WithValue(context.Background(), ctxKey, "katapult")
-	cl = client.New(ctx, conf)
+	return rootCmd.Execute()
 }
 
 func main() {
-	rootCmd.Execute()
+	err := run()
+	if err != nil {
+		log.Printf("A fatal error occurred: %s", err)
+		os.Exit(1)
+	}
 }
