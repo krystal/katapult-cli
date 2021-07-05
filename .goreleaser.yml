@@ -12,6 +12,15 @@ builds:
       - darwin
     main: ./cmd/katapult
 
+dockers:
+  -
+    goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile
+    image_templates:
+      - "ghcr.io/krystal/katapult-cli/cli:{{ .Tag }}"
+      - "ghcr.io/krystal/katapult-cli/cli:latest"
+
 archives:
   - replacements:
       darwin: Darwin
