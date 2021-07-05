@@ -1,0 +1,23 @@
+name: Create binaries and upload them as assets
+
+on:
+  - push
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: goreleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          distribution: goreleaser
+          version: latest
+          args: --snapshot --rm-dist
+      - uses: actions/upload-artifact@v2
+        with:
+          name: binaries
+          path: |
+            dist/checksums.txt
+            dist/*.tar.gz
