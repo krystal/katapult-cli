@@ -8,9 +8,9 @@ import (
 
 func TestNew(t *testing.T) {
 	tests := []struct {
-		name string
 		want *Config
 		kind interface{}
+		name string
 	}{
 		{
 			name: "returns *Config struct",

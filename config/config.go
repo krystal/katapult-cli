@@ -6,10 +6,10 @@ import (
 )
 
 type Config struct {
+	viper *viper.Viper
+
 	APIURL string `mapstructure:"api_url"`
 	APIKey string `mapstructure:"api_key"`
-
-	viper *viper.Viper
 }
 
 var Defaults = &Config{
