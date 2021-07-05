@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/krystal/katapult-cli/config"
 	"log"
+
+	"github.com/krystal/katapult-cli/config"
 
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
