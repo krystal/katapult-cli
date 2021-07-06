@@ -14,7 +14,7 @@ func newClient(conf *config.Config) (*katapult.Client, error) {
 	if conf.APIURL != "" {
 		apiURL, err := url.Parse(conf.APIURL)
 		if err != nil {
-			return nil, fmt.Errorf("invalid API URL: %s\n", conf.APIURL)
+			return nil, fmt.Errorf("invalid API URL: %s", conf.APIURL)
 		}
 		a = append(a, katapult.WithBaseURL(apiURL))
 	}
