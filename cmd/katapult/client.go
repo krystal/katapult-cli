@@ -1,31 +1,26 @@
 package main
 
 import (
-	"context"
-	"log"
+	"fmt"
 	"net/url"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/katapult-cli/config"
-	"golang.org/x/oauth2"
 )
 
 // Create a new Katapult client.
-func newClient(ctx context.Context, conf *config.Config) *katapult.Client {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: conf.APIKey},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-
-	c := katapult.NewClient(tc)
-
+func newClient(conf *config.Config) (*katapult.Client, error) {
+	a := []katapult.Opt{katapult.WithAPIKey(conf.APIKey)}
 	if conf.APIURL != "" {
 		apiURL, err := url.Parse(conf.APIURL)
 		if err != nil {
-			log.Fatalf("Invalid API URL: %s\n", conf.APIURL)
+			return nil, fmt.Errorf("invalid API URL: %s", conf.APIURL)
 		}
-		c.SetBaseURL(apiURL)
+		a = append(a, katapult.WithBaseURL(apiURL))
 	}
-
-	return c
+	c, err := katapult.New(a...)
+	if err != nil {
+		return nil, err
+	}
+	return c, nil
 }

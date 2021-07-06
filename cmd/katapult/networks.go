@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 
+	"github.com/krystal/go-katapult/core"
+
 	"github.com/krystal/go-katapult"
 
 	"github.com/spf13/cobra"
@@ -19,11 +21,20 @@ func networksCmd(client *katapult.Client) *cobra.Command {
 	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
-		Args:    cobra.ExactArgs(1),
 		Short:   "Get list of networks available to a Organization",
 		Long:    "Get list of networks available to a Organization.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			nets, vnets, _, err := client.Networks.List(cmd.Context(), args[0])
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			id := cmd.Flag("id").Value.String()
+			ref := core.OrganizationRef{ID: id}
+			if id == "" {
+				subdomain := cmd.Flag("subdomain").Value.String()
+				if subdomain == "" {
+					return fmt.Errorf("both ID and subdomain are unset")
+				}
+				ref = core.OrganizationRef{SubDomain: subdomain}
+			}
+
+			nets, vnets, _, err := core.NewNetworksClient(client).List(cmd.Context(), ref)
 			if err != nil {
 				return err
 			}
@@ -43,6 +54,9 @@ func networksCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
+	listFlags := list.PersistentFlags()
+	listFlags.String("id", "", "The ID of the organization. Preferred over subdomain for lookups.")
+	listFlags.String("subdomain", "", "The subdomain of the organization.")
 	cmd.AddCommand(list)
 
 	return cmd
