@@ -71,19 +71,11 @@ ifndef VERSION
 endif
 
 CMDDIR := $(CURDIR)/cmd
-BINS := $(shell cd "$(CMDDIR)" && \
-	find * -type d -depth 0 -exec echo $(BINDIR)/{} \;)
 
 .PHONY: build
-build: $(BINS)
 
-$(BINS): $(BINDIR)/%: $(SOURCES)
-	mkdir -p $(BINDIR)
-	cd "$(CMDDIR)/$*" && \
-		go build $(V) -a -o "$(ROOT)/$(BINDIR)/$*" -ldflags "$(LDFLAGS) \
-			-X main.Version=$(VERSION) \
-			-X main.Commit=$(GIT_SHA) \
-			-X main.Date=$(DATE)"
+build:
+	goreleaser --snapshot --rm-dist
 
 #
 # Development
@@ -91,7 +83,7 @@ $(BINS): $(BINDIR)/%: $(SOURCES)
 
 .PHONY: clean
 clean:
-	rm -rf $(BINS) $(TOOLS)
+	rm -rf dist
 	rm -f ./coverage.out ./go.mod.tidy-check ./go.sum.tidy-check
 
 .PHONY: test
