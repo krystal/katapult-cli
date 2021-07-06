@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -30,8 +29,10 @@ func run() error {
 		return err
 	}
 
-	ctx := context.Background()
-	cl := newClient(ctx, conf)
+	cl, err := newClient(conf)
+	if err != nil {
+		return err
+	}
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",

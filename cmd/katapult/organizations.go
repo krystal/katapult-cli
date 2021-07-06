@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/krystal/go-katapult/core"
 
 	"github.com/krystal/go-katapult"
 
@@ -22,7 +23,7 @@ func organizationsCmd(client *katapult.Client) *cobra.Command {
 		Short:   "Get list of organizations",
 		Long:    "Get list of organizations.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			orgs, _, err := client.Organizations.List(cmd.Context())
+			orgs, _, err := core.NewOrganizationsClient(client).List(cmd.Context())
 			if err != nil {
 				return err
 			}

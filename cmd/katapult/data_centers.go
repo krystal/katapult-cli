@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/krystal/go-katapult/core"
 
 	"github.com/krystal/go-katapult"
 
@@ -22,7 +23,7 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 		Short:   "List data centers",
 		Long:    "List data centers.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dcs, _, err := client.DataCenters.List(cmd.Context())
+			dcs, _, err := core.NewDataCentersClient(client).List(cmd.Context())
 			if err != nil {
 				return err
 			}
@@ -45,17 +46,14 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 		Short: "Get details for a data center",
 		Long:  "Get details for a data center.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dc, resp, err := client.DataCenters.Get(cmd.Context(), args[0])
+			dcClient := core.NewDataCentersClient(client)
+			dc, resp, err := dcClient.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
 			if err != nil {
-				if resp == nil || resp.StatusCode != 404 {
-					return err
+				if resp != nil && resp.StatusCode == 404 {
+					fmt.Printf("Unknown datacentre.")
+					return nil
 				}
-
-				dc, _, err = client.DataCenters.GetByPermalink(
-					cmd.Context(), args[0])
-				if err != nil && resp.StatusCode != 404 {
-					return err
-				}
+				return err
 			}
 
 			fmt.Printf(
