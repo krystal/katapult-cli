@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/krystal/katapult-cli/config"
 
@@ -15,14 +14,17 @@ func configCommand(conf *config.Config) *cobra.Command {
 		Use:   "config",
 		Short: "Print configuration",
 		Long:  `Print parsed configuration in YAML format.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE:  func(cmd *cobra.Command, args []string) error {
 			bs, err := yaml.Marshal(conf.AllSettings())
 			if err != nil {
-				log.Fatalf("unable to marshal config to YAML: %v", err)
+				return fmt.Errorf("unable to marshal config to YAML: %v", err)
 			}
 
-			fmt.Println("---")
-			fmt.Println(string(bs))
+			stdout := cmd.OutOrStdout()
+			_, _ = stdout.Write([]byte("---\n"))
+			_, _ = stdout.Write(bs)
+			_, _ = stdout.Write([]byte("\n"))
+			return nil
 		},
 	}
 }
