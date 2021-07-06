@@ -29,8 +29,7 @@ func networksCmd(client *katapult.Client) *cobra.Command {
 			if id == "" {
 				subdomain := cmd.Flag("subdomain").Value.String()
 				if subdomain == "" {
-					fmt.Println("Both ID and subdomain are unset.")
-					return nil
+					return fmt.Errorf("both ID and subdomain are unset")
 				}
 				ref = core.OrganizationRef{SubDomain: subdomain}
 			}

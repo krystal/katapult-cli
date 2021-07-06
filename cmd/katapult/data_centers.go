@@ -51,8 +51,7 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 			dc, resp, err := dcClient.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
 			if err != nil {
 				if resp != nil && resp.StatusCode == 404 {
-					fmt.Printf("Unknown datacentre.")
-					return nil
+					return fmt.Errorf("unknown datacentre")
 				}
 				return err
 			}

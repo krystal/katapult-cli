@@ -1,7 +1,7 @@
 package main
 
 import (
-	"errors"
+	"fmt"
 	"net/url"
 
 	"github.com/krystal/go-katapult"
@@ -14,7 +14,7 @@ func newClient(conf *config.Config) (*katapult.Client, error) {
 	if conf.APIURL != "" {
 		apiURL, err := url.Parse(conf.APIURL)
 		if err != nil {
-			return nil, errors.New("Invalid API URL: " + conf.APIURL)
+			return nil, fmt.Errorf("Invalid API URL: %s\n", conf.APIURL)
 		}
 		a = append(a, katapult.WithBaseURL(apiURL))
 	}
