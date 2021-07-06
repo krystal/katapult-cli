@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/krystal/go-katapult/core"
 
 	"github.com/krystal/go-katapult"
@@ -55,8 +56,8 @@ func networksCmd(client *katapult.Client) *cobra.Command {
 		},
 	}
 	listFlags := list.PersistentFlags()
-	listFlags.String("id", "", "The ID of the organisation. Preferred over subdomain for lookups.")
-	listFlags.String("subdomain", "", "The subdomain of the organisation.")
+	listFlags.String("id", "", "The ID of the organization. Preferred over subdomain for lookups.")
+	listFlags.String("subdomain", "", "The subdomain of the organization.")
 	cmd.AddCommand(list)
 
 	return cmd

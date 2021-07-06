@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/krystal/go-katapult/core"
 
 	"github.com/krystal/go-katapult"
