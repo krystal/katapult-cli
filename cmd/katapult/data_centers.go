@@ -10,15 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func dataCentersCmd(client *katapult.Client) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "dc",
-		Aliases: []string{"dcs", "data-centers", "data_centers"},
-		Short:   "Get information about data centers",
-		Long:    "Get information about data centers.",
-	}
-
-	listCmd := &cobra.Command{
+func listDataCentersCmd(client *katapult.Client) *cobra.Command {
+	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List data centers",
@@ -30,7 +23,8 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 			}
 
 			for _, dc := range dcs {
-				fmt.Printf(
+				_, _ = fmt.Fprintf(
+					cmd.OutOrStdout(),
 					" - %s (%s) [%s] / %s\n",
 					dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
 				)
@@ -39,9 +33,10 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.AddCommand(listCmd)
+}
 
-	getCmd := &cobra.Command{
+func getDataCenterCmd(client *katapult.Client) *cobra.Command {
+	return &cobra.Command{
 		Use:   "get",
 		Args:  cobra.ExactArgs(1),
 		Short: "Get details for a data center",
@@ -56,7 +51,8 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 				return err
 			}
 
-			fmt.Printf(
+			_, _ = fmt.Fprintf(
+				cmd.OutOrStdout(),
 				"%s (%s) [%s] / %s\n",
 				dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
 			)
@@ -64,7 +60,18 @@ func dataCentersCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
-	cmd.AddCommand(getCmd)
+}
+
+func dataCentersCmd(client *katapult.Client) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "dc",
+		Aliases: []string{"dcs", "data-centers", "data_centers"},
+		Short:   "Get information about data centers",
+		Long:    "Get information about data centers.",
+	}
+
+	cmd.AddCommand(listDataCentersCmd(client))
+	cmd.AddCommand(getDataCenterCmd(client))
 
 	return cmd
 }

@@ -39,15 +39,16 @@ func networksCmd(client *katapult.Client) *cobra.Command {
 				return err
 			}
 
-			fmt.Println("Networks:")
+			stdout := cmd.OutOrStdout()
+			_, _ = fmt.Fprintln(stdout, "Networks:")
 			for _, net := range nets {
-				fmt.Printf(" - %s [%s]\n", net.Name, net.ID)
+				_, _ = fmt.Fprintf(stdout, " - %s [%s]\n", net.Name, net.ID)
 			}
 
 			if len(vnets) > 0 {
-				fmt.Println("Virtual Networks:")
+				_, _ = fmt.Fprintln(stdout, "Virtual Networks:")
 				for _, net := range vnets {
-					fmt.Printf(" - %s [%s]\n", net.Name, net.ID)
+					_, _ = fmt.Fprintf(stdout, " - %s [%s]\n", net.Name, net.ID)
 				}
 			}
 

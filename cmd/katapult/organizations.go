@@ -29,8 +29,9 @@ func organizationsCmd(client *katapult.Client) *cobra.Command {
 				return err
 			}
 
+			stdout := cmd.OutOrStdout()
 			for _, org := range orgs {
-				fmt.Printf(" - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
+				fmt.Fprintf(stdout, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
 			}
 
 			return nil
