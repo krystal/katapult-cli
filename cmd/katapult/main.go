@@ -65,6 +65,7 @@ func run() error {
 		dataCentersCmd(cl),
 		networksCmd(cl),
 		organizationsCmd(cl),
+		virtualMachinesCmd(cl),
 	)
 
 	return rootCmd.Execute()
