@@ -14,7 +14,7 @@ func configCommand(conf *config.Config) *cobra.Command {
 		Use:   "config",
 		Short: "Print configuration",
 		Long:  `Print parsed configuration in YAML format.`,
-		RunE:  func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			bs, err := yaml.Marshal(conf.AllSettings())
 			if err != nil {
 				return fmt.Errorf("unable to marshal config to YAML: %v", err)

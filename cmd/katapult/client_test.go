@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/krystal/katapult-cli/config"
 	"testing"
+
+	"github.com/krystal/katapult-cli/config"
 )
 
 func TestNewClient_APIKey(t *testing.T) {
@@ -35,7 +36,7 @@ func TestNewClient_BaseURL(t *testing.T) {
 	}
 
 	// Test invalid base URL.
-	c, err = newClient(&config.Config{
+	_, err = newClient(&config.Config{
 		APIKey: "test",
 		APIURL: "this is a test",
 	})

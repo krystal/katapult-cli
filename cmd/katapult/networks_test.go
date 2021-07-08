@@ -3,38 +3,39 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/krystal/go-katapult/core"
-	"github.com/krystal/katapult-cli/config"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"net/http"
 	"testing"
+
+	"github.com/krystal/go-katapult/core"
+	"github.com/krystal/katapult-cli/config"
+	"github.com/stretchr/testify/assert"
 )
 
 var idNetworks = []*core.Network{
 	{
-		ID:         "pognet",
-		Name:       "Pognet 1",
-		Permalink:  "pog-1",
+		ID:        "pognet",
+		Name:      "Pognet 1",
+		Permalink: "pog-1",
 		DataCenter: &core.DataCenter{
 			ID:        "POG1",
 			Name:      "Pogland 1",
 			Permalink: "pog1",
-			Country:   &core.Country{
+			Country: &core.Country{
 				ID:   "pog",
 				Name: "Pogland",
 			},
 		},
 	},
 	{
-		ID:         "pognet2",
-		Name:       "Pognet 2",
-		Permalink:  "pog-2",
+		ID:        "pognet2",
+		Name:      "Pognet 2",
+		Permalink: "pog-2",
 		DataCenter: &core.DataCenter{
 			ID:        "POG1",
 			Name:      "Pogland 1",
 			Permalink: "pog1",
-			Country:   &core.Country{
+			Country: &core.Country{
 				ID:   "pog",
 				Name: "Pogland",
 			},
@@ -44,28 +45,28 @@ var idNetworks = []*core.Network{
 
 var subdomainNetworks = []*core.Network{
 	{
-		ID:         "pognet3",
-		Name:       "Pognet 3",
-		Permalink:  "pog-3",
+		ID:        "pognet3",
+		Name:      "Pognet 3",
+		Permalink: "pog-3",
 		DataCenter: &core.DataCenter{
 			ID:        "POG1",
 			Name:      "Pogland 1",
 			Permalink: "pog1",
-			Country:   &core.Country{
+			Country: &core.Country{
 				ID:   "pog",
 				Name: "Pogland",
 			},
 		},
 	},
 	{
-		ID:         "pognet4",
-		Name:       "Pognet 4",
-		Permalink:  "pog-4",
+		ID:        "pognet4",
+		Name:      "Pognet 4",
+		Permalink: "pog-4",
 		DataCenter: &core.DataCenter{
 			ID:        "POG1",
 			Name:      "Pogland 1",
 			Permalink: "pog1",
-			Country:   &core.Country{
+			Country: &core.Country{
 				ID:   "pog",
 				Name: "Pogland",
 			},
@@ -110,7 +111,7 @@ func mockNetworksServer() (net.Listener, error) {
 	return ln, nil
 }
 
-var expectedNetworkResults = []struct{
+var expectedNetworkResults = []struct {
 	name string
 
 	args  []string
@@ -153,11 +154,14 @@ func TestNetworkList(t *testing.T) {
 		stdout := &bytes.Buffer{}
 		cmd.SetOut(stdout)
 		cmd.SetArgs(v.args)
-		if err := cmd.Execute(); err == nil {
+
+		err = cmd.Execute()
+		switch {
+		case err == nil:
 			assert.Equal(t, v.wants, stdout.String())
-		} else if v.err != "" {
+		case v.err != "":
 			assert.Equal(t, v.err, err.Error())
-		} else {
+		default:
 			t.Fatal(err)
 		}
 	}

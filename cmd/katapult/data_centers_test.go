@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/krystal/go-katapult/core"
-	"github.com/krystal/katapult-cli/config"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"net/http"
 	"testing"
+
+	"github.com/krystal/go-katapult/core"
+	"github.com/krystal/katapult-cli/config"
+	"github.com/stretchr/testify/assert"
 )
 
 var dcs = []*core.DataCenter{
@@ -16,7 +17,7 @@ var dcs = []*core.DataCenter{
 		ID:        "POG1",
 		Name:      "hello",
 		Permalink: "Hello World!",
-		Country:   &core.Country{
+		Country: &core.Country{
 			ID:   "POG",
 			Name: "Pogland",
 		},
@@ -25,7 +26,7 @@ var dcs = []*core.DataCenter{
 		ID:        "GB1",
 		Name:      "hello",
 		Permalink: "Hello World!",
-		Country:   &core.Country{
+		Country: &core.Country{
 			ID:   "UK",
 			Name: "United Kingdom",
 		},
@@ -63,13 +64,13 @@ func mockDcServer() (net.Listener, error) {
 			notFound(writer, request)
 			return
 		}
-		dcId := request.URL.Query().Get("data_center[permalink]")
-		if dcId == "" {
+		dcID := request.URL.Query().Get("data_center[permalink]")
+		if dcID == "" {
 			notFound(writer, request)
 			return
 		}
 		for _, v := range dcs {
-			if v.ID == dcId {
+			if v.ID == dcID {
 				writer.Header().Add("Content-Type", "application/json")
 				writer.WriteHeader(200)
 				b, err := json.Marshal(map[string]*core.DataCenter{
@@ -115,7 +116,7 @@ func TestDataCenters_List(t *testing.T) {
 	assert.Equal(t, stdoutDcList, stdout.String())
 }
 
-var expectedDcResults = []struct{
+var expectedDcResults = []struct {
 	name string
 
 	args  []string
@@ -123,15 +124,15 @@ var expectedDcResults = []struct{
 	err   string
 }{
 	{
-		name:   "display POG1",
-		args:   []string{"get", "POG1"},
-		wants:  `hello (Hello World!) [POG1] / Pogland
+		name: "display POG1",
+		args: []string{"get", "POG1"},
+		wants: `hello (Hello World!) [POG1] / Pogland
 `,
 	},
 	{
-		name:   "display GB1",
-		args:   []string{"get", "GB1"},
-		wants:  `hello (Hello World!) [GB1] / United Kingdom
+		name: "display GB1",
+		args: []string{"get", "GB1"},
+		wants: `hello (Hello World!) [GB1] / United Kingdom
 `,
 	},
 	{
@@ -160,11 +161,13 @@ func TestDataCenters_Get(t *testing.T) {
 		cmd.SetOut(stdout)
 		cmd.SetErr(&bytes.Buffer{}) // Ignore stderr, this is just testing the command framework,, not the error.
 		cmd.SetArgs(v.args)
-		if err := cmd.Execute(); err == nil {
+		err = cmd.Execute()
+		switch {
+		case err == nil:
 			assert.Equal(t, v.wants, stdout.String())
-		} else if v.err != "" {
+		case v.err != "":
 			assert.Equal(t, v.err, err.Error())
-		} else {
+		default:
 			t.Fatal(err)
 		}
 	}

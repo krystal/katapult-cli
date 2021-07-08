@@ -3,23 +3,24 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/krystal/go-katapult/core"
-	"github.com/krystal/katapult-cli/config"
-	"github.com/stretchr/testify/assert"
 	"net"
 	"net/http"
 	"testing"
+
+	"github.com/krystal/go-katapult/core"
+	"github.com/krystal/katapult-cli/config"
+	"github.com/stretchr/testify/assert"
 )
 
 var organizations = []*core.Organization{
 	{
-		ID: "loge",
-		Name: "Loge Enthusiasts",
+		ID:        "loge",
+		Name:      "Loge Enthusiasts",
 		SubDomain: "loge",
 	},
 	{
-		ID: "testing",
-		Name: "testing, testing, 123",
+		ID:        "testing",
+		Name:      "testing, testing, 123",
 		SubDomain: "test",
 	},
 }

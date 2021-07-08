@@ -3,8 +3,9 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/krystal/katapult-cli/config"
 	"testing"
+
+	"github.com/krystal/katapult-cli/config"
 )
 
 const mockConfigFormat = `---
@@ -13,25 +14,25 @@ api_url: %s
 
 `
 
-var mockConfigSuite = []struct{
+var mockConfigSuite = []struct {
 	apiKey string
-	apiUrl string
+	apiURL string
 }{
 	{
 		apiKey: "",
-		apiUrl: "",
+		apiURL: "",
 	},
 	{
 		apiKey: "test",
-		apiUrl: "",
+		apiURL: "",
 	},
 	{
 		apiKey: "test",
-		apiUrl: "test",
+		apiURL: "test",
 	},
 	{
 		apiKey: "",
-		apiUrl: "test",
+		apiURL: "test",
 	},
 }
 
@@ -42,24 +43,24 @@ func TestConfig(t *testing.T) {
 	}
 	for _, v := range mockConfigSuite {
 		conf.APIKey = v.apiKey
-		conf.APIURL = v.apiUrl
+		conf.APIURL = v.apiURL
 		conf.SetDefault("api_key", v.apiKey)
-		conf.SetDefault("api_url", v.apiUrl)
+		conf.SetDefault("api_url", v.apiURL)
 		cmd := configCommand(conf)
 		stdout := &bytes.Buffer{}
 		cmd.SetOut(stdout)
 		if err := cmd.RunE(cmd, []string{}); err != nil {
 			t.Fatal(err)
 		}
-		mockApiKey := v.apiKey
-		if mockApiKey == "" {
-			mockApiKey = "\"\""
+		mockAPIKey := v.apiKey
+		if mockAPIKey == "" {
+			mockAPIKey = "\"\""
 		}
-		mockApiUrl := v.apiUrl
-		if mockApiUrl == "" {
-			mockApiUrl = "\"\""
+		mockAPIURL := v.apiURL
+		if mockAPIURL == "" {
+			mockAPIURL = "\"\""
 		}
-		mockOutput := fmt.Sprintf(mockConfigFormat, mockApiKey, mockApiUrl)
+		mockOutput := fmt.Sprintf(mockConfigFormat, mockAPIKey, mockAPIURL)
 		if stdout.String() != mockOutput {
 			t.Fatal("invalid result:\n\n", stdout.String())
 		}

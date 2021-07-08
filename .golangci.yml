@@ -9,6 +9,8 @@ linters-settings:
   govet:
     check-shadowing: true
     enable-all: true
+    disable:
+      - fieldalignment
   maligned:
     suggest-new: true
   misspell:
