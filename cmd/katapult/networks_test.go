@@ -74,7 +74,7 @@ var subdomainNetworks = []*core.Network{
 }
 
 func mockNetworksServer() (net.Listener, error) {
-	ln, err := net.Listen("tcp", "127.0.0.1:3210")
+	ln, err := net.Listen("tcp", "127.0.0.1:7654")
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func TestNetworkList(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer ln.Close()
-	client, err := newClient(&config.Config{APIURL: "http://127.0.0.1:3210", APIKey: "a"})
+	client, err := newClient(&config.Config{APIURL: "http://127.0.0.1:7654", APIKey: "a"})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -158,6 +158,7 @@ func TestDataCenters_Get(t *testing.T) {
 	for _, v := range expectedDcResults {
 		stdout := &bytes.Buffer{}
 		cmd.SetOut(stdout)
+		cmd.SetErr(&bytes.Buffer{}) // Ignore stderr, this is just testing the command framework,, not the error.
 		cmd.SetArgs(v.args)
 		if err := cmd.Execute(); err == nil {
 			assert.Equal(t, v.wants, stdout.String())
