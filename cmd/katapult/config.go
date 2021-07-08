@@ -21,9 +21,8 @@ func configCommand(conf *config.Config) *cobra.Command {
 			}
 
 			stdout := cmd.OutOrStdout()
-			_, _ = stdout.Write([]byte("---\n"))
-			_, _ = stdout.Write(bs)
-			_, _ = stdout.Write([]byte("\n"))
+			_, _ = fmt.Fprintln(stdout, "---")
+			_, _ = stdout.Write(append(bs, '\n'))
 			return nil
 		},
 	}
