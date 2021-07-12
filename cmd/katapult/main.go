@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/krystal/go-katapult"
 	"log"
 	"os"
 
@@ -29,32 +30,32 @@ func run() error {
 		return err
 	}
 
-	cl, err := newClient(conf)
-	if err != nil {
-		return err
-	}
+	var cl *katapult.Client
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
 		Long:  `katapult is a CLI tool for the katapult.io hosting platform.`,
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			// TODO: Pointer problems here because the commands are built before here.
+			cl, err = newClient(conf)
+			return err
+		},
 	}
 
-	rootFlags := rootCmd.PersistentFlags()
-
-	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
+	rootCmd.PersistentFlags().StringVarP(&configFileFlag, "config", "c", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
 
-	rootFlags.StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
+	rootCmd.PersistentFlags().StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
 		"URL for Katapult API (default: %s)", config.Defaults.APIURL,
 	))
-	err = conf.BindPFlag("api_url", rootFlags.Lookup("api-url"))
+	err = conf.BindPFlag("api_url", rootCmd.PersistentFlags().Lookup("api-url"))
 	if err != nil {
 		return err
 	}
-	rootFlags.StringVar(&configAPIKey, "api-key", "", fmt.Sprintf(
+	rootCmd.PersistentFlags().StringVar(&configAPIKey, "api-key", "", fmt.Sprintf(
 		"Katapult API Key (default: %s)", config.Defaults.APIKey,
 	))
-	err = conf.BindPFlag("api_key", rootFlags.Lookup("api-key"))
+	err = conf.BindPFlag("api_key", rootCmd.PersistentFlags().Lookup("api-key"))
 	if err != nil {
 		return err
 	}

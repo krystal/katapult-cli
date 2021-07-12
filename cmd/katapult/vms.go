@@ -37,7 +37,6 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 
 	list := &cobra.Command{
 		Use:     "list",
-		Args:    cobra.ExactArgs(1),
 		Aliases: []string{"ls"},
 		Short:   "Get a list of virtual machines from an organisation",
 		Long:    "Get a list of virtual machines from an organisation.",
@@ -90,7 +89,8 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
-	// TODO: Flags seem to be broken in multiple places
+	list.Flags().String("id", "", "The ID of the organisation. If set, this takes priority over the sub-domain.")
+	list.Flags().String("subdomain", "", "The sub-domain of the organisation.")
 	cmd.AddCommand(list)
 
 	poweroff := &cobra.Command{
