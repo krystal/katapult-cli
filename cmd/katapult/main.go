@@ -21,24 +21,14 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if configFileFlag != "" {
-		conf.SetConfigFile(configFileFlag)
-	}
-
-	err = conf.Load()
-	if err != nil {
-		return err
-	}
 
 	var cl *katapult.Client
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
 		Long:  `katapult is a CLI tool for the katapult.io hosting platform.`,
-		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
-			// TODO: Pointer problems here because the commands are built before here.
-			cl, err = newClient(conf)
-			return err
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
 		},
 	}
 
@@ -56,6 +46,25 @@ func run() error {
 		"Katapult API Key (default: %s)", config.Defaults.APIKey,
 	))
 	err = conf.BindPFlag("api_key", rootCmd.PersistentFlags().Lookup("api-key"))
+	if err != nil {
+		return err
+	}
+
+	err = rootCmd.ParseFlags(os.Args)
+	if err != nil {
+		return err
+	}
+
+	if configFileFlag != "" {
+		conf.SetConfigFile(configFileFlag)
+	}
+
+	err = conf.Load()
+	if err != nil {
+		return err
+	}
+
+	cl, err = newClient(conf)
 	if err != nil {
 		return err
 	}
