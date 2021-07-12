@@ -1,7 +1,6 @@
 package config
 
 import (
-	"errors"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 )
@@ -38,7 +37,10 @@ func New() (*Config, error) {
 
 func (c *Config) Load() error {
 	err := c.viper.ReadInConfig()
-	if err != nil && !errors.Is(err, viper.ConfigFileNotFoundError{}) {
+	if err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			return c.viper.Unmarshal(c)
+		}
 		return err
 	}
 
