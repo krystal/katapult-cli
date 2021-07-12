@@ -107,6 +107,8 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
+	poweroff.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
+	poweroff.Flags().String("fqdn", "", "The FQDN of the server.")
 	cmd.AddCommand(poweroff)
 
 	start := &cobra.Command{
@@ -126,6 +128,8 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
+	start.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
+	start.Flags().String("fqdn", "", "The FQDN of the server.")
 	cmd.AddCommand(start)
 
 	stop := &cobra.Command{
@@ -145,6 +149,8 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
+	stop.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
+	stop.Flags().String("fqdn", "", "The FQDN of the server.")
 	cmd.AddCommand(stop)
 
 	reset := &cobra.Command{
@@ -164,6 +170,8 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 			return nil
 		},
 	}
+	reset.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
+	reset.Flags().String("fqdn", "", "The FQDN of the server.")
 	cmd.AddCommand(reset)
 
 	return cmd
