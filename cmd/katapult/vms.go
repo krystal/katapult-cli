@@ -41,16 +41,13 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 		Short:   "Get a list of virtual machines from an organisation",
 		Long:    "Get a list of virtual machines from an organisation.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			idFlag := cmd.Flags().Lookup("id")
-			var ref core.OrganizationRef
-			if idFlag == nil {
-				subdomainFlag := cmd.Flags().Lookup("subdomain")
-				if subdomainFlag == nil {
+			ref := core.OrganizationRef{ID: cmd.Flags().Lookup("id").Value.String()}
+			if ref.ID == "" {
+				subdomain := cmd.Flags().Lookup("subdomain").Value.String()
+				if subdomain == "" {
 					return fmt.Errorf("both ID and subdomain are unset")
 				}
-				ref = core.OrganizationRef{SubDomain: subdomainFlag.Value.String()}
-			} else {
-				ref = core.OrganizationRef{ID: idFlag.Value.String()}
+				ref.SubDomain = subdomain
 			}
 
 			stdout := cmd.OutOrStdout()
@@ -70,7 +67,7 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 				pagination := resp.Pagination
 				page = pagination.CurrentPage + 1
 				perPage = pagination.PerPage
-				end := pagination.CurrentPage == pagination.TotalPages
+				end := pagination.TotalPages == 0 || pagination.CurrentPage == pagination.TotalPages
 
 				for _, vm := range vms {
 					fqdn := vm.FQDN
