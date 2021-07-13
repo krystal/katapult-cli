@@ -27,7 +27,7 @@ func vmNotFoundHandlingError(err error, resp *katapult.Response) error {
 	return err
 }
 
-func virtualMachinesListCmd(client *katapult.Client) *cobra.Command {
+func virtualMachinesListCmd(client core.RequestMaker) *cobra.Command {
 	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -84,7 +84,7 @@ func virtualMachinesListCmd(client *katapult.Client) *cobra.Command {
 	return list
 }
 
-func virtualMachinesPoweroffCmd(client *katapult.Client) *cobra.Command {
+func virtualMachinesPoweroffCmd(client core.RequestMaker) *cobra.Command {
 	poweroff := &cobra.Command{
 		Use:   "poweroff",
 		Short: "Used to power off a virtual machine.",
@@ -107,7 +107,7 @@ func virtualMachinesPoweroffCmd(client *katapult.Client) *cobra.Command {
 	return poweroff
 }
 
-func virtualMachinesStartCmd(client *katapult.Client) *cobra.Command {
+func virtualMachinesStartCmd(client core.RequestMaker) *cobra.Command {
 	start := &cobra.Command{
 		Use:   "start",
 		Short: "Used to start a virtual machine.",
@@ -130,7 +130,7 @@ func virtualMachinesStartCmd(client *katapult.Client) *cobra.Command {
 	return start
 }
 
-func virtualMachinesStopCmd(client *katapult.Client) *cobra.Command {
+func virtualMachinesStopCmd(client core.RequestMaker) *cobra.Command {
 	stop := &cobra.Command{
 		Use:   "stop",
 		Short: "Used to stop a virtual machine.",
@@ -153,7 +153,7 @@ func virtualMachinesStopCmd(client *katapult.Client) *cobra.Command {
 	return stop
 }
 
-func virtualMachinesResetCmd(client *katapult.Client) *cobra.Command {
+func virtualMachinesResetCmd(client core.RequestMaker) *cobra.Command {
 	reset := &cobra.Command{
 		Use:   "reset",
 		Short: "Used to reset a virtual machine.",
@@ -176,7 +176,7 @@ func virtualMachinesResetCmd(client *katapult.Client) *cobra.Command {
 	return reset
 }
 
-func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
+func virtualMachinesCmd(client core.RequestMaker) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "vm",
 		Aliases: []string{"vms", "virtual-machines", "virtual_machines"},
