@@ -5,12 +5,10 @@ import (
 
 	"github.com/krystal/go-katapult/core"
 
-	"github.com/krystal/go-katapult"
-
 	"github.com/spf13/cobra"
 )
 
-func networksCmd(client *katapult.Client) *cobra.Command {
+func networksCmd(client core.RequestMaker) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "networks",
 		Aliases: []string{"net", "nets"},

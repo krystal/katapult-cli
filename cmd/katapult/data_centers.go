@@ -5,12 +5,10 @@ import (
 
 	"github.com/krystal/go-katapult/core"
 
-	"github.com/krystal/go-katapult"
-
 	"github.com/spf13/cobra"
 )
 
-func listDataCentersCmd(client *katapult.Client) *cobra.Command {
+func listDataCentersCmd(client core.RequestMaker) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -35,7 +33,7 @@ func listDataCentersCmd(client *katapult.Client) *cobra.Command {
 	}
 }
 
-func getDataCenterCmd(client *katapult.Client) *cobra.Command {
+func getDataCenterCmd(client core.RequestMaker) *cobra.Command {
 	return &cobra.Command{
 		Use:   "get",
 		Args:  cobra.ExactArgs(1),
@@ -62,7 +60,7 @@ func getDataCenterCmd(client *katapult.Client) *cobra.Command {
 	}
 }
 
-func dataCentersCmd(client *katapult.Client) *cobra.Command {
+func dataCentersCmd(client core.RequestMaker) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "dc",
 		Aliases: []string{"dcs", "data-centers", "data_centers"},

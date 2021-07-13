@@ -5,12 +5,10 @@ import (
 
 	"github.com/krystal/go-katapult/core"
 
-	"github.com/krystal/go-katapult"
-
 	"github.com/spf13/cobra"
 )
 
-func organizationsCmd(client *katapult.Client) *cobra.Command {
+func organizationsCmd(client core.RequestMaker) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "org",
 		Aliases: []string{"orgs", "organization", "organizations"},

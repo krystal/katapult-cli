@@ -3,6 +3,8 @@ package main
 import (
 	"testing"
 
+	"github.com/krystal/go-katapult"
+
 	"github.com/krystal/katapult-cli/config"
 )
 
@@ -13,7 +15,7 @@ func TestNewClient_APIKey(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.APIKey != "test" {
+	if c.(*katapult.Client).APIKey != "test" {
 		t.Fatal("API key is unset")
 	}
 }
@@ -27,10 +29,10 @@ func TestNewClient_BaseURL(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if c.APIKey != "test" {
-		t.Fatal("API key is set to", c.APIKey)
+	if c.(*katapult.Client).APIKey != "test" {
+		t.Fatal("API key is set to", c.(*katapult.Client).APIKey)
 	}
-	s := c.BaseURL.String()
+	s := c.(*katapult.Client).BaseURL.String()
 	if s != "https://example.com" {
 		t.Fatal("invalid base URL:", s)
 	}
