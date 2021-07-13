@@ -22,35 +22,34 @@ func TestDataCenters_List(t *testing.T) {
 	assert.Equal(t, stdoutDcList, stdout.String())
 }
 
-var expectedDcResults = []struct {
-	name string
-
-	args  []string
-	wants string
-	err   string
-}{
-	{
-		name: "display POG1",
-		args: []string{"get", "POG1"},
-		wants: `hello (Hello World!) [POG1] / Pogland
-`,
-	},
-	{
-		name: "display GB1",
-		args: []string{"get", "GB1"},
-		wants: `hello (Hello World!) [GB1] / United Kingdom
-`,
-	},
-	{
-		name: "display invalid DC",
-		args: []string{"get", "UNPOG1"},
-		err:  "unknown datacentre",
-	},
-}
-
 func TestDataCenters_Get(t *testing.T) {
 	cmd := dataCentersCmd(mockAPIClient{})
-	for _, v := range expectedDcResults {
+	tests := []struct {
+		name string
+
+		args  []string
+		wants string
+		err   string
+	}{
+		{
+			name: "display POG1",
+			args: []string{"get", "POG1"},
+			wants: `hello (Hello World!) [POG1] / Pogland
+`,
+		},
+		{
+			name: "display GB1",
+			args: []string{"get", "GB1"},
+			wants: `hello (Hello World!) [GB1] / United Kingdom
+`,
+		},
+		{
+			name: "display invalid DC",
+			args: []string{"get", "UNPOG1"},
+			err:  "unknown datacentre",
+		},
+	}
+	for _, v := range tests {
 		stdout := &bytes.Buffer{}
 		cmd.SetOut(stdout)
 		cmd.SetErr(&bytes.Buffer{}) // Ignore stderr, this is just testing the command framework, not the error.

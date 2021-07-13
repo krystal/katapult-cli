@@ -7,33 +7,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var expectedNetworkResults = []struct {
-	name string
+func TestNetworkList(t *testing.T) {
+	tests := []struct {
+		name string
 
-	args  []string
-	wants string
-	err   string
-}{
-	{
-		name: "Test listing pog-id",
-		args: []string{"ls", "--id", "pog-id"},
-		wants: `Networks:
+		args  []string
+		wants string
+		err   string
+	}{
+		{
+			name: "Test listing pog-id",
+			args: []string{"ls", "--id", "pog-id"},
+			wants: `Networks:
  - Pognet 1 [pognet]
  - Pognet 2 [pognet2]
 `,
-	},
-	{
-		name: "Test listing pog-subdomain",
-		args: []string{"ls", "--subdomain", "pog-subdomain"},
-		wants: `Networks:
+		},
+		{
+			name: "Test listing pog-subdomain",
+			args: []string{"ls", "--subdomain", "pog-subdomain"},
+			wants: `Networks:
  - Pognet 3 [pognet3]
  - Pognet 4 [pognet4]
 `,
-	},
-}
-
-func TestNetworkList(t *testing.T) {
-	for _, v := range expectedNetworkResults {
+		},
+	}
+	for _, v := range tests {
 		cmd := networksCmd(mockAPIClient{})
 		stdout := &bytes.Buffer{}
 		cmd.SetOut(stdout)
