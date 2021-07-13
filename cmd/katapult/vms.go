@@ -27,14 +27,7 @@ func vmNotFoundHandlingError(err error, resp *katapult.Response) error {
 	return err
 }
 
-func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:     "vm",
-		Aliases: []string{"vms", "virtual-machines", "virtual_machines"},
-		Short:   "Get information or do actions with virtual machines",
-		Long:    "Get information or do actions with virtual machines.",
-	}
-
+func virtualMachinesListCmd(client *katapult.Client) *cobra.Command {
 	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -88,8 +81,10 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 	}
 	list.Flags().String("id", "", "The ID of the organisation. If set, this takes priority over the sub-domain.")
 	list.Flags().String("subdomain", "", "The sub-domain of the organisation.")
-	cmd.AddCommand(list)
+	return list
+}
 
+func virtualMachinesPoweroffCmd(client *katapult.Client) *cobra.Command {
 	poweroff := &cobra.Command{
 		Use:   "poweroff",
 		Short: "Used to power off a virtual machine.",
@@ -109,8 +104,10 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 	}
 	poweroff.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	poweroff.Flags().String("fqdn", "", "The FQDN of the server.")
-	cmd.AddCommand(poweroff)
+	return poweroff
+}
 
+func virtualMachinesStartCmd(client *katapult.Client) *cobra.Command {
 	start := &cobra.Command{
 		Use:   "start",
 		Short: "Used to start a virtual machine.",
@@ -130,8 +127,10 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 	}
 	start.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	start.Flags().String("fqdn", "", "The FQDN of the server.")
-	cmd.AddCommand(start)
+	return start
+}
 
+func virtualMachinesStopCmd(client *katapult.Client) *cobra.Command {
 	stop := &cobra.Command{
 		Use:   "stop",
 		Short: "Used to stop a virtual machine.",
@@ -151,8 +150,10 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 	}
 	stop.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	stop.Flags().String("fqdn", "", "The FQDN of the server.")
-	cmd.AddCommand(stop)
+	return stop
+}
 
+func virtualMachinesResetCmd(client *katapult.Client) *cobra.Command {
 	reset := &cobra.Command{
 		Use:   "reset",
 		Short: "Used to reset a virtual machine.",
@@ -172,7 +173,23 @@ func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
 	}
 	reset.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	reset.Flags().String("fqdn", "", "The FQDN of the server.")
-	cmd.AddCommand(reset)
+	return reset
+}
+
+func virtualMachinesCmd(client *katapult.Client) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:     "vm",
+		Aliases: []string{"vms", "virtual-machines", "virtual_machines"},
+		Short:   "Get information or do actions with virtual machines",
+		Long:    "Get information or do actions with virtual machines.",
+	}
+
+	cmd.AddCommand(
+		virtualMachinesListCmd(client),
+		virtualMachinesPoweroffCmd(client),
+		virtualMachinesStartCmd(client),
+		virtualMachinesStopCmd(client),
+		virtualMachinesResetCmd(client))
 
 	return cmd
 }
