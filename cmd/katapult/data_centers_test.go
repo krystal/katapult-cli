@@ -49,19 +49,21 @@ func TestDataCenters_Get(t *testing.T) {
 			err:  "unknown datacentre",
 		},
 	}
-	for _, v := range tests {
-		stdout := &bytes.Buffer{}
-		cmd.SetOut(stdout)
-		cmd.SetErr(&bytes.Buffer{}) // Ignore stderr, this is just testing the command framework, not the error.
-		cmd.SetArgs(v.args)
-		err := cmd.Execute()
-		switch {
-		case err == nil:
-			assert.Equal(t, v.wants, stdout.String())
-		case v.err != "":
-			assert.Equal(t, v.err, err.Error())
-		default:
-			t.Fatal(err)
-		}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			stdout := &bytes.Buffer{}
+			cmd.SetOut(stdout)
+			cmd.SetErr(&bytes.Buffer{}) // Ignore stderr, this is just testing the command framework, not the error.
+			cmd.SetArgs(tt.args)
+			err := cmd.Execute()
+			switch {
+			case err == nil:
+				assert.Equal(t, tt.wants, stdout.String())
+			case tt.err != "":
+				assert.Equal(t, tt.err, err.Error())
+			default:
+				t.Fatal(err)
+			}
+		})
 	}
 }

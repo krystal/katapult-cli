@@ -41,27 +41,29 @@ func TestConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		conf.APIKey = tt.apiKey
-		conf.APIURL = tt.apiURL
-		conf.SetDefault("api_key", tt.apiKey)
-		conf.SetDefault("api_url", tt.apiURL)
-		cmd := configCommand(conf)
-		stdout := &bytes.Buffer{}
-		cmd.SetOut(stdout)
-		if err := cmd.RunE(cmd, []string{}); err != nil {
-			t.Fatal(err)
-		}
-		mockAPIKey := tt.apiKey
-		if mockAPIKey == "" {
-			mockAPIKey = "\"\""
-		}
-		mockAPIURL := tt.apiURL
-		if mockAPIURL == "" {
-			mockAPIURL = "\"\""
-		}
-		mockOutput := fmt.Sprintf(mockConfigFormat, mockAPIKey, mockAPIURL)
-		if stdout.String() != mockOutput {
-			t.Fatal("invalid result:\n\n", stdout.String())
-		}
+		t.Run(fmt.Sprintf("key: %s, url: %s", tt.apiKey, tt.apiURL), func(t *testing.T) {
+			conf.APIKey = tt.apiKey
+			conf.APIURL = tt.apiURL
+			conf.SetDefault("api_key", tt.apiKey)
+			conf.SetDefault("api_url", tt.apiURL)
+			cmd := configCommand(conf)
+			stdout := &bytes.Buffer{}
+			cmd.SetOut(stdout)
+			if err := cmd.RunE(cmd, []string{}); err != nil {
+				t.Fatal(err)
+			}
+			mockAPIKey := tt.apiKey
+			if mockAPIKey == "" {
+				mockAPIKey = "\"\""
+			}
+			mockAPIURL := tt.apiURL
+			if mockAPIURL == "" {
+				mockAPIURL = "\"\""
+			}
+			mockOutput := fmt.Sprintf(mockConfigFormat, mockAPIKey, mockAPIURL)
+			if stdout.String() != mockOutput {
+				t.Fatal("invalid result:\n\n", stdout.String())
+			}
+		})
 	}
 }
