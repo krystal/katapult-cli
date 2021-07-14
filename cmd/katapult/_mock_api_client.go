@@ -96,7 +96,6 @@ func (mockAPIClient) Do(
 	// Defines URL starts for multiple result routes starting with the same string.
 	dcStart := "/core/v1/data_centers"
 
-
 	// Process the path.
 	path := request.URL.Path
 	switch {
