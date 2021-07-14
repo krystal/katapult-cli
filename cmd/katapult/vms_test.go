@@ -26,42 +26,42 @@ func TestVMs_Poweroff(t *testing.T) {
 	cmd := virtualMachinesCmd(mockAPIClient{})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"poweroff", "--id", "1"})
+	cmd.SetArgs([]string{"poweroff", "--id=1"})
 	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, stdoutVMsList, stdout.String())
+	assert.Equal(t, "Virtual machine successfully powered down.\n", stdout.String())
 }
 
 func TestVMs_Stop(t *testing.T) {
 	cmd := virtualMachinesCmd(mockAPIClient{})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"stop", "--id", "1"})
+	cmd.SetArgs([]string{"stop", "--id=1"})
 	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, stdoutVMsList, stdout.String())
+	assert.Equal(t, "Virtual machine successfully stopped.\n", stdout.String())
 }
 
 func TestVMs_Start(t *testing.T) {
 	cmd := virtualMachinesCmd(mockAPIClient{})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"start", "--id", "1"})
+	cmd.SetArgs([]string{"start", "--id=1"})
 	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, stdoutVMsList, stdout.String())
+	assert.Equal(t, "Virtual machine successfully started.\n", stdout.String())
 }
 
 func TestVMs_Reset(t *testing.T) {
 	cmd := virtualMachinesCmd(mockAPIClient{})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"reset", "--id", "1"})
+	cmd.SetArgs([]string{"reset", "--id=1"})
 	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, stdoutVMsList, stdout.String())
+	assert.Equal(t, "Virtual machine successfully reset.\n", stdout.String())
 }
