@@ -1,38 +1,14 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"net/http"
 	"strings"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 )
-
-var dcs = []*core.DataCenter{
-	{
-		ID:        "POG1",
-		Name:      "hello",
-		Permalink: "Hello World!",
-		Country: &core.Country{
-			ID:   "POG",
-			Name: "Pogland",
-		},
-	},
-	{
-		ID:        "GB1",
-		Name:      "hello",
-		Permalink: "Hello World!",
-		Country: &core.Country{
-			ID:   "UK",
-			Name: "United Kingdom",
-		},
-	},
-}
 
 var idNetworks = []*core.Network{
 	{
@@ -120,19 +96,6 @@ func (mockAPIClient) Do(
 	// Defines URL starts for multiple result routes starting with the same string.
 	dcStart := "/core/v1/data_centers"
 
-	// Handle creating un-paginated responses for JSON 200 OK's.
-	okJSON := func(b []byte) *katapult.Response {
-		return &katapult.Response{
-			Response: &http.Response{
-				StatusCode: 200,
-				Header: http.Header{
-					"Content-Type": {"application/json"},
-				},
-				Body:          ioutil.NopCloser(bytes.NewReader(b)),
-				ContentLength: int64(len(b)),
-			},
-		}
-	}
 
 	// Process the path.
 	path := request.URL.Path
