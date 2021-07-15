@@ -20,22 +20,28 @@ func TestConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 	tests := []struct {
+		name string
+
 		apiKey string
 		apiURL string
 	}{
 		{
+			name:   "Check that the config command displays blank values properly",
 			apiKey: "",
 			apiURL: "",
 		},
 		{
+			name:   "Check that the config command displays only API URL being blank properly",
 			apiKey: "test",
 			apiURL: "",
 		},
 		{
+			name:   "Check that the config command handles both fields being present properly",
 			apiKey: "test",
 			apiURL: "test",
 		},
 		{
+			name:   "Check that the config command displays only API key being blank properly",
 			apiKey: "",
 			apiURL: "test",
 		},
