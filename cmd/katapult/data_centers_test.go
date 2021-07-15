@@ -64,10 +64,11 @@ func TestDataCenters_Get(t *testing.T) {
 	tests := []struct {
 		name string
 
-		args  []string
-		dc    string
-		wants string
-		err   string
+		args   []string
+		dc     string
+		wants  string
+		stderr string
+		err    string
 	}{
 		{
 			name: "display POG1",
@@ -82,9 +83,10 @@ func TestDataCenters_Get(t *testing.T) {
 `,
 		},
 		{
-			name: "display invalid DC",
-			args: []string{"get", "UNPOG1"},
-			err:  "unknown datacentre",
+			name:   "display invalid DC",
+			args:   []string{"get", "UNPOG1"},
+			stderr: "Error: unknown datacentre\n",
+			err:    "unknown datacentre",
 		},
 	}
 
@@ -115,10 +117,12 @@ func TestDataCenters_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
+			stderr := &bytes.Buffer{}
 			cmd.SetOut(stdout)
-			cmd.SetErr(&bytes.Buffer{}) // Ignore stderr, this is just testing the command framework, not the error.
+			cmd.SetErr(stderr)
 			cmd.SetArgs(tt.args)
 			err := cmd.Execute()
+			assert.Equal(t, tt.stderr, stderr.String())
 			switch {
 			case err == nil:
 				assert.Equal(t, tt.wants, stdout.String())
