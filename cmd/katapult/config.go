@@ -17,7 +17,7 @@ func configCommand(conf *config.Config) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			bs, err := yaml.Marshal(conf.AllSettings())
 			if err != nil {
-				return fmt.Errorf("unable to marshal config to YAML: %v", err)
+				return fmt.Errorf("unable to marshal config to YAML: %w", err)
 			}
 
 			stdout := cmd.OutOrStdout()
