@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"github.com/krystal/go-katapult"
 	"testing"
 
 	"github.com/krystal/go-katapult/core"
@@ -25,9 +27,14 @@ const stdoutOrganizationsList = ` - Loge Enthusiasts (loge) [loge]
  - testing, testing, 123 (test) [testing]
 `
 
+type mockNetworkListClient struct {}
+
+func (mockNetworkListClient) List(context.Context) ([]*core.Organization, *katapult.Response, error) {
+	return organizations, nil, nil
+}
+
 func TestOrganizations_List(t *testing.T) {
-	mock := singleResponse(t, "/core/v1/organizations", "organizations", organizations)
-	cmd := organizationsCmd(mock)
+	cmd := organizationsCmd(mockNetworkListClient{})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
 	cmd.SetArgs([]string{"list"})

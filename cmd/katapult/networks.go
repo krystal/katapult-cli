@@ -1,14 +1,23 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/krystal/go-katapult"
 
 	"github.com/krystal/go-katapult/core"
 
 	"github.com/spf13/cobra"
 )
 
-func networksCmd(client core.RequestMaker) *cobra.Command {
+type networksListClient interface {
+	List(
+		ctx context.Context,
+		org core.OrganizationRef,
+	) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error)
+}
+
+func networksCmd(client networksListClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "networks",
 		Aliases: []string{"net", "nets"},
@@ -32,7 +41,7 @@ func networksCmd(client core.RequestMaker) *cobra.Command {
 				ref = core.OrganizationRef{SubDomain: subdomain}
 			}
 
-			nets, vnets, _, err := core.NewNetworksClient(client).List(cmd.Context(), ref)
+			nets, vnets, _, err := client.List(cmd.Context(), ref)
 			if err != nil {
 				return err
 			}

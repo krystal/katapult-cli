@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/krystal/go-katapult/core"
 	"log"
 	"os"
 
@@ -63,8 +64,8 @@ func run() error {
 		versionCommand(),
 		configCommand(conf),
 		dataCentersCmd(cl),
-		networksCmd(cl),
-		organizationsCmd(cl),
+		networksCmd(core.NewNetworksClient(cl)),
+		organizationsCmd(core.NewOrganizationsClient(cl)),
 	)
 
 	return rootCmd.Execute()

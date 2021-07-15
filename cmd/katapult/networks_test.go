@@ -3,13 +3,10 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-	"github.com/krystal/katapult-cli/cmd/katapult/mocks"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -76,18 +73,15 @@ var subdomainNetworks = []*core.Network{
 	},
 }
 
-func TestNetworkList(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mock := mocks.NewMockRequestMaker(ctrl)
-	matcher := mocks.KatapultRequestMatcher{
-		Path: "/core/v1/organizations/_/available_networks",
-		ExpectedParams: []mocks.URLParamMatcher{
-			mocks.URLParamOr(
-				mocks.URLParamContains("organization[id]"),
-				mocks.URLParamContains("organization[sub_domain]")),
-		},
-	}
+type mockNetworkList struct {}
 
+func (mockNetworkList) List(
+	_ context.Context, org core.OrganizationRef,
+) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error) {
+	// TODO
+}
+
+func TestNetworkList(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -113,44 +107,9 @@ func TestNetworkList(t *testing.T) {
 		},
 	}
 
-	mock.
-		EXPECT().
-		Do(gomock.Any(), matcher, gomock.Any()).
-		DoAndReturn(func(_ context.Context, req *katapult.Request, iface interface{}) (*katapult.Response, error) {
-			params := req.URL.Query()
-			x := params.Get("organization[id]")
-			if x == "pog-id" {
-				b, err := json.Marshal(map[string]interface{}{
-					"networks": idNetworks,
-				})
-				if err != nil {
-					return nil, err
-				}
-				if err = json.Unmarshal(b, iface); err != nil {
-					return nil, err
-				}
-				return mocks.MockOKJSON(b), nil
-			}
-			x = params.Get("organization[sub_domain]")
-			if x == "pog-subdomain" {
-				b, err := json.Marshal(map[string]interface{}{
-					"networks": subdomainNetworks,
-				})
-				if err != nil {
-					return nil, err
-				}
-				if err = json.Unmarshal(b, iface); err != nil {
-					return nil, err
-				}
-				return mocks.MockOKJSON(b), nil
-			}
-			return nil, katapult.ErrNotFound
-		}).
-		Times(len(tests))
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := networksCmd(mock)
+			cmd := networksCmd(mockNetworkList{})
 			stdout := &bytes.Buffer{}
 			cmd.SetOut(stdout)
 			cmd.SetArgs(tt.args)
