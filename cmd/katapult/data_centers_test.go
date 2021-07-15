@@ -5,31 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/cmd/katapult/mocks"
-	"io/ioutil"
-	"net/http"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-const stdoutDcList = ` - hello (Hello World!) [POG1] / Pogland
- - hello (Hello World!) [GB1] / United Kingdom
-`
-
-//func TestDataCenters_List(t *testing.T) {
-//	cmd := dataCentersCmd(mockAPIClient{})
-//	stdout := &bytes.Buffer{}
-//	cmd.SetOut(stdout)
-//	cmd.SetArgs([]string{"list"})
-//	if err := cmd.Execute(); err != nil {
-//		t.Fatal(err)
-//	}
-//	assert.Equal(t, stdoutDcList, stdout.String())
-//}
 
 var dcs = []*core.DataCenter{
 	{
@@ -52,26 +36,30 @@ var dcs = []*core.DataCenter{
 	},
 }
 
-// TODO: Move!
-func okJSON(b []byte) *katapult.Response {
-	return &katapult.Response{
-		Response: &http.Response{
-			StatusCode: 200,
-			Header: http.Header{
-				"Content-Type": {"application/json"},
-			},
-			Body:          ioutil.NopCloser(bytes.NewReader(b)),
-			ContentLength: int64(len(b)),
-		},
+const stdoutDcList = ` - hello (Hello World!) [POG1] / Pogland
+ - hello (Hello World!) [GB1] / United Kingdom
+`
+
+func TestDataCenters_List(t *testing.T) {
+	mock := singleResponse(t, "/core/v1/data_centers", "data_centers", dcs)
+	cmd := dataCentersCmd(mock)
+	stdout := &bytes.Buffer{}
+	cmd.SetOut(stdout)
+	cmd.SetArgs([]string{"list"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatal(err)
 	}
+	assert.Equal(t, stdoutDcList, stdout.String())
 }
 
 func TestDataCenters_Get(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	mock := mocks.NewMockRequestMaker(ctrl)
 	matcher := mocks.KatapultRequestMatcher{
-		Path:           "/core/v1/data_centers/_",
-		ExpectedParams: []string{"data_center[permalink]"},
+		Path: "/core/v1/data_centers/_",
+		ExpectedParams: []mocks.URLParamMatcher{
+			mocks.URLParamContains("data_center[permalink]"),
+		},
 	}
 	tests := []struct {
 		name string
@@ -99,6 +87,7 @@ func TestDataCenters_Get(t *testing.T) {
 			err:  "unknown datacentre",
 		},
 	}
+
 	mock.
 		EXPECT().
 		Do(gomock.Any(), matcher, gomock.Any()).
@@ -115,12 +104,13 @@ func TestDataCenters_Get(t *testing.T) {
 					if err = json.Unmarshal(b, iface); err != nil {
 						return nil, err
 					}
-					return okJSON(b), nil
+					return mocks.MockOKJSON(b), nil
 				}
 			}
 			return nil, fmt.Errorf("unknown datacentre")
 		}).
 		Times(len(tests))
+
 	cmd := dataCentersCmd(mock)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

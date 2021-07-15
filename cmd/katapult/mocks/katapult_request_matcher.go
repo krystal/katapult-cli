@@ -3,8 +3,8 @@ package mocks
 import "github.com/krystal/go-katapult"
 
 type KatapultRequestMatcher struct {
-	Path           string   `json:"path"`
-	ExpectedParams []string `json:"expected_params"`
+	Path           string            `json:"path"`
+	ExpectedParams []URLParamMatcher `json:"expected_params"`
 }
 
 func (k KatapultRequestMatcher) String() string {
@@ -22,9 +22,8 @@ func (k KatapultRequestMatcher) Matches(iface interface{}) bool {
 		return false
 	}
 	q := req.URL.Query()
-	for _, k := range k.ExpectedParams {
-		if q.Get(k) == "" {
-			// This query param is not set.
+	for _, x := range k.ExpectedParams {
+		if !x.MatchParam(q) {
 			return false
 		}
 	}
