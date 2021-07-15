@@ -37,15 +37,15 @@ func TestNewClient(t *testing.T) {
 				t.Fatal(err)
 			}
 			assert.Equal(t, tt.apiKey, c.(*katapult.Client).APIKey)
-			var apiUrl string
+			var apiURL string
 			if c.(*katapult.Client).BaseURL != nil {
-				apiUrl = c.(*katapult.Client).BaseURL.String()
+				apiURL = c.(*katapult.Client).BaseURL.String()
 			}
-			expectedApiUrl := tt.apiURL
-			if expectedApiUrl == "" {
-				expectedApiUrl = "https://api.katapult.io"
+			expectedAPIURL := tt.apiURL
+			if expectedAPIURL == "" {
+				expectedAPIURL = "https://api.katapult.io"
 			}
-			assert.Equal(t, expectedApiUrl, apiUrl)
+			assert.Equal(t, expectedAPIURL, apiURL)
 		})
 	}
 }
