@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,9 +34,7 @@ func TestNewClient(t *testing.T) {
 				APIKey: tt.apiKey,
 				APIURL: tt.apiURL,
 			})
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 			assert.Equal(t, tt.apiKey, c.(*katapult.Client).APIKey)
 			var apiURL string
 			if c.(*katapult.Client).BaseURL != nil {
