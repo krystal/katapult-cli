@@ -12,7 +12,7 @@ import (
 	"github.com/krystal/katapult-cli/config"
 )
 
-func TestNewClient(t *testing.T) {
+func Test_newClient(t *testing.T) {
 	tests := []struct {
 		name string
 
