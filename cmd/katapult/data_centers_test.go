@@ -74,13 +74,13 @@ func TestDataCenters_Get(t *testing.T) {
 		err    string
 	}{
 		{
-			name: "display POG1",
-			args: []string{"get", "POG1-ID"},
+			name:  "display POG1",
+			args:  []string{"get", "POG1-ID"},
 			wants: "hello (POG1) [POG1-ID] / Pogland\n",
 		},
 		{
-			name: "display GB1",
-			args: []string{"get", "GB1-ID"},
+			name:  "display GB1",
+			args:  []string{"get", "GB1-ID"},
 			wants: "hello (GB1) [GB1-ID] / United Kingdom\n",
 		},
 		{
