@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -33,14 +34,23 @@ var dcs = []*core.DataCenter{
 	},
 }
 
-type mockDataCentersClient struct{}
-
-func (mockDataCentersClient) List(context.Context) ([]*core.DataCenter, *katapult.Response, error) {
-	return dcs, nil, nil
+type mockDataCentersClient struct {
+	dcs    []*core.DataCenter
+	throws string
 }
 
-func (mockDataCentersClient) Get(_ context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error) {
-	for _, v := range dcs {
+func (m mockDataCentersClient) List(context.Context) ([]*core.DataCenter, *katapult.Response, error) {
+	if m.throws != "" {
+		return nil, nil, errors.New(m.throws)
+	}
+	return m.dcs, nil, nil
+}
+
+func (m mockDataCentersClient) Get(_ context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error) {
+	if m.throws != "" {
+		return nil, nil, errors.New(m.throws)
+	}
+	for _, v := range m.dcs {
 		if v.ID == ref.Permalink {
 			return v, nil, nil
 		}
@@ -48,19 +58,55 @@ func (mockDataCentersClient) Get(_ context.Context, ref core.DataCenterRef) (*co
 	return nil, nil, fmt.Errorf("unknown datacentre")
 }
 
-const stdoutDcList = ` - hello (POG1) [POG1-ID] / Pogland
- - hello (GB1) [GB1-ID] / United Kingdom
-`
-
 func TestDataCenters_List(t *testing.T) {
-	cmd := dataCentersCmd(mockDataCentersClient{})
-	stdout := &bytes.Buffer{}
-	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"list"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
+	tests := []struct {
+		name string
+
+		dcs    []*core.DataCenter
+		wants  string
+		stderr string
+		throws string
+		err    string
+	}{
+		{
+			name: "data center list",
+			dcs:  dcs,
+			wants: ` - hello (POG1) [POG1-ID] / Pogland
+ - hello (GB1) [GB1-ID] / United Kingdom
+`,
+		},
+		{
+			name: "blank data centers",
+			dcs:  []*core.DataCenter{},
+		},
+		{
+			name:   "data center error",
+			throws: "test error",
+			err:    "test error",
+		},
 	}
-	assert.Equal(t, stdoutDcList, stdout.String())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := dataCentersCmd(mockDataCentersClient{dcs: tt.dcs, throws: tt.throws})
+			stdout := &bytes.Buffer{}
+			stderr := &bytes.Buffer{}
+			cmd.SetOut(stdout)
+			cmd.SetErr(stderr)
+			cmd.SetArgs([]string{"list"})
+			err := cmd.Execute()
+			switch {
+			case err == nil:
+				// Ignore this.
+			case tt.err != "":
+				assert.Equal(t, tt.err, err.Error())
+				return
+			default:
+				t.Fatal(err)
+			}
+			assert.Equal(t, tt.wants, stdout.String())
+			assert.Equal(t, tt.stderr, stderr.String())
+		})
+	}
 }
 
 func TestDataCenters_Get(t *testing.T) {
@@ -91,7 +137,7 @@ func TestDataCenters_Get(t *testing.T) {
 		},
 	}
 
-	cmd := dataCentersCmd(mockDataCentersClient{})
+	cmd := dataCentersCmd(mockDataCentersClient{dcs: dcs})
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
