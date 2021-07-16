@@ -26,22 +26,22 @@ func TestConfig(t *testing.T) {
 		apiURL string
 	}{
 		{
-			name:   "Check that the config command displays blank values properly",
+			name:   "blank values",
 			apiKey: "",
 			apiURL: "",
 		},
 		{
-			name:   "Check that the config command displays only API URL being blank properly",
+			name:   "only API URL blank",
 			apiKey: "test",
 			apiURL: "",
 		},
 		{
-			name:   "Check that the config command handles both fields being present properly",
+			name:   "both fields present",
 			apiKey: "test",
 			apiURL: "test",
 		},
 		{
-			name:   "Check that the config command displays only API key being blank properly",
+			name:   "only API key blank",
 			apiKey: "",
 			apiURL: "test",
 		},

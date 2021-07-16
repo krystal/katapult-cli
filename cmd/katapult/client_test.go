@@ -20,11 +20,11 @@ func Test_newClient(t *testing.T) {
 		apiURL string
 	}{
 		{
-			name:   "Handle blank API URL",
+			name:   "blank API URL",
 			apiKey: "test",
 		},
 		{
-			name:   "Handle both values",
+			name:   "both values",
 			apiKey: "test",
 			apiURL: "https://example.com",
 		},
