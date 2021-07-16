@@ -3,8 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
-	"github.com/krystal/go-katapult"
 	"testing"
+
+	"github.com/krystal/go-katapult"
 
 	"github.com/krystal/go-katapult/core"
 	"github.com/stretchr/testify/assert"
@@ -27,14 +28,14 @@ const stdoutOrganizationsList = ` - Loge Enthusiasts (loge) [loge]
  - testing, testing, 123 (test) [testing]
 `
 
-type mockNetworkListClient struct {}
+type mockOrganisationsListClient struct{}
 
-func (mockNetworkListClient) List(context.Context) ([]*core.Organization, *katapult.Response, error) {
+func (mockOrganisationsListClient) List(context.Context) ([]*core.Organization, *katapult.Response, error) {
 	return organizations, nil, nil
 }
 
 func TestOrganizations_List(t *testing.T) {
-	cmd := organizationsCmd(mockNetworkListClient{})
+	cmd := organizationsCmd(mockOrganisationsListClient{})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
 	cmd.SetArgs([]string{"list"})

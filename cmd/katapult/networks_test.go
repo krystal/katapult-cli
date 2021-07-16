@@ -73,12 +73,19 @@ var subdomainNetworks = []*core.Network{
 	},
 }
 
-type mockNetworkList struct {}
+type mockNetworkList struct{}
 
 func (mockNetworkList) List(
 	_ context.Context, org core.OrganizationRef,
 ) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error) {
-	// TODO
+	switch {
+	case org.SubDomain == "pog-subdomain":
+		return subdomainNetworks, nil, nil, nil
+	case org.ID == "pog-id":
+		return idNetworks, nil, nil, nil
+	default:
+		return nil, nil, nil, katapult.ErrNotFound
+	}
 }
 
 func TestNetworkList(t *testing.T) {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/krystal/go-katapult"
 
 	"github.com/krystal/go-katapult/core"
@@ -10,11 +11,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type dataCenterListClient interface {
+type dataCentersClient interface {
 	List(ctx context.Context) ([]*core.DataCenter, *katapult.Response, error)
+	Get(ctx context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error)
 }
 
-func listDataCentersCmd(client dataCenterListClient) *cobra.Command {
+func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -39,11 +41,7 @@ func listDataCentersCmd(client dataCenterListClient) *cobra.Command {
 	}
 }
 
-type dataCenterGetClient interface {
-	Get(ctx context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error)
-}
-
-func getDataCenterCmd(client dataCenterGetClient) *cobra.Command {
+func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 	return &cobra.Command{
 		Use:   "get",
 		Args:  cobra.ExactArgs(1),
@@ -69,7 +67,7 @@ func getDataCenterCmd(client dataCenterGetClient) *cobra.Command {
 	}
 }
 
-func dataCentersCmd(client core.RequestMaker) *cobra.Command {
+func dataCentersCmd(client dataCentersClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "dc",
 		Aliases: []string{"dcs", "data-centers", "data_centers"},
@@ -77,8 +75,8 @@ func dataCentersCmd(client core.RequestMaker) *cobra.Command {
 		Long:    "Get information about data centers.",
 	}
 
-	cmd.AddCommand(listDataCentersCmd(core.NewDataCentersClient(client)))
-	cmd.AddCommand(getDataCenterCmd(core.NewDataCentersClient(client)))
+	cmd.AddCommand(listDataCentersCmd(client))
+	cmd.AddCommand(getDataCenterCmd(client))
 
 	return cmd
 }

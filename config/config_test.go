@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,9 +21,7 @@ func TestNew(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, err := New()
-			if err != nil {
-				t.Fatal(err)
-			}
+			require.NoError(t, err)
 
 			if tt.kind != nil {
 				assert.IsType(t, tt.kind, c)

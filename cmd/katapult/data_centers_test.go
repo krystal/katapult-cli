@@ -3,32 +3,29 @@ package main
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-	"github.com/krystal/katapult-cli/cmd/katapult/mocks"
 
 	"github.com/stretchr/testify/assert"
 )
 
 var dcs = []*core.DataCenter{
 	{
-		ID:        "POG1",
+		ID:        "POG1-ID",
 		Name:      "hello",
-		Permalink: "Hello World!",
+		Permalink: "POG1",
 		Country: &core.Country{
 			ID:   "POG",
 			Name: "Pogland",
 		},
 	},
 	{
-		ID:        "GB1",
+		ID:        "GB1-ID",
 		Name:      "hello",
-		Permalink: "Hello World!",
+		Permalink: "GB1",
 		Country: &core.Country{
 			ID:   "UK",
 			Name: "United Kingdom",
@@ -36,13 +33,27 @@ var dcs = []*core.DataCenter{
 	},
 }
 
-const stdoutDcList = ` - hello (Hello World!) [POG1] / Pogland
- - hello (Hello World!) [GB1] / United Kingdom
+type mockDataCentersClient struct{}
+
+func (mockDataCentersClient) List(context.Context) ([]*core.DataCenter, *katapult.Response, error) {
+	return dcs, nil, nil
+}
+
+func (mockDataCentersClient) Get(_ context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error) {
+	for _, v := range dcs {
+		if v.ID == ref.Permalink {
+			return v, nil, nil
+		}
+	}
+	return nil, nil, fmt.Errorf("unknown datacentre")
+}
+
+const stdoutDcList = ` - hello (POG1) [POG1-ID] / Pogland
+ - hello (GB1) [GB1-ID] / United Kingdom
 `
 
 func TestDataCenters_List(t *testing.T) {
-	mock := singleResponse(t, "/core/v1/data_centers", "data_centers", dcs)
-	cmd := dataCentersCmd(mock)
+	cmd := dataCentersCmd(mockDataCentersClient{})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
 	cmd.SetArgs([]string{"list"})
@@ -53,14 +64,6 @@ func TestDataCenters_List(t *testing.T) {
 }
 
 func TestDataCenters_Get(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	mock := mocks.NewMockRequestMaker(ctrl)
-	matcher := mocks.KatapultRequestMatcher{
-		Path: "/core/v1/data_centers/_",
-		ExpectedParams: []mocks.URLParamMatcher{
-			mocks.URLParamContains("data_center[permalink]"),
-		},
-	}
 	tests := []struct {
 		name string
 
@@ -72,14 +75,14 @@ func TestDataCenters_Get(t *testing.T) {
 	}{
 		{
 			name: "display POG1",
-			args: []string{"get", "POG1"},
-			wants: `hello (Hello World!) [POG1] / Pogland
+			args: []string{"get", "POG1-ID"},
+			wants: `hello (POG1) [POG1-ID] / Pogland
 `,
 		},
 		{
 			name: "display GB1",
-			args: []string{"get", "GB1"},
-			wants: `hello (Hello World!) [GB1] / United Kingdom
+			args: []string{"get", "GB1-ID"},
+			wants: `hello (GB1) [GB1-ID] / United Kingdom
 `,
 		},
 		{
@@ -90,30 +93,7 @@ func TestDataCenters_Get(t *testing.T) {
 		},
 	}
 
-	mock.
-		EXPECT().
-		Do(gomock.Any(), matcher, gomock.Any()).
-		DoAndReturn(func(_ context.Context, req *katapult.Request, iface interface{}) (*katapult.Response, error) {
-			permalink := req.URL.Query().Get("data_center[permalink]")
-			for _, v := range dcs {
-				if v.ID == permalink {
-					b, err := json.Marshal(map[string]interface{}{
-						"data_center": v,
-					})
-					if err != nil {
-						return nil, err
-					}
-					if err = json.Unmarshal(b, iface); err != nil {
-						return nil, err
-					}
-					return mocks.MockOKJSON(b), nil
-				}
-			}
-			return nil, fmt.Errorf("unknown datacentre")
-		}).
-		Times(len(tests))
-
-	cmd := dataCentersCmd(mock)
+	cmd := dataCentersCmd(mockDataCentersClient{})
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			stdout := &bytes.Buffer{}

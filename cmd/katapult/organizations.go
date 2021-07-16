@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/krystal/go-katapult"
 
 	"github.com/krystal/go-katapult/core"
@@ -10,13 +11,13 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type organisationListClient interface {
+type organisationsClient interface {
 	List(
 		ctx context.Context,
 	) ([]*core.Organization, *katapult.Response, error)
 }
 
-func organizationsCmd(client organisationListClient) *cobra.Command {
+func organizationsCmd(client organisationsClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "org",
 		Aliases: []string{"orgs", "organization", "organizations"},

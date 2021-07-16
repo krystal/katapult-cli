@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/krystal/go-katapult/core"
 	"log"
 	"os"
+
+	"github.com/krystal/go-katapult/core"
 
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
@@ -63,7 +64,7 @@ func run() error {
 	rootCmd.AddCommand(
 		versionCommand(),
 		configCommand(conf),
-		dataCentersCmd(cl),
+		dataCentersCmd(core.NewDataCentersClient(cl)),
 		networksCmd(core.NewNetworksClient(cl)),
 		organizationsCmd(core.NewOrganizationsClient(cl)),
 	)
