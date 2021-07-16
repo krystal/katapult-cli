@@ -3,8 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	"github.com/stretchr/testify/assert"
 
 	"github.com/krystal/go-katapult"
@@ -18,10 +16,16 @@ func Test_newClient(t *testing.T) {
 
 		apiKey string
 		apiURL string
+		err    string
 	}{
 		{
 			name:   "blank API URL",
 			apiKey: "test",
+		},
+		{
+			name:   "invalid URL",
+			err:    "invalid API URL: @@:",
+			apiURL: "@@:",
 		},
 		{
 			name:   "both values",
@@ -35,7 +39,15 @@ func Test_newClient(t *testing.T) {
 				APIKey: tt.apiKey,
 				APIURL: tt.apiURL,
 			})
-			require.NoError(t, err)
+			switch {
+			case err == nil:
+				// Ignore this. Jump out here.
+			case tt.err != "":
+				assert.Equal(t, tt.err, err.Error())
+				return
+			default:
+				t.Fatal(err)
+			}
 			assert.Equal(t, tt.apiKey, c.(*katapult.Client).APIKey)
 			var apiURL string
 			if c.(*katapult.Client).BaseURL != nil {
