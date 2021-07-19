@@ -2,6 +2,8 @@ linters-settings:
   funlen:
     lines: 100
     statements: 150
+  goconst:
+    min-occurrences: 5
   gocyclo:
     min-complexity: 20
   golint:
@@ -11,6 +13,9 @@ linters-settings:
     enable-all: true
     disable:
       - fieldalignment
+  lll:
+    line-length: 120
+    tab-width: 4
   maligned:
     suggest-new: true
   misspell:
@@ -19,11 +24,16 @@ linters-settings:
 linters:
   disable-all: true
   enable:
+    - asciicheck
     - bodyclose
     - deadcode
     - depguard
     - dupl
+    - durationcheck
     - errcheck
+    - errorlint
+    - exhaustive
+    - exportloopref
     - funlen
     - gochecknoinits
     - goconst
@@ -31,23 +41,35 @@ linters:
     - gocyclo
     - golint
     - goprintffuncname
+    - godot
+    - gofumpt
+    - goimports
     - goprintffuncname
     - gosec
     - gosimple
     - govet
+    - importas
     - ineffassign
+    - lll
     - misspell
     - nakedret
+    - nilerr
     - noctx
     - nolintlint
-    - scopelint
+    - prealloc
+    - predeclared
+    - revive
+    - rowserrcheck
     - sqlclosecheck
     - staticcheck
     - structcheck
+    - tparallel
     - typecheck
     - unconvert
+    - unparam
     - unused
     - varcheck
+    - wastedassign
     - whitespace
 
 issues:
@@ -58,6 +80,8 @@ issues:
     - path: "_test\\.go"
       linters:
         - funlen
+        - dupl
+        - goconst
     - source: "^//go:generate "
       linters:
         - lll
