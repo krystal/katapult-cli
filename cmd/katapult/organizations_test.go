@@ -1,12 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -46,14 +44,14 @@ func TestOrganizations_List(t *testing.T) {
 		err    string
 	}{
 		{
-			name: "orgamisations list",
+			name: "organizations list",
 			orgs: organizations,
 			wants: ` - Loge Enthusiasts (loge) [loge]
  - testing, testing, 123 (test) [testing]
 `,
 		},
 		{
-			name: "blank organisations",
+			name: "blank organizations",
 			orgs: []*core.Organization{},
 		},
 		{
@@ -65,23 +63,8 @@ func TestOrganizations_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := organizationsCmd(mockOrganisationsListClient{orgs: tt.orgs, throws: tt.throws})
-			stdout := &bytes.Buffer{}
-			stderr := &bytes.Buffer{}
-			cmd.SetOut(stdout)
-			cmd.SetErr(stderr)
 			cmd.SetArgs([]string{"list"})
-			err := cmd.Execute()
-			switch {
-			case err == nil:
-				// Ignore this.
-			case tt.err != "":
-				assert.Equal(t, tt.err, err.Error())
-				return
-			default:
-				t.Fatal(err)
-			}
-			assert.Equal(t, tt.wants, stdout.String())
-			assert.Equal(t, tt.stderr, stderr.String())
+			executeTestCommand(t, cmd, tt.err, tt.wants, tt.stderr)
 		})
 	}
 }

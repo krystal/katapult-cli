@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -141,21 +139,8 @@ Virtual Networks:
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := networksCmd(mockNetworkList{})
-			stdout := &bytes.Buffer{}
-			stderr := &bytes.Buffer{}
-			cmd.SetOut(stdout)
-			cmd.SetErr(stderr)
 			cmd.SetArgs(tt.args)
-			err := cmd.Execute()
-			assert.Equal(t, tt.stderr, stderr.String())
-			switch {
-			case err == nil:
-				assert.Equal(t, tt.wants, stdout.String())
-			case tt.err != "":
-				assert.Equal(t, tt.err, err.Error())
-			default:
-				t.Fatal(err)
-			}
+			executeTestCommand(t, cmd, tt.err, tt.wants, tt.stderr)
 		})
 	}
 }
