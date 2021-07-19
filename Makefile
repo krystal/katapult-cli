@@ -34,24 +34,19 @@ SHELL := env \
 # Tools
 #
 
-TOOLS += $(TOOLDIR)/gobin
-gobin: $(TOOLDIR)/gobin
-$(TOOLDIR)/gobin:
-	GO111MODULE=off go get -u github.com/myitcv/gobin
-
 # external tool
 define tool # 1: binary-name, 2: go-import-path
 TOOLS += $(TOOLDIR)/$(1)
 
-.PHONY: $(1)
-$(1): $(TOOLDIR)/$(1)
-
-$(TOOLDIR)/$(1): $(TOOLDIR)/gobin Makefile
-	gobin $(V) "$(2)"
+$(TOOLDIR)/$(1): Makefile
+	GOBIN="$(CURDIR)/$(TOOLDIR)" go install "$(2)"
 endef
 
-$(eval $(call tool,gofumports,mvdan.cc/gofumpt/gofumports))
-$(eval $(call tool,golangci-lint,github.com/golangci/golangci-lint/cmd/golangci-lint@v1.31))
+$(eval $(call tool,gofumpt,mvdan.cc/gofumpt@latest))
+$(eval $(call tool,goimports,golang.org/x/tools/cmd/goimports@latest))
+$(eval $(call tool,golangci-lint,github.com/golangci/golangci-lint/cmd/golangci-lint@v1.41))
+$(eval $(call tool,gomod,github.com/Helcaraxan/gomod@latest))
+$(eval $(call tool,goreleaser,github.com/goreleaser/goreleaser@latest))
 
 .PHONY: tools
 tools: $(TOOLS)
@@ -70,38 +65,53 @@ ifndef VERSION
 	VERSION = dev
 endif
 
-CMDDIR := $(CURDIR)/cmd
+CMDDIR := cmd
+BINS := $(shell test -d "$(CMDDIR)" && cd "$(CMDDIR)" && \
+	find * -maxdepth 0 -type d -exec echo $(BINDIR)/{} \;)
 
 .PHONY: build
+build: $(BINS)
 
-build:
+$(BINS): $(BINDIR)/%: $(SOURCES)
+	mkdir -p "$(BINDIR)"
+	cd "$(CMDDIR)/$*" && go build -a $(V) \
+		-o "$(CURDIR)/$(BINDIR)/$*" \
+		-ldflags "$(LDFLAGS) \
+			-X main.version=$(VERSION) \
+			-X main.commit=$(COMMIT) \
+			-X main.date=$(DATE)"
+
+.PHONY: build-snapshot
+build-snapshot: $(TOOLDIR)/goreleaser
 	goreleaser --snapshot --rm-dist
 
 #
 # Development
 #
 
+TEST ?= ./...
+
 .PHONY: clean
 clean:
-	rm -rf dist
+	rm -rf $(TOOLDIR) $(BINDIR)
 	rm -f ./coverage.out ./go.mod.tidy-check ./go.sum.tidy-check
 
 .PHONY: test
 test:
-	go test $(V) -count=1 -race ./...
+	CGO_ENABLED=1 go test $(V) -count=1 -race  $(TESTARGS) $(TEST)
 
 .PHONY: test-deps
 test-deps:
 	go test all
 
 .PHONY: lint
-lint: $(TOOLS)
-	$(info Running Go linters)
-	GOGC=off golangci-lint $(V) run
+lint: $(TOOLDIR)/golangci-lint
+	golangci-lint $(V) run
 
 .PHONY: format
-format: gofumports
-	gofumports -w .
+format: $(TOOLDIR)/goimports $(TOOLDIR)/gofumpt
+	goimports -l -w .
+	gofumpt -l -w .
 
 #
 # Coverage
@@ -130,6 +140,11 @@ deps:
 	$(info Downloading dependencies)
 	go mod download
 
+
+.PHONY: deps-analyze
+deps-analyze: $(TOOLDIR)/gomod
+	gomod analyze
+
 .PHONY: tidy
 tidy:
 	go mod tidy $(V)
@@ -144,8 +159,32 @@ check-tidy:
 	cp go.mod go.mod.tidy-check
 	cp go.sum go.sum.tidy-check
 	go mod tidy
-	-diff go.mod go.mod.tidy-check
-	-diff go.sum go.sum.tidy-check
-	-rm -f go.mod go.sum
-	-mv go.mod.tidy-check go.mod
-	-mv go.sum.tidy-check go.sum
+	( \
+		diff go.mod go.mod.tidy-check && \
+		diff go.sum go.sum.tidy-check && \
+		rm -f go.mod go.sum && \
+		mv go.mod.tidy-check go.mod && \
+		mv go.sum.tidy-check go.sum \
+	) || ( \
+		rm -f go.mod go.sum && \
+		mv go.mod.tidy-check go.mod && \
+		mv go.sum.tidy-check go.sum; \
+		exit 1 \
+	)
+
+#
+# Release
+#
+
+.PHONY: new-version
+new-version: check-npx
+	npx standard-version
+
+.PHONY: next-version
+next-version: check-npx
+	npx standard-version --dry-run
+
+.PHONY: check-npx
+check-npx:
+	$(if $(shell which npx),,\
+		$(error No npx found in PATH, please install NodeJS))
