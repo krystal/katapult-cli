@@ -36,11 +36,11 @@ func (mockOrganisationsListClient) List(context.Context) ([]*core.Organization, 
 
 func TestOrganizations_List(t *testing.T) {
 	cmd := organizationsCmd(mockOrganisationsListClient{})
-	stdout := &bytes.Buffer{}
-	cmd.SetOut(stdout)
+	out := &bytes.Buffer{}
+	cmd.SetOut(out)
 	cmd.SetArgs([]string{"list"})
 	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
-	assert.Equal(t, stdoutOrganizationsList, stdout.String())
+	assert.Equal(t, stdoutOrganizationsList, out.String())
 }

@@ -53,8 +53,8 @@ func TestConfig(t *testing.T) {
 			conf.SetDefault("api_key", tt.apiKey)
 			conf.SetDefault("api_url", tt.apiURL)
 			cmd := configCommand(conf)
-			stdout := &bytes.Buffer{}
-			cmd.SetOut(stdout)
+			out := &bytes.Buffer{}
+			cmd.SetOut(out)
 			if err := cmd.RunE(cmd, []string{}); err != nil {
 				t.Fatal(err)
 			}
@@ -67,8 +67,8 @@ func TestConfig(t *testing.T) {
 				mockAPIURL = "\"\""
 			}
 			mockOutput := fmt.Sprintf(mockConfigFormat, mockAPIKey, mockAPIURL)
-			if stdout.String() != mockOutput {
-				t.Fatal("invalid result:\n\n", stdout.String())
+			if out.String() != mockOutput {
+				t.Fatal("invalid result:\n\n", out.String())
 			}
 		})
 	}

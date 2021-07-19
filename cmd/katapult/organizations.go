@@ -36,9 +36,9 @@ func organizationsCmd(client organisationsClient) *cobra.Command {
 				return err
 			}
 
-			stdout := cmd.OutOrStdout()
+			out := cmd.OutOrStdout()
 			for _, org := range orgs {
-				fmt.Fprintf(stdout, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
+				fmt.Fprintf(out, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
 			}
 
 			return nil

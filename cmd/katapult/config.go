@@ -20,9 +20,9 @@ func configCommand(conf *config.Config) *cobra.Command {
 				return fmt.Errorf("unable to marshal config to YAML: %w", err)
 			}
 
-			stdout := cmd.OutOrStdout()
-			_, _ = fmt.Fprintln(stdout, "---")
-			_, _ = stdout.Write(append(bs, '\n'))
+			out := cmd.OutOrStdout()
+			_, _ = fmt.Fprintln(out, "---")
+			_, _ = out.Write(append(bs, '\n'))
 			return nil
 		},
 	}

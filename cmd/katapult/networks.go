@@ -47,16 +47,16 @@ func networksCmd(client networksListClient) *cobra.Command {
 				return err
 			}
 
-			stdout := cmd.OutOrStdout()
-			_, _ = fmt.Fprintln(stdout, "Networks:")
+			out := cmd.OutOrStdout()
+			_, _ = fmt.Fprintln(out, "Networks:")
 			for _, net := range nets {
-				_, _ = fmt.Fprintf(stdout, " - %s [%s]\n", net.Name, net.ID)
+				_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
 			}
 
 			if len(vnets) > 0 {
-				_, _ = fmt.Fprintln(stdout, "Virtual Networks:")
+				_, _ = fmt.Fprintln(out, "Virtual Networks:")
 				for _, net := range vnets {
-					_, _ = fmt.Fprintf(stdout, " - %s [%s]\n", net.Name, net.ID)
+					_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
 				}
 			}
 

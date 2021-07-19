@@ -88,7 +88,7 @@ func (mockNetworkList) List(
 	}
 }
 
-func TestNetworkList(t *testing.T) {
+func TestNetworks_List(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -117,14 +117,14 @@ func TestNetworkList(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := networksCmd(mockNetworkList{})
-			stdout := &bytes.Buffer{}
-			cmd.SetOut(stdout)
+			out := &bytes.Buffer{}
+			cmd.SetOut(out)
 			cmd.SetArgs(tt.args)
 
 			err := cmd.Execute()
 			switch {
 			case err == nil:
-				assert.Equal(t, tt.wants, stdout.String())
+				assert.Equal(t, tt.wants, out.String())
 			case tt.err != "":
 				assert.Equal(t, tt.err, err.Error())
 			default:
