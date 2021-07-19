@@ -71,6 +71,22 @@ var subdomainNetworks = []*core.Network{
 	},
 }
 
+var idVirtualNetworks = []*core.VirtualNetwork{
+	{
+		ID:   "pognet-virtual-1",
+		Name: "Pognet Virtual Network 1",
+		DataCenter: &core.DataCenter{
+			ID:        "POG1",
+			Name:      "Pogland 1",
+			Permalink: "pog1",
+			Country: &core.Country{
+				ID:   "pog",
+				Name: "Pogland",
+			},
+		},
+	},
+}
+
 type mockNetworkList struct{}
 
 func (mockNetworkList) List(
@@ -80,7 +96,7 @@ func (mockNetworkList) List(
 	case org.SubDomain == "pog-subdomain":
 		return subdomainNetworks, nil, nil, nil
 	case org.ID == "pog-id":
-		return idNetworks, nil, nil, nil
+		return idNetworks, idVirtualNetworks, nil, nil
 	default:
 		return nil, nil, nil, katapult.ErrNotFound
 	}
@@ -90,9 +106,10 @@ func TestNetworks_List(t *testing.T) {
 	tests := []struct {
 		name string
 
-		args  []string
-		wants string
-		err   string
+		args   []string
+		wants  string
+		stderr string
+		err    string
 	}{
 		{
 			name: "Test listing pog-id",
@@ -100,6 +117,8 @@ func TestNetworks_List(t *testing.T) {
 			wants: `Networks:
  - Pognet 1 [pognet]
  - Pognet 2 [pognet2]
+Virtual Networks:
+ - Pognet Virtual Network 1 [pognet-virtual-1]
 `,
 		},
 		{
@@ -110,19 +129,28 @@ func TestNetworks_List(t *testing.T) {
  - Pognet 4 [pognet4]
 `,
 		},
+		{
+			name:   "No flags provided",
+			args:   []string{"ls"},
+			stderr: "Error: both ID and subdomain are unset\n",
+			err:    "both ID and subdomain are unset",
+		},
+		// TODO
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := networksCmd(mockNetworkList{})
-			out := &bytes.Buffer{}
-			cmd.SetOut(out)
+			stdout := &bytes.Buffer{}
+			stderr := &bytes.Buffer{}
+			cmd.SetOut(stdout)
+			cmd.SetErr(stderr)
 			cmd.SetArgs(tt.args)
-
 			err := cmd.Execute()
+			assert.Equal(t, tt.stderr, stderr.String())
 			switch {
 			case err == nil:
-				assert.Equal(t, tt.wants, out.String())
+				assert.Equal(t, tt.wants, stdout.String())
 			case tt.err != "":
 				assert.Equal(t, tt.err, err.Error())
 			default:
