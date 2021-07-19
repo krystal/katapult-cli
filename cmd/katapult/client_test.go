@@ -1,10 +1,11 @@
 package main
 
 import (
+	"testing"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func Test_newClient(t *testing.T) {

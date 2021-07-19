@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"strconv"
 	"time"
+
+	"github.com/spf13/cobra"
 )
 
 var (

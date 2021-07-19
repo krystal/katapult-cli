@@ -5,10 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 var dcs = []*core.DataCenter{
@@ -44,7 +45,8 @@ func (m mockDataCentersClient) List(context.Context) ([]*core.DataCenter, *katap
 	return m.dcs, nil, nil
 }
 
-func (m mockDataCentersClient) Get(_ context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error) {
+func (m mockDataCentersClient) Get(
+	_ context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
 	}

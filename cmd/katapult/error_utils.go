@@ -2,9 +2,10 @@ package main
 
 import (
 	"bytes"
+	"testing"
+
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func executeTestCommand(t *testing.T, cmd *cobra.Command, errResult, wants, stderrResult string) {

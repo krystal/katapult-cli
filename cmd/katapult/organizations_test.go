@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-	"testing"
 )
 
 var organizations = []*core.Organization{

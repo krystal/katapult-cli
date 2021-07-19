@@ -3,8 +3,9 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/krystal/katapult-cli/config"
 	"testing"
+
+	"github.com/krystal/katapult-cli/config"
 )
 
 const mockConfigFormat = `---

@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
-	"log"
-	"os"
 )
 
 func run() error {

@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"testing"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-	"testing"
 )
 
 var idNetworks = []*core.Network{
