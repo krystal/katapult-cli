@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/krystal/go-katapult"
@@ -48,9 +49,9 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 		Short: "Get details for a data center",
 		Long:  "Get details for a data center.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			dc, resp, err := client.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
+			dc, _, err := client.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
 			if err != nil {
-				if resp != nil && resp.StatusCode == 404 {
+				if errors.Is(err, katapult.ErrNotFound) {
 					return fmt.Errorf("unknown datacentre")
 				}
 				return err
