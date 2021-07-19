@@ -2,12 +2,10 @@ package main
 
 import (
 	"fmt"
-	"net/url"
-
-	"github.com/krystal/go-katapult/core"
-
 	"github.com/krystal/go-katapult"
+	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
+	"net/url"
 )
 
 // Create a new Katapult client.

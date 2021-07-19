@@ -3,12 +3,10 @@ package main
 import (
 	"bytes"
 	"context"
-	"testing"
-
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 var idNetworks = []*core.Network{

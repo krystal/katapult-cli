@@ -5,12 +5,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"testing"
-
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
 var dcs = []*core.DataCenter{
