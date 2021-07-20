@@ -48,8 +48,6 @@ func TestConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("key: %s, url: %s", tt.apiKey, tt.apiURL), func(t *testing.T) {
-			conf.APIKey = tt.apiKey
-			conf.APIURL = tt.apiURL
 			conf.SetDefault("api_key", tt.apiKey)
 			conf.SetDefault("api_url", tt.apiURL)
 			cmd := configCommand(conf)
