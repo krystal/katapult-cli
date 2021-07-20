@@ -1,11 +1,45 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
 )
+
+type virtualMachinesClient interface {
+	List(
+		ctx context.Context,
+		org core.OrganizationRef,
+		opts *core.ListOptions,
+	) ([]*core.VirtualMachine, *katapult.Response, error)
+
+	Delete(
+		ctx context.Context,
+		ref core.VirtualMachineRef,
+	) (*core.TrashObject, *katapult.Response, error)
+
+	Shutdown(
+		ctx context.Context,
+		ref core.VirtualMachineRef,
+	) (*core.Task, *katapult.Response, error)
+
+	Start(
+		ctx context.Context,
+		ref core.VirtualMachineRef,
+	) (*core.Task, *katapult.Response, error)
+
+	Stop(
+		ctx context.Context,
+		ref core.VirtualMachineRef,
+	) (*core.Task, *katapult.Response, error)
+
+	Reset(
+		ctx context.Context,
+		ref core.VirtualMachineRef,
+	) (*core.Task, *katapult.Response, error)
+}
 
 func vmFlag(cmd *cobra.Command) (core.VirtualMachineRef, error) {
 	id := cmd.Flag("id").Value.String()
@@ -27,7 +61,7 @@ func vmNotFoundHandlingError(err error, resp *katapult.Response) error {
 	return err
 }
 
-func virtualMachinesListCmd(client core.RequestMaker) *cobra.Command {
+func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
@@ -48,7 +82,7 @@ func virtualMachinesListCmd(client core.RequestMaker) *cobra.Command {
 			page := 1
 			perPage := 30
 			for {
-				vms, resp, err := core.NewVirtualMachinesClient(client).List(cmd.Context(), ref, &core.ListOptions{
+				vms, resp, err := client.List(cmd.Context(), ref, &core.ListOptions{
 					Page:    page,
 					PerPage: perPage,
 				})
@@ -84,7 +118,7 @@ func virtualMachinesListCmd(client core.RequestMaker) *cobra.Command {
 	return list
 }
 
-func virtualMachinesPoweroffCmd(client core.RequestMaker) *cobra.Command {
+func virtualMachinesPoweroffCmd(client virtualMachinesClient) *cobra.Command {
 	poweroff := &cobra.Command{
 		Use:   "poweroff",
 		Short: "Used to power off a virtual machine.",
@@ -94,7 +128,7 @@ func virtualMachinesPoweroffCmd(client core.RequestMaker) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, resp, err := core.NewVirtualMachinesClient(client).Shutdown(cmd.Context(), ref)
+			_, resp, err := client.Shutdown(cmd.Context(), ref)
 			if err != nil {
 				return vmNotFoundHandlingError(err, resp)
 			}
@@ -107,7 +141,7 @@ func virtualMachinesPoweroffCmd(client core.RequestMaker) *cobra.Command {
 	return poweroff
 }
 
-func virtualMachinesStartCmd(client core.RequestMaker) *cobra.Command {
+func virtualMachinesStartCmd(client virtualMachinesClient) *cobra.Command {
 	start := &cobra.Command{
 		Use:   "start",
 		Short: "Used to start a virtual machine.",
@@ -117,7 +151,7 @@ func virtualMachinesStartCmd(client core.RequestMaker) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, resp, err := core.NewVirtualMachinesClient(client).Start(cmd.Context(), ref)
+			_, resp, err := client.Start(cmd.Context(), ref)
 			if err != nil {
 				return vmNotFoundHandlingError(err, resp)
 			}
@@ -130,7 +164,7 @@ func virtualMachinesStartCmd(client core.RequestMaker) *cobra.Command {
 	return start
 }
 
-func virtualMachinesStopCmd(client core.RequestMaker) *cobra.Command {
+func virtualMachinesStopCmd(client virtualMachinesClient) *cobra.Command {
 	stop := &cobra.Command{
 		Use:   "stop",
 		Short: "Used to stop a virtual machine.",
@@ -140,7 +174,7 @@ func virtualMachinesStopCmd(client core.RequestMaker) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, resp, err := core.NewVirtualMachinesClient(client).Stop(cmd.Context(), ref)
+			_, resp, err := client.Stop(cmd.Context(), ref)
 			if err != nil {
 				return vmNotFoundHandlingError(err, resp)
 			}
@@ -153,7 +187,7 @@ func virtualMachinesStopCmd(client core.RequestMaker) *cobra.Command {
 	return stop
 }
 
-func virtualMachinesResetCmd(client core.RequestMaker) *cobra.Command {
+func virtualMachinesResetCmd(client virtualMachinesClient) *cobra.Command {
 	reset := &cobra.Command{
 		Use:   "reset",
 		Short: "Used to reset a virtual machine.",
@@ -163,7 +197,7 @@ func virtualMachinesResetCmd(client core.RequestMaker) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			_, resp, err := core.NewVirtualMachinesClient(client).Reset(cmd.Context(), ref)
+			_, resp, err := client.Reset(cmd.Context(), ref)
 			if err != nil {
 				return vmNotFoundHandlingError(err, resp)
 			}
@@ -176,7 +210,7 @@ func virtualMachinesResetCmd(client core.RequestMaker) *cobra.Command {
 	return reset
 }
 
-func virtualMachinesCmd(client core.RequestMaker) *cobra.Command {
+func virtualMachinesCmd(client virtualMachinesClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "vm",
 		Aliases: []string{"vms", "virtual-machines", "virtual_machines"},
