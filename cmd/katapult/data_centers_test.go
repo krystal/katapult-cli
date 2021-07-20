@@ -15,7 +15,7 @@ import (
 
 var fixtureDataCenters = []*core.DataCenter{
 	{
-		ID:        "POG1-ID",
+		ID:        "dc_9UVoPiUQoI1cqtRd",
 		Name:      "hello",
 		Permalink: "POG1",
 		Country: &core.Country{
@@ -24,7 +24,7 @@ var fixtureDataCenters = []*core.DataCenter{
 		},
 	},
 	{
-		ID:        "GB1-ID",
+		ID:        "dc_9UVoPiUQoI1cqtR0",
 		Name:      "hello",
 		Permalink: "GB1",
 		Country: &core.Country{
@@ -52,7 +52,7 @@ func (m mockDataCentersClient) Get(
 		return nil, nil, errors.New(m.throws)
 	}
 	for _, v := range m.dcs {
-		if v.ID == ref.Permalink {
+		if v.Permalink == ref.Permalink {
 			return v, nil, nil
 		}
 	}
@@ -72,8 +72,8 @@ func TestDataCenters_List(t *testing.T) {
 		{
 			name: "data center list",
 			dcs:  fixtureDataCenters,
-			want: ` - hello (POG1) [POG1-ID] / Pogland
- - hello (GB1) [GB1-ID] / United Kingdom
+			want: ` - hello (POG1) [dc_9UVoPiUQoI1cqtRd] / Pogland
+ - hello (GB1) [dc_9UVoPiUQoI1cqtR0] / United Kingdom
 `,
 		},
 		{
@@ -120,12 +120,12 @@ func TestDataCenters_Get(t *testing.T) {
 	}{
 		{
 			name: "display POG1",
-			args: []string{"get", "POG1-ID"},
+			args: []string{"get", "POG1"},
 			want: "hello (POG1) [POG1-ID] / Pogland\n",
 		},
 		{
 			name: "display GB1",
-			args: []string{"get", "GB1-ID"},
+			args: []string{"get", "GB1"},
 			want: "hello (GB1) [GB1-ID] / United Kingdom\n",
 		},
 		{
