@@ -2,8 +2,9 @@ package main
 
 import (
 	"bytes"
-	"github.com/stretchr/testify/require"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
