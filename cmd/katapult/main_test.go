@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -14,15 +15,13 @@ func testAssertCommand(t *testing.T, cmd *cobra.Command, errResult, want, stderr
 	cmd.SetOut(stdout)
 	cmd.SetErr(stderr)
 	err := cmd.Execute()
-	switch {
-	case err == nil:
-		// Ignore this.
-	case errResult != "":
-		assert.Equal(t, errResult, err.Error())
+
+	if errResult != "" {
+		require.EqualError(t, err, errResult)
 		return
-	default:
-		t.Fatal(err)
 	}
+	require.NoError(t, err)
+
 	assert.Equal(t, want, stdout.String())
 	assert.Equal(t, stderrResult, stderr.String())
 }

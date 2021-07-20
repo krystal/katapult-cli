@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/krystal/go-katapult"
@@ -94,15 +95,13 @@ func TestDataCenters_List(t *testing.T) {
 			cmd.SetErr(stderr)
 			cmd.SetArgs([]string{"list"})
 			err := cmd.Execute()
-			switch {
-			case err == nil:
-				// Ignore this.
-			case tt.err != "":
-				assert.Equal(t, tt.err, err.Error())
+
+			if tt.err != "" {
+				require.EqualError(t, err, tt.err)
 				return
-			default:
-				t.Fatal(err)
 			}
+			require.NoError(t, err)
+
 			assert.Equal(t, tt.want, stdout.String())
 			assert.Equal(t, tt.stderr, stderr.String())
 		})
@@ -147,14 +146,12 @@ func TestDataCenters_Get(t *testing.T) {
 			cmd.SetArgs(tt.args)
 			err := cmd.Execute()
 			assert.Equal(t, tt.stderr, stderr.String())
-			switch {
-			case err == nil:
-				assert.Equal(t, tt.want, stdout.String())
-			case tt.err != "":
-				assert.Equal(t, tt.err, err.Error())
-			default:
-				t.Fatal(err)
+
+			if tt.err != "" {
+				require.EqualError(t, err, tt.err)
+				return
 			}
+			require.NoError(t, err)
 		})
 	}
 }
