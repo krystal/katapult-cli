@@ -38,11 +38,11 @@ func TestOrganizations_List(t *testing.T) {
 	tests := []struct {
 		name string
 
-		orgs   []*core.Organization
-		want   string
-		stderr string
-		throws string
-		err    string
+		orgs    []*core.Organization
+		want    string
+		stderr  string
+		throws  string
+		wantErr string
 	}{
 		{
 			name: "organizations list",
@@ -56,16 +56,16 @@ func TestOrganizations_List(t *testing.T) {
 			orgs: []*core.Organization{},
 		},
 		{
-			name:   "organization error",
-			throws: "test error",
-			err:    "test error",
+			name:    "organization error",
+			throws:  "test error",
+			wantErr: "test error",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := organizationsCmd(mockOrganisationsListClient{orgs: tt.orgs, throws: tt.throws})
 			cmd.SetArgs([]string{"list"})
-			testAssertCommand(t, cmd, tt.err, tt.want, tt.stderr)
+			testAssertCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})
 	}
 }

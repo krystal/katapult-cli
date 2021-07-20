@@ -105,10 +105,10 @@ func TestNetworks_List(t *testing.T) {
 	tests := []struct {
 		name string
 
-		args   []string
-		want   string
-		stderr string
-		err    string
+		args    []string
+		want    string
+		stderr  string
+		wantErr string
 	}{
 		{
 			name: "Test listing pog-id",
@@ -129,10 +129,10 @@ Virtual Networks:
 `,
 		},
 		{
-			name:   "No flags provided",
-			args:   []string{"ls"},
-			stderr: "Error: both ID and subdomain are unset\n",
-			err:    "both ID and subdomain are unset",
+			name:    "No flags provided",
+			args:    []string{"ls"},
+			stderr:  "Error: both ID and subdomain are unset\n",
+			wantErr: "both ID and subdomain are unset",
 		},
 		// TODO
 	}
@@ -141,7 +141,7 @@ Virtual Networks:
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := networksCmd(mockNetworkList{})
 			cmd.SetArgs(tt.args)
-			testAssertCommand(t, cmd, tt.err, tt.want, tt.stderr)
+			testAssertCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})
 	}
 }

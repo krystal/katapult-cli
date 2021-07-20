@@ -13,18 +13,18 @@ func Test_newClient(t *testing.T) {
 	tests := []struct {
 		name string
 
-		apiKey string
-		apiURL string
-		err    string
+		apiKey  string
+		apiURL  string
+		wantErr string
 	}{
 		{
 			name:   "empty API URL",
 			apiKey: "test",
 		},
 		{
-			name:   "invalid URL",
-			err:    "invalid API URL: @@:",
-			apiURL: "@@:",
+			name:    "invalid URL",
+			wantErr: "invalid API URL: @@:",
+			apiURL:  "@@:",
 		},
 		{
 			name:   "both values",
@@ -39,8 +39,8 @@ func Test_newClient(t *testing.T) {
 				APIURL: tt.apiURL,
 			})
 
-			if tt.err != "" {
-				require.EqualError(t, err, tt.err)
+			if tt.wantErr != "" {
+				require.EqualError(t, err, tt.wantErr)
 				return
 			}
 			require.NoError(t, err)

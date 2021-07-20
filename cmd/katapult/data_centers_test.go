@@ -63,11 +63,11 @@ func TestDataCenters_List(t *testing.T) {
 	tests := []struct {
 		name string
 
-		dcs    []*core.DataCenter
-		want   string
-		stderr string
-		throws string
-		err    string
+		dcs     []*core.DataCenter
+		want    string
+		stderr  string
+		throws  string
+		wantErr string
 	}{
 		{
 			name: "data center list",
@@ -81,9 +81,9 @@ func TestDataCenters_List(t *testing.T) {
 			dcs:  []*core.DataCenter{},
 		},
 		{
-			name:   "data center error",
-			throws: "test error",
-			err:    "test error",
+			name:    "data center error",
+			throws:  "test error",
+			wantErr: "test error",
 		},
 	}
 	for _, tt := range tests {
@@ -96,8 +96,8 @@ func TestDataCenters_List(t *testing.T) {
 			cmd.SetArgs([]string{"list"})
 			err := cmd.Execute()
 
-			if tt.err != "" {
-				require.EqualError(t, err, tt.err)
+			if tt.wantErr != "" {
+				require.EqualError(t, err, tt.wantErr)
 				return
 			}
 			require.NoError(t, err)
@@ -112,11 +112,11 @@ func TestDataCenters_Get(t *testing.T) {
 	tests := []struct {
 		name string
 
-		args   []string
-		dc     string
-		want   string
-		stderr string
-		err    string
+		args    []string
+		dc      string
+		want    string
+		stderr  string
+		wantErr string
 	}{
 		{
 			name: "display POG1",
@@ -129,10 +129,10 @@ func TestDataCenters_Get(t *testing.T) {
 			want: "hello (GB1) [GB1-ID] / United Kingdom\n",
 		},
 		{
-			name:   "display invalid DC",
-			args:   []string{"get", "UNPOG1"},
-			stderr: "Error: unknown datacentre\n",
-			err:    "unknown datacentre",
+			name:    "display invalid DC",
+			args:    []string{"get", "UNPOG1"},
+			stderr:  "Error: unknown datacentre\n",
+			wantErr: "unknown datacentre",
 		},
 	}
 
@@ -147,8 +147,8 @@ func TestDataCenters_Get(t *testing.T) {
 			err := cmd.Execute()
 			assert.Equal(t, tt.stderr, stderr.String())
 
-			if tt.err != "" {
-				require.EqualError(t, err, tt.err)
+			if tt.wantErr != "" {
+				require.EqualError(t, err, tt.wantErr)
 				return
 			}
 			require.NoError(t, err)

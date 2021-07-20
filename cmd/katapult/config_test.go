@@ -15,10 +15,6 @@ api_url: %s
 `
 
 func TestConfig(t *testing.T) {
-	conf, err := config.New()
-	if err != nil {
-		t.Fatal(err)
-	}
 	tests := []struct {
 		name string
 
@@ -48,6 +44,10 @@ func TestConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("key: %s, url: %s", tt.apiKey, tt.apiURL), func(t *testing.T) {
+			conf, err := config.New()
+			if err != nil {
+				t.Fatal(err)
+			}
 			conf.SetDefault("api_key", tt.apiKey)
 			conf.SetDefault("api_url", tt.apiURL)
 			cmd := configCommand(conf)
