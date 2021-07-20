@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func executeTestCommand(t *testing.T, cmd *cobra.Command, errResult, wants, stderrResult string) {
+func testAssertCommand(t *testing.T, cmd *cobra.Command, errResult, want, stderrResult string) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	cmd.SetOut(stdout)
@@ -23,6 +23,6 @@ func executeTestCommand(t *testing.T, cmd *cobra.Command, errResult, wants, stde
 	default:
 		t.Fatal(err)
 	}
-	assert.Equal(t, wants, stdout.String())
+	assert.Equal(t, want, stdout.String())
 	assert.Equal(t, stderrResult, stderr.String())
 }

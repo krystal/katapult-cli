@@ -17,7 +17,7 @@ func Test_newClient(t *testing.T) {
 		err    string
 	}{
 		{
-			name:   "blank API URL",
+			name:   "empty API URL",
 			apiKey: "test",
 		},
 		{

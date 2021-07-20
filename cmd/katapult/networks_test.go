@@ -106,14 +106,14 @@ func TestNetworks_List(t *testing.T) {
 		name string
 
 		args   []string
-		wants  string
+		want   string
 		stderr string
 		err    string
 	}{
 		{
 			name: "Test listing pog-id",
 			args: []string{"ls", "--id", "pog-id"},
-			wants: `Networks:
+			want: `Networks:
  - Pognet 1 [pognet]
  - Pognet 2 [pognet2]
 Virtual Networks:
@@ -123,7 +123,7 @@ Virtual Networks:
 		{
 			name: "Test listing pog-subdomain",
 			args: []string{"ls", "--subdomain", "pog-subdomain"},
-			wants: `Networks:
+			want: `Networks:
  - Pognet 3 [pognet3]
  - Pognet 4 [pognet4]
 `,
@@ -141,7 +141,7 @@ Virtual Networks:
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := networksCmd(mockNetworkList{})
 			cmd.SetArgs(tt.args)
-			executeTestCommand(t, cmd, tt.err, tt.wants, tt.stderr)
+			testAssertCommand(t, cmd, tt.err, tt.want, tt.stderr)
 		})
 	}
 }

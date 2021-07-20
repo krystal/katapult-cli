@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var dcs = []*core.DataCenter{
+var fixtureDataCenters = []*core.DataCenter{
 	{
 		ID:        "POG1-ID",
 		Name:      "hello",
@@ -63,20 +63,20 @@ func TestDataCenters_List(t *testing.T) {
 		name string
 
 		dcs    []*core.DataCenter
-		wants  string
+		want   string
 		stderr string
 		throws string
 		err    string
 	}{
 		{
 			name: "data center list",
-			dcs:  dcs,
-			wants: ` - hello (POG1) [POG1-ID] / Pogland
+			dcs:  fixtureDataCenters,
+			want: ` - hello (POG1) [POG1-ID] / Pogland
  - hello (GB1) [GB1-ID] / United Kingdom
 `,
 		},
 		{
-			name: "blank data centers",
+			name: "empty data centers",
 			dcs:  []*core.DataCenter{},
 		},
 		{
@@ -103,7 +103,7 @@ func TestDataCenters_List(t *testing.T) {
 			default:
 				t.Fatal(err)
 			}
-			assert.Equal(t, tt.wants, stdout.String())
+			assert.Equal(t, tt.want, stdout.String())
 			assert.Equal(t, tt.stderr, stderr.String())
 		})
 	}
@@ -115,19 +115,19 @@ func TestDataCenters_Get(t *testing.T) {
 
 		args   []string
 		dc     string
-		wants  string
+		want   string
 		stderr string
 		err    string
 	}{
 		{
-			name:  "display POG1",
-			args:  []string{"get", "POG1-ID"},
-			wants: "hello (POG1) [POG1-ID] / Pogland\n",
+			name: "display POG1",
+			args: []string{"get", "POG1-ID"},
+			want: "hello (POG1) [POG1-ID] / Pogland\n",
 		},
 		{
-			name:  "display GB1",
-			args:  []string{"get", "GB1-ID"},
-			wants: "hello (GB1) [GB1-ID] / United Kingdom\n",
+			name: "display GB1",
+			args: []string{"get", "GB1-ID"},
+			want: "hello (GB1) [GB1-ID] / United Kingdom\n",
 		},
 		{
 			name:   "display invalid DC",
@@ -137,7 +137,7 @@ func TestDataCenters_Get(t *testing.T) {
 		},
 	}
 
-	cmd := dataCentersCmd(mockDataCentersClient{dcs: dcs})
+	cmd := dataCentersCmd(mockDataCentersClient{dcs: fixtureDataCenters})
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			stdout := &bytes.Buffer{}
@@ -149,7 +149,7 @@ func TestDataCenters_Get(t *testing.T) {
 			assert.Equal(t, tt.stderr, stderr.String())
 			switch {
 			case err == nil:
-				assert.Equal(t, tt.wants, stdout.String())
+				assert.Equal(t, tt.want, stdout.String())
 			case tt.err != "":
 				assert.Equal(t, tt.err, err.Error())
 			default:

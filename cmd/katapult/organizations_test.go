@@ -9,7 +9,7 @@ import (
 	"github.com/krystal/go-katapult/core"
 )
 
-var organizations = []*core.Organization{
+var fixtureOrganizations = []*core.Organization{
 	{
 		ID:        "loge",
 		Name:      "Loge Enthusiasts",
@@ -39,20 +39,20 @@ func TestOrganizations_List(t *testing.T) {
 		name string
 
 		orgs   []*core.Organization
-		wants  string
+		want   string
 		stderr string
 		throws string
 		err    string
 	}{
 		{
 			name: "organizations list",
-			orgs: organizations,
-			wants: ` - Loge Enthusiasts (loge) [loge]
+			orgs: fixtureOrganizations,
+			want: ` - Loge Enthusiasts (loge) [loge]
  - testing, testing, 123 (test) [testing]
 `,
 		},
 		{
-			name: "blank organizations",
+			name: "empty organizations",
 			orgs: []*core.Organization{},
 		},
 		{
@@ -65,7 +65,7 @@ func TestOrganizations_List(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := organizationsCmd(mockOrganisationsListClient{orgs: tt.orgs, throws: tt.throws})
 			cmd.SetArgs([]string{"list"})
-			executeTestCommand(t, cmd, tt.err, tt.wants, tt.stderr)
+			testAssertCommand(t, cmd, tt.err, tt.want, tt.stderr)
 		})
 	}
 }

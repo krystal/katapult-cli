@@ -39,7 +39,6 @@ linters:
     - goconst
     - gocritic
     - gocyclo
-    - golint
     - goprintffuncname
     - godot
     - gofumpt

@@ -26,7 +26,7 @@ func TestConfig(t *testing.T) {
 		apiURL string
 	}{
 		{
-			name:   "blank values",
+			name:   "empty values",
 			apiKey: "",
 			apiURL: "",
 		},
