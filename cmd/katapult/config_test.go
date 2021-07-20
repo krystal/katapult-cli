@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
 
 	"github.com/krystal/katapult-cli/config"
+	"github.com/stretchr/testify/assert"
 )
 
 const mockConfigFormat = `---
