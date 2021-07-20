@@ -65,7 +65,7 @@ func TestOrganizations_List(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := organizationsCmd(mockOrganisationsListClient{orgs: tt.orgs, throws: tt.throws})
 			cmd.SetArgs([]string{"list"})
-			testAssertCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})
 	}
 }

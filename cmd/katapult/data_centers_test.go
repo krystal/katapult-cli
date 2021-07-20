@@ -121,12 +121,12 @@ func TestDataCenters_Get(t *testing.T) {
 		{
 			name: "display POG1",
 			args: []string{"get", "POG1"},
-			want: "hello (POG1) [POG1-ID] / Pogland\n",
+			want: "hello (POG1) [dc_9UVoPiUQoI1cqtRd] / Pogland\n",
 		},
 		{
 			name: "display GB1",
 			args: []string{"get", "GB1"},
-			want: "hello (GB1) [GB1-ID] / United Kingdom\n",
+			want: "hello (GB1) [dc_9UVoPiUQoI1cqtR0] / United Kingdom\n",
 		},
 		{
 			name:    "display invalid DC",
@@ -139,19 +139,8 @@ func TestDataCenters_Get(t *testing.T) {
 	cmd := dataCentersCmd(mockDataCentersClient{dcs: fixtureDataCenters})
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdout := &bytes.Buffer{}
-			stderr := &bytes.Buffer{}
-			cmd.SetOut(stdout)
-			cmd.SetErr(stderr)
 			cmd.SetArgs(tt.args)
-			err := cmd.Execute()
-			assert.Equal(t, tt.stderr, stderr.String())
-
-			if tt.wantErr != "" {
-				require.EqualError(t, err, tt.wantErr)
-				return
-			}
-			require.NoError(t, err)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})
 	}
 }

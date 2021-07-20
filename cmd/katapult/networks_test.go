@@ -141,7 +141,7 @@ Virtual Networks:
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := networksCmd(mockNetworkList{})
 			cmd.SetArgs(tt.args)
-			testAssertCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})
 	}
 }

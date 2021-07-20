@@ -9,7 +9,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func testAssertCommand(t *testing.T, cmd *cobra.Command, errResult, want, stderrResult string) {
+func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, want, stderrResult string) {
+	t.Helper()
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 	cmd.SetOut(stdout)

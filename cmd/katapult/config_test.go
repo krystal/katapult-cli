@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"testing"
 
@@ -50,11 +49,7 @@ func TestConfig(t *testing.T) {
 			conf.SetDefault("api_key", tt.apiKey)
 			conf.SetDefault("api_url", tt.apiURL)
 			cmd := configCommand(conf)
-			out := &bytes.Buffer{}
-			cmd.SetOut(out)
-			if err := cmd.RunE(cmd, []string{}); err != nil {
-				t.Fatal(err)
-			}
+			cmd.SetArgs([]string{})
 			expectedAPIKey := tt.apiKey
 			if expectedAPIKey == "" {
 				expectedAPIKey = "\"\""
@@ -63,10 +58,7 @@ func TestConfig(t *testing.T) {
 			if expectedAPIURL == "" {
 				expectedAPIURL = "\"\""
 			}
-			mockOutput := fmt.Sprintf(mockConfigFormat, expectedAPIKey, expectedAPIURL)
-			if out.String() != mockOutput {
-				t.Fatal("invalid result:\n\n", out.String())
-			}
+			assertCobraCommand(t, cmd, "", fmt.Sprintf(mockConfigFormat, expectedAPIKey, expectedAPIURL), "")
 		})
 	}
 }
