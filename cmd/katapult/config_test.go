@@ -1,0 +1,64 @@
+package main
+
+import (
+	"fmt"
+	"testing"
+
+	"github.com/krystal/katapult-cli/config"
+	"github.com/stretchr/testify/assert"
+)
+
+const mockConfigFormat = `---
+api_key: %s
+api_url: %s
+
+`
+
+func TestConfig(t *testing.T) {
+	tests := []struct {
+		name string
+
+		apiKey string
+		apiURL string
+	}{
+		{
+			name:   "empty values",
+			apiKey: "",
+			apiURL: "",
+		},
+		{
+			name:   "only API URL blank",
+			apiKey: "test",
+			apiURL: "",
+		},
+		{
+			name:   "both fields present",
+			apiKey: "test",
+			apiURL: "test",
+		},
+		{
+			name:   "only API key blank",
+			apiKey: "",
+			apiURL: "test",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("key: %s, url: %s", tt.apiKey, tt.apiURL), func(t *testing.T) {
+			conf, err := config.New()
+			assert.NoError(t, err)
+			conf.SetDefault("api_key", tt.apiKey)
+			conf.SetDefault("api_url", tt.apiURL)
+			cmd := configCommand(conf)
+			cmd.SetArgs([]string{})
+			expectedAPIKey := tt.apiKey
+			if expectedAPIKey == "" {
+				expectedAPIKey = "\"\""
+			}
+			expectedAPIURL := tt.apiURL
+			if expectedAPIURL == "" {
+				expectedAPIURL = "\"\""
+			}
+			assertCobraCommand(t, cmd, "", fmt.Sprintf(mockConfigFormat, expectedAPIKey, expectedAPIURL), "")
+		})
+	}
+}

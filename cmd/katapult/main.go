@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
@@ -62,9 +63,9 @@ func run() error {
 	rootCmd.AddCommand(
 		versionCommand(),
 		configCommand(conf),
-		dataCentersCmd(cl),
-		networksCmd(cl),
-		organizationsCmd(cl),
+		dataCentersCmd(core.NewDataCentersClient(cl)),
+		networksCmd(core.NewNetworksClient(cl)),
+		organizationsCmd(core.NewOrganizationsClient(cl)),
 	)
 
 	return rootCmd.Execute()
