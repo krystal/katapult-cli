@@ -55,15 +55,15 @@ func TestConfig(t *testing.T) {
 			if err := cmd.RunE(cmd, []string{}); err != nil {
 				t.Fatal(err)
 			}
-			mockAPIKey := tt.apiKey
-			if mockAPIKey == "" {
-				mockAPIKey = "\"\""
+			expectedAPIKey := tt.apiKey
+			if expectedAPIKey == "" {
+				expectedAPIKey = "\"\""
 			}
-			mockAPIURL := tt.apiURL
-			if mockAPIURL == "" {
-				mockAPIURL = "\"\""
+			expectedAPIURL := tt.apiURL
+			if expectedAPIURL == "" {
+				expectedAPIURL = "\"\""
 			}
-			mockOutput := fmt.Sprintf(mockConfigFormat, mockAPIKey, mockAPIURL)
+			mockOutput := fmt.Sprintf(mockConfigFormat, expectedAPIKey, expectedAPIURL)
 			if out.String() != mockOutput {
 				t.Fatal("invalid result:\n\n", out.String())
 			}
