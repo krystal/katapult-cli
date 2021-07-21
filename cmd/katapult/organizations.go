@@ -1,16 +1,21 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/krystal/go-katapult/core"
-
 	"github.com/krystal/go-katapult"
-
+	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
 )
 
-func organizationsCmd(client *katapult.Client) *cobra.Command {
+type organisationsClient interface {
+	List(
+		ctx context.Context,
+	) ([]*core.Organization, *katapult.Response, error)
+}
+
+func organizationsCmd(client organisationsClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "org",
 		Aliases: []string{"orgs", "organization", "organizations"},
@@ -24,13 +29,14 @@ func organizationsCmd(client *katapult.Client) *cobra.Command {
 		Short:   "Get list of organizations",
 		Long:    "Get list of organizations.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			orgs, _, err := core.NewOrganizationsClient(client).List(cmd.Context())
+			orgs, _, err := client.List(cmd.Context())
 			if err != nil {
 				return err
 			}
 
+			out := cmd.OutOrStdout()
 			for _, org := range orgs {
-				fmt.Printf(" - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
+				fmt.Fprintf(out, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
 			}
 
 			return nil

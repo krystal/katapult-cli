@@ -1,16 +1,22 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/krystal/go-katapult/core"
-
 	"github.com/krystal/go-katapult"
-
+	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
 )
 
-func networksCmd(client *katapult.Client) *cobra.Command {
+type networksListClient interface {
+	List(
+		ctx context.Context,
+		org core.OrganizationRef,
+	) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error)
+}
+
+func networksCmd(client networksListClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "networks",
 		Aliases: []string{"net", "nets"},
@@ -34,20 +40,21 @@ func networksCmd(client *katapult.Client) *cobra.Command {
 				ref = core.OrganizationRef{SubDomain: subdomain}
 			}
 
-			nets, vnets, _, err := core.NewNetworksClient(client).List(cmd.Context(), ref)
+			nets, vnets, _, err := client.List(cmd.Context(), ref)
 			if err != nil {
 				return err
 			}
 
-			fmt.Println("Networks:")
+			out := cmd.OutOrStdout()
+			_, _ = fmt.Fprintln(out, "Networks:")
 			for _, net := range nets {
-				fmt.Printf(" - %s [%s]\n", net.Name, net.ID)
+				_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
 			}
 
 			if len(vnets) > 0 {
-				fmt.Println("Virtual Networks:")
+				_, _ = fmt.Fprintln(out, "Virtual Networks:")
 				for _, net := range vnets {
-					fmt.Printf(" - %s [%s]\n", net.Name, net.ID)
+					_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
 				}
 			}
 

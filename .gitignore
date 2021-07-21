@@ -4,3 +4,4 @@ bin/*
 tools/*
 .idea/
 dist/
+.DS_Store

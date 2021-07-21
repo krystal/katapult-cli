@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/krystal/go-katapult"
-	"github.com/krystal/go-katapult/core"
 	"log"
 	"os"
 
+	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
@@ -22,40 +21,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-
-	var cl *katapult.Client
-	rootCmd := &cobra.Command{
-		Use:   "katapult",
-		Short: "katapult CLI tool",
-		Long:  `katapult is a CLI tool for the katapult.io hosting platform.`,
-		FParseErrWhitelist: cobra.FParseErrWhitelist{
-			UnknownFlags: true,
-		},
-	}
-
-	rootCmd.PersistentFlags().StringVarP(&configFileFlag, "config", "c", "",
-		"config file (default: $HOME/.katapult/katapult.yaml)")
-
-	rootCmd.PersistentFlags().StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
-		"URL for Katapult API (default: %s)", config.Defaults.APIURL,
-	))
-	err = conf.BindPFlag("api_url", rootCmd.PersistentFlags().Lookup("api-url"))
-	if err != nil {
-		return err
-	}
-	rootCmd.PersistentFlags().StringVar(&configAPIKey, "api-key", "", fmt.Sprintf(
-		"Katapult API Key (default: %s)", config.Defaults.APIKey,
-	))
-	err = conf.BindPFlag("api_key", rootCmd.PersistentFlags().Lookup("api-key"))
-	if err != nil {
-		return err
-	}
-
-	err = rootCmd.ParseFlags(os.Args)
-	if err != nil {
-		return err
-	}
-
 	if configFileFlag != "" {
 		conf.SetConfigFile(configFileFlag)
 	}
@@ -65,7 +30,32 @@ func run() error {
 		return err
 	}
 
-	cl, err = newClient(conf)
+	cl, err := newClient(conf)
+	if err != nil {
+		return err
+	}
+	rootCmd := &cobra.Command{
+		Use:   "katapult",
+		Short: "katapult CLI tool",
+		Long:  `katapult is a CLI tool for the katapult.io hosting platform.`,
+	}
+
+	rootFlags := rootCmd.PersistentFlags()
+
+	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
+		"config file (default: $HOME/.katapult/katapult.yaml)")
+
+	rootFlags.StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
+		"URL for Katapult API (default: %s)", config.Defaults.APIURL,
+	))
+	err = conf.BindPFlag("api_url", rootFlags.Lookup("api-url"))
+	if err != nil {
+		return err
+	}
+	rootFlags.StringVar(&configAPIKey, "api-key", "", fmt.Sprintf(
+		"Katapult API Key (default: %s)", config.Defaults.APIKey,
+	))
+	err = conf.BindPFlag("api_key", rootFlags.Lookup("api-key"))
 	if err != nil {
 		return err
 	}
@@ -73,9 +63,9 @@ func run() error {
 	rootCmd.AddCommand(
 		versionCommand(),
 		configCommand(conf),
-		dataCentersCmd(cl),
-		networksCmd(cl),
-		organizationsCmd(cl),
+		dataCentersCmd(core.NewDataCentersClient(cl)),
+		networksCmd(core.NewNetworksClient(cl)),
+		organizationsCmd(core.NewOrganizationsClient(cl)),
 		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
 	)
 
