@@ -1,18 +1,13 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"testing"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-
 	"github.com/stretchr/testify/assert"
 )
-
-const stdoutVMsList = ` - test (test.example.com) [1]: test
-`
 
 type vmPages [][]*core.VirtualMachine
 
@@ -160,29 +155,111 @@ func (v *vmsClient) Delete(_ context.Context, ref core.VirtualMachineRef) (
 }
 
 func TestVMs_List(t *testing.T) {
-	cmd := virtualMachinesCmd(&vmsClient{
-		organizationIDPages: map[string]vmPages{
-			"1": {
-				{
+	tests := []struct {
+		name string
+
+		id         map[string]vmPages
+		subdomains map[string]vmPages
+
+		args    []string
+		want    string
+		stderr  string
+		wantErr string
+	}{
+		{
+			name: "test un-paginated vm ID list",
+			id: map[string]vmPages{
+				"1": {
 					{
-						ID:          "1",
-						Name:        "test",
-						Hostname:    "test.example.com",
-						FQDN:        "test.example.com",
-						Description: "test",
-						Package:     &core.VirtualMachinePackage{Name: "test"},
+						{
+							ID:          "1",
+							Name:        "test",
+							Hostname:    "test.example.com",
+							FQDN:        "test.example.com",
+							Description: "test",
+							Package:     &core.VirtualMachinePackage{Name: "test"},
+						},
 					},
 				},
 			},
+			args: []string{"list", "--id=1"},
+			want: " - test (test.example.com) [1]: test\n",
 		},
-	})
-	stdout := &bytes.Buffer{}
-	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"list", "--id=1"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
+		{
+			name: "test un-paginated vm subdomain list",
+			subdomains: map[string]vmPages{
+				"1": {
+					{
+						{
+							ID:          "1",
+							Name:        "test",
+							Hostname:    "test.example.com",
+							FQDN:        "test.example.com",
+							Description: "test",
+							Package:     &core.VirtualMachinePackage{Name: "test"},
+						},
+					},
+				},
+			},
+			args: []string{"list", "--subdomain=1"},
+			want: " - test (test.example.com) [1]: test\n",
+		},
+		{
+			name: "test paginated vm list",
+			subdomains: map[string]vmPages{
+				"1": {
+					{
+						{
+							ID:          "0",
+							Name:        "test",
+							Hostname:    "test.example.com",
+							FQDN:        "test.example.com",
+							Description: "test",
+							Package:     &core.VirtualMachinePackage{Name: "test"},
+						},
+					},
+					{
+						{
+							ID:          "1",
+							Name:        "test1",
+							Hostname:    "test1.example.com",
+							FQDN:        "test1.example.com",
+							Description: "test1",
+							Package:     &core.VirtualMachinePackage{Name: "test1"},
+						},
+					},
+					{
+						{
+							ID:          "2",
+							Name:        "test2",
+							Hostname:    "test2.example.com",
+							FQDN:        "test2.example.com",
+							Description: "test2",
+							Package:     &core.VirtualMachinePackage{Name: "test2"},
+						},
+					},
+				},
+			},
+			args: []string{"list", "--subdomain=1"},
+			want: ` - test (test.example.com) [0]: test
+ - test1 (test1.example.com) [1]: test1
+ - test2 (test2.example.com) [2]: test2
+`,
+		},
+		{
+			name:    "test not found",
+			args:    []string{"list", "--subdomain=not_exists"},
+			wantErr: "katapult: not_found",
+		},
 	}
-	assert.Equal(t, stdoutVMsList, stdout.String())
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cmd := virtualMachinesCmd(&vmsClient{organizationIDPages: tt.id, organizationSubdomainPages: tt.subdomains})
+			cmd.SetArgs(tt.args)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+		})
+	}
 }
 
 func TestVMs_Poweroff(t *testing.T) {
