@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -49,7 +50,7 @@ func vmFlag(cmd *cobra.Command) (core.VirtualMachineRef, error) {
 		if fqdn == "" {
 			return core.VirtualMachineRef{}, fmt.Errorf("both ID and FQDN are unset")
 		}
-		return core.VirtualMachineRef{FQDN: fqdn},  nil
+		return core.VirtualMachineRef{FQDN: fqdn}, nil
 	}
 	return ref, nil
 }
@@ -65,8 +66,8 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
-		Short:   "Get a list of virtual machines from an organisation",
-		Long:    "Get a list of virtual machines from an organisation.",
+		Short:   "Get a list of virtual machines from an organization",
+		Long:    "Get a list of virtual machines from an organization.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ref := core.OrganizationRef{ID: cmd.Flags().Lookup("id").Value.String()}
 			if ref.ID == "" {
@@ -113,8 +114,8 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 			return nil
 		},
 	}
-	list.Flags().String("id", "", "The ID of the organisation. If set, this takes priority over the sub-domain.")
-	list.Flags().String("subdomain", "", "The sub-domain of the organisation.")
+	list.Flags().String("id", "", "The ID of the organization. If set, this takes priority over the sub-domain.")
+	list.Flags().String("subdomain", "", "The sub-domain of the organization.")
 	return list
 }
 

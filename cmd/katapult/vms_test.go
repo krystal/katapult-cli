@@ -1,12 +1,12 @@
-
 package main
 
 import (
 	"bytes"
 	"context"
+	"testing"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -20,10 +20,10 @@ type vmsClient struct {
 	// Defines the power state of the VM's.
 	powerStates map[string]bool
 
-	// Defines the organisation ID -> vmPages.
-	organisationIDPages map[string]vmPages
+	// Defines the organization ID -> vmPages.
+	organizationIDPages map[string]vmPages
 
-	// Defines the organisation subdomain -> vmPages.
+	// Defines the organization subdomain -> vmPages.
 	organizationSubdomainPages map[string]vmPages
 }
 
@@ -36,25 +36,23 @@ func (v *vmsClient) togglePowerState(key string, fqdn bool) bool {
 	if fqdn {
 		prefix = "s"
 	}
-	state, ok := v.powerStates[prefix + key]
+	state, ok := v.powerStates[prefix+key]
 	if !ok {
 		// A VM starts powered up.
 		state = true
 	}
-	v.powerStates[prefix + key] = !state
+	v.powerStates[prefix+key] = !state
 	return state
 }
 
-func (v *vmsClient) List(
-	_ context.Context,
-	org core.OrganizationRef,
-	opts *core.ListOptions,
-) ([]*core.VirtualMachine, *katapult.Response, error) {
+func (v *vmsClient) List(_ context.Context, org core.OrganizationRef, opts *core.ListOptions) (
+	[]*core.VirtualMachine, *katapult.Response, error,
+) {
 	// Defines the pages.
 	var pages vmPages
 	switch {
 	case org.ID != "":
-		pages = v.organisationIDPages[org.ID]
+		pages = v.organizationIDPages[org.ID]
 	case org.SubDomain != "":
 		pages = v.organizationSubdomainPages[org.SubDomain]
 	default:
@@ -80,10 +78,7 @@ func (v *vmsClient) List(
 	}}, nil
 }
 
-func (v *vmsClient) Shutdown(
-	_ context.Context,
-	ref core.VirtualMachineRef,
-) (*core.Task, *katapult.Response, error) {
+func (v *vmsClient) Shutdown(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
 	// Get the key and if it's an FQDN.
 	fqdn := false
 	id := ref.ID
@@ -96,23 +91,20 @@ func (v *vmsClient) Shutdown(
 	poweredOn := v.togglePowerState(id, fqdn)
 	if !poweredOn {
 		// The VM wasn't powered on.
-		return nil, nil, katapult.ErrNotAcceptable
+		return nil, nil, core.NewTaskQueueingError(&katapult.ResponseError{
+			Code:        "task_queueing_error",
+			Description: "VM was not powered on",
+		})
 	}
 	return &core.Task{}, nil, nil
 }
 
-func (v *vmsClient) Stop(
-	_ context.Context,
-	ref core.VirtualMachineRef,
-) (*core.Task, *katapult.Response, error) {
+func (v *vmsClient) Stop(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
 	// Basically acts the same as far as event mocking logic goes.
-	return v.Shutdown(nil, ref)
+	return v.Shutdown(context.TODO(), ref)
 }
 
-func (v *vmsClient) Start(
-	_ context.Context,
-	ref core.VirtualMachineRef,
-) (*core.Task, *katapult.Response, error) {
+func (v *vmsClient) Start(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
 	// Get the key and if it's an FQDN.
 	fqdn := false
 	id := ref.ID
@@ -124,45 +116,61 @@ func (v *vmsClient) Start(
 	// Toggle the power state.
 	poweredOn := v.togglePowerState(id, fqdn)
 	if poweredOn {
-		// The VM was powered off.
-		return nil, nil, katapult.ErrNotAcceptable
+		// The VM was powered on.
+		return nil, nil, core.NewTaskQueueingError(&katapult.ResponseError{
+			Code:        "task_queueing_error",
+			Description: "VM was powered on",
+		})
 	}
 	return &core.Task{}, nil, nil
 }
 
-func (v *vmsClient) Reset(
-	_ context.Context,
-	ref core.VirtualMachineRef,
-) (*core.Task, *katapult.Response, error) {
-	// Basically acts the same as far as event mocking logic goes.
-	return v.Start(nil, ref)
+func (v *vmsClient) Reset(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+	// Get the key and if it's an FQDN.
+	fqdn := false
+	id := ref.ID
+	if id == "" {
+		fqdn = true
+		id = ref.FQDN
+	}
+
+	// Toggle the power state.
+	poweredOn := v.togglePowerState(id, fqdn)
+	if !poweredOn {
+		// The VM needs to be on to be reset.
+		return nil, nil, core.NewTaskQueueingError(&katapult.ResponseError{
+			Code:        "task_queueing_error",
+			Description: "VM was not powered off",
+		})
+	}
+	v.togglePowerState(id, fqdn)
+	return nil, nil, nil
 }
 
-func (v *vmsClient) Delete(
-	_ context.Context,
-	ref core.VirtualMachineRef,
-) (*core.TrashObject, *katapult.Response, error) {
+func (v *vmsClient) Delete(_ context.Context, ref core.VirtualMachineRef) (
+	*core.TrashObject, *katapult.Response, error,
+) {
 	switch {
 	case ref.ID != "":
-		delete(v.powerStates, "i" + ref.ID)
+		delete(v.powerStates, "i"+ref.ID)
 	case ref.FQDN != "":
-		delete(v.powerStates, "s" + ref.FQDN)
+		delete(v.powerStates, "s"+ref.FQDN)
 	}
 	return nil, nil, nil
 }
 
 func TestVMs_List(t *testing.T) {
 	cmd := virtualMachinesCmd(&vmsClient{
-		organisationIDPages: map[string]vmPages{
+		organizationIDPages: map[string]vmPages{
 			"1": {
 				{
 					{
-						ID:                  "1",
-						Name:                "test",
-						Hostname:            "test.example.com",
-						FQDN:                "test.example.com",
-						Description:         "test",
-						Package: 			&core.VirtualMachinePackage{Name: "test"},
+						ID:          "1",
+						Name:        "test",
+						Hostname:    "test.example.com",
+						FQDN:        "test.example.com",
+						Description: "test",
+						Package:     &core.VirtualMachinePackage{Name: "test"},
 					},
 				},
 			},
@@ -178,49 +186,321 @@ func TestVMs_List(t *testing.T) {
 }
 
 func TestVMs_Poweroff(t *testing.T) {
-	cmd := virtualMachinesCmd(&vmsClient{})
-	stdout := &bytes.Buffer{}
-	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"poweroff", "--id=1"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
+	successMessage := "Virtual machine successfully powered down.\n"
+	tests := []struct {
+		name string
+
+		args        []string
+		want        string
+		poweredDown *struct {
+			key  string
+			fqdn bool
+		}
+		stderr   string
+		wantErr  string
+		validate func(client *vmsClient) string
+	}{
+		{
+			name: "test normal power down by ID",
+			args: []string{"poweroff", "--id=1"},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["i1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if state {
+					return "virtual machine powered on"
+				}
+				return ""
+			},
+		},
+		{
+			name: "test normal power down by fqdn",
+			args: []string{"poweroff", "--fqdn=1"},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["s1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if state {
+					return "virtual machine powered on"
+				}
+				return ""
+			},
+		},
+		{
+			name: "test power down of already powered down FQDN",
+			args: []string{"poweroff", "--fqdn=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: true},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered on",
+		},
+		{
+			name: "test power down of already powered down ID",
+			args: []string{"poweroff", "--id=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: false},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered on",
+		},
 	}
-	assert.Equal(t, "Virtual machine successfully powered down.\n", stdout.String())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &vmsClient{}
+			if tt.poweredDown != nil {
+				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
+			}
+			cmd := virtualMachinesCmd(client)
+			cmd.SetArgs(tt.args)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			if tt.validate != nil {
+				assert.Equal(t, "", tt.validate(client))
+			}
+		})
+	}
 }
 
 func TestVMs_Stop(t *testing.T) {
-	cmd := virtualMachinesCmd(&vmsClient{})
-	stdout := &bytes.Buffer{}
-	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"stop", "--id=1"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
+	successMessage := "Virtual machine successfully stopped.\n"
+	tests := []struct {
+		name string
+
+		args        []string
+		want        string
+		poweredDown *struct {
+			key  string
+			fqdn bool
+		}
+		stderr   string
+		wantErr  string
+		validate func(client *vmsClient) string
+	}{
+		{
+			name: "test normal stop by ID",
+			args: []string{"stop", "--id=1"},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["i1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if state {
+					return "virtual machine powered on"
+				}
+				return ""
+			},
+		},
+		{
+			name: "test normal stop by fqdn",
+			args: []string{"stop", "--fqdn=1"},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["s1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if state {
+					return "virtual machine powered on"
+				}
+				return ""
+			},
+		},
+		{
+			name: "test stop of already powered down FQDN",
+			args: []string{"stop", "--fqdn=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: true},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered on",
+		},
+		{
+			name: "test stop of already powered down ID",
+			args: []string{"stop", "--id=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: false},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered on",
+		},
 	}
-	assert.Equal(t, "Virtual machine successfully stopped.\n", stdout.String())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &vmsClient{}
+			if tt.poweredDown != nil {
+				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
+			}
+			cmd := virtualMachinesCmd(client)
+			cmd.SetArgs(tt.args)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			if tt.validate != nil {
+				assert.Equal(t, "", tt.validate(client))
+			}
+		})
+	}
 }
 
 func TestVMs_Start(t *testing.T) {
-	client := &vmsClient{}
-	client.togglePowerState("1", false)
-	cmd := virtualMachinesCmd(client)
-	stdout := &bytes.Buffer{}
-	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"start", "--id=1"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
+	successMessage := "Virtual machine successfully started.\n"
+	tests := []struct {
+		name string
+
+		args        []string
+		want        string
+		poweredDown *struct {
+			key  string
+			fqdn bool
+		}
+		stderr   string
+		wantErr  string
+		validate func(client *vmsClient) string
+	}{
+		{
+			name: "test normal start by ID",
+			args: []string{"start", "--id=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: false},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["i1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if !state {
+					return "virtual machine powered off"
+				}
+				return ""
+			},
+		},
+		{
+			name: "test normal start by FQDN",
+			args: []string{"start", "--fqdn=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: true},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["s1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if !state {
+					return "virtual machine powered off"
+				}
+				return ""
+			},
+		},
+		{
+			name:    "test start of already powered up FQDN",
+			args:    []string{"start", "--fqdn=1"},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was powered on",
+		},
+		{
+			name:    "test start of already powered up ID",
+			args:    []string{"start", "--id=1"},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was powered on",
+		},
 	}
-	assert.Equal(t, "Virtual machine successfully started.\n", stdout.String())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &vmsClient{}
+			if tt.poweredDown != nil {
+				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
+			}
+			cmd := virtualMachinesCmd(client)
+			cmd.SetArgs(tt.args)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			if tt.validate != nil {
+				assert.Equal(t, "", tt.validate(client))
+			}
+		})
+	}
 }
 
 func TestVMs_Reset(t *testing.T) {
-	client := &vmsClient{}
-	client.togglePowerState("1", false)
-	cmd := virtualMachinesCmd(client)
-	stdout := &bytes.Buffer{}
-	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"reset", "--id=1"})
-	if err := cmd.Execute(); err != nil {
-		t.Fatal(err)
+	successMessage := "Virtual machine successfully reset.\n"
+	tests := []struct {
+		name string
+
+		args        []string
+		want        string
+		poweredDown *struct {
+			key  string
+			fqdn bool
+		}
+		stderr   string
+		wantErr  string
+		validate func(client *vmsClient) string
+	}{
+		{
+			name: "test normal reset by ID",
+			args: []string{"reset", "--id=1"},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["i1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if !state {
+					return "virtual machine powered off"
+				}
+				return ""
+			},
+		},
+		{
+			name: "test normal reset by FQDN",
+			args: []string{"reset", "--fqdn=1"},
+			want: successMessage,
+			validate: func(client *vmsClient) string {
+				state, ok := client.powerStates["s1"]
+				if !ok {
+					return "virtual machine not stopped"
+				}
+				if !state {
+					return "virtual machine powered off"
+				}
+				return ""
+			},
+		},
+		{
+			name: "test reset of already powered down FQDN",
+			args: []string{"reset", "--fqdn=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: true},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered off",
+		},
+		{
+			name: "test reset of already powered down ID",
+			args: []string{"reset", "--id=1"},
+			poweredDown: &struct {
+				key  string
+				fqdn bool
+			}{key: "1", fqdn: false},
+			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered off",
+		},
 	}
-	assert.Equal(t, "Virtual machine successfully reset.\n", stdout.String())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client := &vmsClient{}
+			if tt.poweredDown != nil {
+				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
+			}
+			cmd := virtualMachinesCmd(client)
+			cmd.SetArgs(tt.args)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			if tt.validate != nil {
+				assert.Equal(t, "", tt.validate(client))
+			}
+		})
+	}
 }
