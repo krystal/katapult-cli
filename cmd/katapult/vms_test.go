@@ -11,8 +11,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const stdoutVMsList = `- loge-enthusiasts-1 (example.com) [some_id]: ROCK-6
-- loge-enthusiasts-2 (2.example.com) [some_id_2]: ROCK-6`
+const stdoutVMsList = ` - test (test.example.com) [1]: test
+`
 
 type vmPages [][]*core.VirtualMachine
 
@@ -62,7 +62,10 @@ func (v *vmsClient) List(
 	}
 
 	// Get the VM page.
-	page := pages[opts.Page]
+	if opts.Page > len(pages) {
+		return nil, nil, katapult.ErrNotFound
+	}
+	page := pages[opts.Page-1]
 
 	// Return the pages.
 	totalPages := 0
@@ -149,10 +152,25 @@ func (v *vmsClient) Delete(
 }
 
 func TestVMs_List(t *testing.T) {
-	cmd := virtualMachinesCmd(&vmsClient{})
+	cmd := virtualMachinesCmd(&vmsClient{
+		organisationIDPages: map[string]vmPages{
+			"1": {
+				{
+					{
+						ID:                  "1",
+						Name:                "test",
+						Hostname:            "test.example.com",
+						FQDN:                "test.example.com",
+						Description:         "test",
+						Package: 			&core.VirtualMachinePackage{Name: "test"},
+					},
+				},
+			},
+		},
+	})
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
-	cmd.SetArgs([]string{"list"})
+	cmd.SetArgs([]string{"list", "--id=1"})
 	if err := cmd.Execute(); err != nil {
 		t.Fatal(err)
 	}
@@ -182,7 +200,9 @@ func TestVMs_Stop(t *testing.T) {
 }
 
 func TestVMs_Start(t *testing.T) {
-	cmd := virtualMachinesCmd(&vmsClient{})
+	client := &vmsClient{}
+	client.togglePowerState("1", false)
+	cmd := virtualMachinesCmd(client)
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
 	cmd.SetArgs([]string{"start", "--id=1"})
@@ -193,7 +213,9 @@ func TestVMs_Start(t *testing.T) {
 }
 
 func TestVMs_Reset(t *testing.T) {
-	cmd := virtualMachinesCmd(&vmsClient{})
+	client := &vmsClient{}
+	client.togglePowerState("1", false)
+	cmd := virtualMachinesCmd(client)
 	stdout := &bytes.Buffer{}
 	cmd.SetOut(stdout)
 	cmd.SetArgs([]string{"reset", "--id=1"})
