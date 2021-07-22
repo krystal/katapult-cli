@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
@@ -35,13 +37,23 @@ func organizationsCmd(client organisationsClient) *cobra.Command {
 			}
 
 			out := cmd.OutOrStdout()
-			for _, org := range orgs {
-				fmt.Fprintf(out, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
+			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+				j, err := json.Marshal(orgs)
+				if err != nil {
+					return err
+				}
+				_, _ = out.Write(append(j, '\n'))
+			} else {
+				for _, org := range orgs {
+					_, _ = fmt.Fprintf(out, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
+				}
 			}
 
 			return nil
 		},
 	}
+	listFlags := list.PersistentFlags()
+	listFlags.StringP("output", "o", "text", "Defines the output type of the data centers. Can be text or json.")
 	cmd.AddCommand(list)
 
 	return cmd

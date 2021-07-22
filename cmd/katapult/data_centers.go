@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
@@ -16,7 +18,7 @@ type dataCentersClient interface {
 }
 
 func listDataCentersCmd(client dataCentersClient) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List data centers",
@@ -27,21 +29,34 @@ func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 				return err
 			}
 
-			for _, dc := range dcs {
-				_, _ = fmt.Fprintf(
-					cmd.OutOrStdout(),
-					" - %s (%s) [%s] / %s\n",
-					dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
-				)
+			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+				j, err := json.Marshal(dcs)
+				if err != nil {
+					return err
+				}
+				_, _ = cmd.OutOrStdout().Write(append(j, '\n'))
+			} else {
+				for _, dc := range dcs {
+					_, _ = fmt.Fprintf(
+						cmd.OutOrStdout(),
+						" - %s (%s) [%s] / %s\n",
+						dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
+					)
+				}
 			}
 
 			return nil
 		},
 	}
+
+	flags := cmd.PersistentFlags()
+	flags.StringP("output", "o", "text", "Defines the output type of the data centers. Can be text or json.")
+
+	return cmd
 }
 
 func getDataCenterCmd(client dataCentersClient) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "get",
 		Args:  cobra.ExactArgs(1),
 		Short: "Get details for a data center",
@@ -55,15 +70,28 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 				return err
 			}
 
-			_, _ = fmt.Fprintf(
-				cmd.OutOrStdout(),
-				"%s (%s) [%s] / %s\n",
-				dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
-			)
+			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+				j, err := json.Marshal(dc)
+				if err != nil {
+					return err
+				}
+				_, _ = cmd.OutOrStdout().Write(append(j, '\n'))
+			} else {
+				_, _ = fmt.Fprintf(
+					cmd.OutOrStdout(),
+					"%s (%s) [%s] / %s\n",
+					dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
+				)
+			}
 
 			return nil
 		},
 	}
+
+	flags := cmd.PersistentFlags()
+	flags.StringP("output", "o", "text", "Defines the output type of the data centers. Can be text or json.")
+
+	return cmd
 }
 
 func dataCentersCmd(client dataCentersClient) *cobra.Command {

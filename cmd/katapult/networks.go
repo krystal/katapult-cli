@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
@@ -45,16 +47,33 @@ func networksCmd(client networksListClient) *cobra.Command {
 				return err
 			}
 
-			out := cmd.OutOrStdout()
-			_, _ = fmt.Fprintln(out, "Networks:")
-			for _, net := range nets {
-				_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
-			}
-
-			if len(vnets) > 0 {
-				_, _ = fmt.Fprintln(out, "Virtual Networks:")
-				for _, net := range vnets {
+			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+				if nets == nil {
+					nets = []*core.Network{}
+				}
+				if vnets == nil {
+					vnets = []*core.VirtualNetwork{}
+				}
+				j, err := json.Marshal(map[string]interface{}{
+					"networks": nets,
+					"virtual_networks": vnets,
+				})
+				if err != nil {
+					return err
+				}
+				_, _ = cmd.OutOrStdout().Write(append(j, '\n'))
+			} else {
+				out := cmd.OutOrStdout()
+				_, _ = fmt.Fprintln(out, "Networks:")
+				for _, net := range nets {
 					_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
+				}
+
+				if len(vnets) > 0 {
+					_, _ = fmt.Fprintln(out, "Virtual Networks:")
+					for _, net := range vnets {
+						_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
+					}
 				}
 			}
 
@@ -64,6 +83,7 @@ func networksCmd(client networksListClient) *cobra.Command {
 	listFlags := list.PersistentFlags()
 	listFlags.String("id", "", "The ID of the organization. Preferred over subdomain for lookups.")
 	listFlags.String("subdomain", "", "The subdomain of the organization.")
+	listFlags.StringP("output", "o", "text", "Defines the output type of the data centers. Can be text or json.")
 	cmd.AddCommand(list)
 
 	return cmd

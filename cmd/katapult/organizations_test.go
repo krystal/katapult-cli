@@ -38,6 +38,7 @@ func TestOrganizations_List(t *testing.T) {
 	tests := []struct {
 		name string
 
+		args    []string
 		orgs    []*core.Organization
 		want    string
 		stderr  string
@@ -45,15 +46,28 @@ func TestOrganizations_List(t *testing.T) {
 		wantErr string
 	}{
 		{
-			name: "organizations list",
+			name: "organizations list human readable",
 			orgs: fixtureOrganizations,
 			want: ` - Loge Enthusiasts (loge) [loge]
  - testing, testing, 123 (test) [testing]
 `,
 		},
 		{
-			name: "empty organizations",
+			name: "organizations list json",
+			orgs: fixtureOrganizations,
+			args: []string{"list", "-o", "json"},
+			want: `[{"id":"loge","name":"Loge Enthusiasts","sub_domain":"loge"},{"id":"testing","name":"testing, testing, 123","sub_domain":"test"}]
+`,
+		},
+		{
+			name: "empty organizations human readable",
 			orgs: []*core.Organization{},
+		},
+		{
+			name: "empty organizations json",
+			orgs: []*core.Organization{},
+			args: []string{"list", "-o", "json"},
+			want: "[]\n",
 		},
 		{
 			name:    "organization error",
@@ -64,7 +78,11 @@ func TestOrganizations_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := organizationsCmd(mockOrganisationsListClient{orgs: tt.orgs, throws: tt.throws})
-			cmd.SetArgs([]string{"list"})
+			if tt.args == nil {
+				cmd.SetArgs([]string{"list"})
+			} else {
+				cmd.SetArgs(tt.args)
+			}
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})
 	}
