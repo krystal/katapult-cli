@@ -81,8 +81,7 @@ func TestDataCenters_List(t *testing.T) {
 			name: "data center json list",
 			args: []string{"list", "-o", "json"},
 			dcs:  fixtureDataCenters,
-			want: `[{"id":"dc_9UVoPiUQoI1cqtRd","name":"hello","permalink":"POG1","country":{"id":"POG","name":"Pogland"}},{"id":"dc_9UVoPiUQoI1cqtR0","name":"hello","permalink":"GB1","country":{"id":"UK","name":"United Kingdom"}}]
-`,
+			want: getTestData(t, "data_center_JSON_list.json"),
 		},
 		{
 			name: "empty data centers human readable",
@@ -144,14 +143,12 @@ func TestDataCenters_Get(t *testing.T) {
 		{
 			name: "display POG1 json",
 			args: []string{"get", "POG1", "-o", "json"},
-			want: `{"id":"dc_9UVoPiUQoI1cqtRd","name":"hello","permalink":"POG1","country":{"id":"POG","name":"Pogland"}}
-`,
+			want: getTestData(t, "display_POG1_json.json"),
 		},
 		{
 			name: "display GB1 json",
 			args: []string{"get", "GB1", "-o", "json"},
-			want: `{"id":"dc_9UVoPiUQoI1cqtR0","name":"hello","permalink":"GB1","country":{"id":"UK","name":"United Kingdom"}}
-`,
+			want: getTestData(t, "display_GB1_json.json"),
 		},
 		{
 			name: "display GB1 human readable",

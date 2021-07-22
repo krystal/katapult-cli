@@ -37,7 +37,7 @@ func organizationsCmd(client organisationsClient) *cobra.Command {
 			}
 
 			out := cmd.OutOrStdout()
-			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
 				j, err := json.Marshal(orgs)
 				if err != nil {
 					return err

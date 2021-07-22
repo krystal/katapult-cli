@@ -18,7 +18,7 @@ func configCommand(conf *config.Config) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var bs []byte
 			var err error
-			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
 				bs, err = json.Marshal(conf.AllSettings())
 				if err != nil {
 					return fmt.Errorf("unable to marshal config to JSON: %w", err)

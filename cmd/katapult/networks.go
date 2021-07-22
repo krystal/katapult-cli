@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const jsonOutput = "json"
+
 type networksListClient interface {
 	List(
 		ctx context.Context,
@@ -47,7 +49,7 @@ func networksCmd(client networksListClient) *cobra.Command {
 				return err
 			}
 
-			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
 				if nets == nil {
 					nets = []*core.Network{}
 				}

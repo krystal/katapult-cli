@@ -56,8 +56,7 @@ func TestOrganizations_List(t *testing.T) {
 			name: "organizations list json",
 			orgs: fixtureOrganizations,
 			args: []string{"list", "-o", "json"},
-			want: `[{"id":"loge","name":"Loge Enthusiasts","sub_domain":"loge"},{"id":"testing","name":"testing, testing, 123","sub_domain":"test"}]
-`,
+			want: getTestData(t, "organizations_list_json.json"),
 		},
 		{
 			name: "empty organizations human readable",

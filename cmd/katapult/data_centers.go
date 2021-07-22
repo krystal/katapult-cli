@@ -29,7 +29,7 @@ func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 				return err
 			}
 
-			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
 				j, err := json.Marshal(dcs)
 				if err != nil {
 					return err
@@ -70,7 +70,7 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 				return err
 			}
 
-			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
 				j, err := json.Marshal(dc)
 				if err != nil {
 					return err

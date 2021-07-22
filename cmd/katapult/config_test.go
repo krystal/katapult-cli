@@ -64,8 +64,7 @@ func TestConfig(t *testing.T) {
 			apiKey: "test",
 			apiURL: "test",
 			args:   []string{"-o", "json"},
-			wants: `{"api_key":"test","api_url":"test"}
-`,
+			wants:  getTestData(t, "test_JSON_output.json"),
 		},
 	}
 	for _, tt := range tests {
@@ -82,7 +81,4 @@ func TestConfig(t *testing.T) {
 			assertCobraCommand(t, cmd, "", tt.wants, "")
 		})
 	}
-}
-
-func TestConfig_JSON(t *testing.T) {
 }

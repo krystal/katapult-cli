@@ -64,7 +64,7 @@ func versionCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			prettyVersion.Populate()
 
-			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
 				j, err := json.Marshal(prettyVersion)
 				if err != nil {
 					return err

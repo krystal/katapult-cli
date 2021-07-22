@@ -123,8 +123,7 @@ Virtual Networks:
 		{
 			name: "Test listing pog-id json",
 			args: []string{"ls", "--id", "pog-id", "-o", "json"},
-			want: `{"networks":[{"id":"pognet","name":"Pognet 1","permalink":"pog-1","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}},{"id":"pognet2","name":"Pognet 2","permalink":"pog-2","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}}],"virtual_networks":[{"id":"pognet-virtual-1","name":"Pognet Virtual Network 1","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}}]}
-`,
+			want: getTestData(t, "test_listing_pog-id_JSON.json"),
 		},
 		{
 			name: "Test listing pog-subdomain human readable",
@@ -137,8 +136,7 @@ Virtual Networks:
 		{
 			name: "Test listing pog-subdomain json",
 			args: []string{"ls", "--subdomain", "pog-subdomain", "-o", "json"},
-			want: `{"networks":[{"id":"pognet3","name":"Pognet 3","permalink":"pog-3","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}},{"id":"pognet4","name":"Pognet 4","permalink":"pog-4","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}}],"virtual_networks":[]}
-`,
+			want: getTestData(t, "test_listing_pog-subdomain_JSON.json"),
 		},
 		{
 			name:    "No flags provided",
