@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -17,9 +19,9 @@ var (
 const unknownPlaceholder = "undefined"
 
 type versionInfo struct {
-	Version   string
-	Commit    string
-	Date      string
+	Version   string `json:"version"`
+	Commit    string `json:"commit"`
+	Date      string `json:"date"`
 	populated bool
 }
 
@@ -59,16 +61,28 @@ func versionCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Print the version",
 		Long:  `Print the version number of katapult CLI tool.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: func(cmd *cobra.Command, args []string) error {
 			prettyVersion.Populate()
 
-			fmt.Printf("katapult %s (katapult-cli)\n", prettyVersion.Version)
-			fmt.Println("---")
-			fmt.Printf("Version: %s\n", prettyVersion.Version)
-			fmt.Printf("GitCommit: %s\n", prettyVersion.Commit)
-			fmt.Printf("BuildDate: %s\n", prettyVersion.Date)
+			if strings.ToLower(cmd.Flag("output").Value.String()) == "json" {
+				j, err := json.Marshal(prettyVersion)
+				if err != nil {
+					return err
+				}
+				fmt.Println(string(j))
+			} else {
+				fmt.Printf("katapult %s (katapult-cli)\n", prettyVersion.Version)
+				fmt.Println("---")
+				fmt.Printf("Version: %s\n", prettyVersion.Version)
+				fmt.Printf("GitCommit: %s\n", prettyVersion.Commit)
+				fmt.Printf("BuildDate: %s\n", prettyVersion.Date)
+			}
+			return nil
 		},
 	}
+
+	flags := versionCmd.PersistentFlags()
+	flags.StringP("output", "o", "text", "Defines the output type of the config. Can be text or json.")
 
 	return versionCmd
 }

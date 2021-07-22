@@ -55,7 +55,7 @@ func networksCmd(client networksListClient) *cobra.Command {
 					vnets = []*core.VirtualNetwork{}
 				}
 				j, err := json.Marshal(map[string]interface{}{
-					"networks": nets,
+					"networks":         nets,
 					"virtual_networks": vnets,
 				})
 				if err != nil {

@@ -39,13 +39,13 @@ func TestConfig(t *testing.T) {
 			name:   "empty values",
 			apiKey: "",
 			apiURL: "",
-			wants: formatYaml("", ""),
+			wants:  formatYaml("", ""),
 		},
 		{
 			name:   "only API URL blank",
 			apiKey: "test",
 			apiURL: "",
-			wants: formatYaml("test", ""),
+			wants:  formatYaml("test", ""),
 		},
 		{
 			name:   "both fields present",
@@ -64,7 +64,7 @@ func TestConfig(t *testing.T) {
 			apiKey: "test",
 			apiURL: "test",
 			args:   []string{"-o", "json"},
-			wants:  `{"api_key":"test","api_url":"test"}
+			wants: `{"api_key":"test","api_url":"test"}
 `,
 		},
 	}
@@ -85,5 +85,4 @@ func TestConfig(t *testing.T) {
 }
 
 func TestConfig_JSON(t *testing.T) {
-
 }
