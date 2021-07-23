@@ -42,12 +42,11 @@ func FuzzySelector(question string, items []string, stdin io.Reader) string {
 			// There's no matches, we should just just print the users input.
 			_, _ = goterm.Println(query)
 		} else {
-			// We should print it inside the possible first result.
-			firstMatched := matched[0]
-			index := strings.Index(firstMatched, queryLower)
-			item := matched[0]
-			start := item[:index]
-			end := item[index+len(query):]
+			// We should print it inside the highlighted result.
+			highlighted := matched[highlightIndex]
+			index := strings.Index(strings.ToLower(highlighted), queryLower)
+			start := highlighted[:index]
+			end := highlighted[index+len(query):]
 			_, _ = goterm.Println(goterm.Color(start, goterm.BLUE) + query + goterm.Color(end, goterm.BLUE))
 		}
 
