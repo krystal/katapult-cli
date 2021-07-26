@@ -20,10 +20,10 @@ func FuzzySelector(question string, items []string, stdin io.Reader) string {
 		// Get the matched items.
 		var matched []string
 		queryLower := strings.ToLower(query)
-		for i, v := range items {
+		for _, v := range items {
 			if strings.Contains(strings.ToLower(v), query) {
 				// The query is contained in the string.
-				matched = append(matched, items[i])
+				matched = append(matched, v)
 			}
 		}
 		if matched == nil {
