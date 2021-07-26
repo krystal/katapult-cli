@@ -69,7 +69,8 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Args:    cobra.MaximumNArgs(1),
 		Short:   "Get a list of virtual machines from an organization",
-		Long:    "Get a list of virtual machines from an organization. By default, the argument is used as the sub-domain and is used if the ID is not specified.",
+		Long: "Get a list of virtual machines from an organization. By default, " +
+			"the argument is used as the sub-domain and is used if the ID is not specified.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ref := core.OrganizationRef{ID: cmd.Flags().Lookup("org-id").Value.String()}
 			if ref.ID == "" {
