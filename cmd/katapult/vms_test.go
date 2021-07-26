@@ -167,15 +167,20 @@ func TestVMs_List(t *testing.T) {
 		wantErr string
 	}{
 		{
+			name:    "no ID/subdomain provided",
+			args:    []string{"list"},
+			wantErr: "both ID and subdomain are unset",
+		},
+		{
 			name: "test un-paginated vm ID list",
 			id: map[string]vmPages{
 				"1": {
 					{
 						{
-							ID:          "1",
-							Name:        "test",
-							Hostname:    "test.example.com",
-							FQDN:        "test.example.com",
+							ID:          "vm_rrmEoG6CKUX0IKgX",
+							Name:        "My Blog",
+							Hostname:    "my-blog",
+							FQDN:        "my-blog.acme-labs.katapult.cloud",
 							Description: "test",
 							Package:     &core.VirtualMachinePackage{Name: "test"},
 						},
@@ -183,7 +188,7 @@ func TestVMs_List(t *testing.T) {
 				},
 			},
 			args: []string{"list", "--id=1"},
-			want: " - test (test.example.com) [1]: test\n",
+			want: " - My Blog (my-blog.acme-labs.katapult.cloud) [vm_rrmEoG6CKUX0IKgX]: test\n",
 		},
 		{
 			name: "test un-paginated vm subdomain list",
@@ -191,10 +196,10 @@ func TestVMs_List(t *testing.T) {
 				"1": {
 					{
 						{
-							ID:          "1",
-							Name:        "test",
-							Hostname:    "test.example.com",
-							FQDN:        "test.example.com",
+							ID:          "vm_rrmEoG6CKUX0IKgX",
+							Name:        "My Blog",
+							Hostname:    "my-blog",
+							FQDN:        "my-blog.acme-labs.katapult.cloud",
 							Description: "test",
 							Package:     &core.VirtualMachinePackage{Name: "test"},
 						},
@@ -202,7 +207,7 @@ func TestVMs_List(t *testing.T) {
 				},
 			},
 			args: []string{"list", "--subdomain=1"},
-			want: " - test (test.example.com) [1]: test\n",
+			want: " - My Blog (my-blog.acme-labs.katapult.cloud) [vm_rrmEoG6CKUX0IKgX]: test\n",
 		},
 		{
 			name: "test paginated vm list",
@@ -217,8 +222,6 @@ func TestVMs_List(t *testing.T) {
 							Description: "test",
 							Package:     &core.VirtualMachinePackage{Name: "test"},
 						},
-					},
-					{
 						{
 							ID:          "1",
 							Name:        "test1",
@@ -277,6 +280,11 @@ func TestVMs_Poweroff(t *testing.T) {
 		wantErr  string
 		validate func(client *vmsClient) string
 	}{
+		{
+			name:    "no ID/FQDN provided",
+			args:    []string{"poweroff"},
+			wantErr: "both ID and FQDN are unset",
+		},
 		{
 			name: "test normal power down by ID",
 			args: []string{"poweroff", "--id=1"},
@@ -358,6 +366,11 @@ func TestVMs_Stop(t *testing.T) {
 		validate func(client *vmsClient) string
 	}{
 		{
+			name:    "no ID/FQDN provided",
+			args:    []string{"stop"},
+			wantErr: "both ID and FQDN are unset",
+		},
+		{
 			name: "test normal stop by ID",
 			args: []string{"stop", "--id=1"},
 			want: successMessage,
@@ -438,6 +451,11 @@ func TestVMs_Start(t *testing.T) {
 		validate func(client *vmsClient) string
 	}{
 		{
+			name:    "no ID/FQDN provided",
+			args:    []string{"start"},
+			wantErr: "both ID and FQDN are unset",
+		},
+		{
 			name: "test normal start by ID",
 			args: []string{"start", "--id=1"},
 			poweredDown: &struct {
@@ -517,6 +535,11 @@ func TestVMs_Reset(t *testing.T) {
 		wantErr  string
 		validate func(client *vmsClient) string
 	}{
+		{
+			name:    "no ID/FQDN provided",
+			args:    []string{"reset"},
+			wantErr: "both ID and FQDN are unset",
+		},
 		{
 			name: "test normal reset by ID",
 			args: []string{"reset", "--id=1"},
