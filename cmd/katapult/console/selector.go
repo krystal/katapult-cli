@@ -1,6 +1,7 @@
 package console
 
 import (
+	"container/list"
 	"github.com/buger/goterm"
 	"golang.org/x/crypto/ssh/terminal"
 	"io"
@@ -8,12 +9,24 @@ import (
 	"strings"
 )
 
-// FuzzySelector is used to create a selector which also fuzzy searches the items
-func FuzzySelector(question string, items []string, stdin io.Reader) string {
+const (
+	// Clarification string for a single item
+	clarificationStringSingle = " (Press ENTER to make your selection): "
+
+	// Clarification string for multiple items
+	clarificationStringMultiple = " (Press ENTER to select items and ESC when you are done with your selections): "
+)
+
+func selectorComponent(question string, items []string, stdin io.Reader, multiple bool) []string {
 	// Pre-initialise things we need below.
 	query := ""
 	buf := make([]byte, 3)
 	highlightIndex := 0
+	var selectedItems *list.List
+	if multiple {
+		// Allocate a list for selections.
+		selectedItems = list.New()
+	}
 
 	// Loop until we match.
 	for {
@@ -37,7 +50,15 @@ func FuzzySelector(question string, items []string, stdin io.Reader) string {
 		goterm.Clear()
 
 		// Asks the question.
-		_, _ = goterm.Print(goterm.Color(question+": ", goterm.GREEN))
+		if multiple {
+			// Add the multiple clarification string onto the question.
+			_, _ = goterm.Print(goterm.Color(question+clarificationStringMultiple, goterm.GREEN))
+		} else {
+			// Add the single clarification string on o the question.
+			_, _ = goterm.Print(goterm.Color(question+clarificationStringSingle, goterm.GREEN))
+		}
+
+		// Format the query.
 		if len(matched) == 0 {
 			// There's no matches, we should just just print the users input.
 			_, _ = goterm.Println(query)
@@ -54,10 +75,26 @@ func FuzzySelector(question string, items []string, stdin io.Reader) string {
 		for i, v := range matched {
 			if i == highlightIndex {
 				// Highlight this item.
-				_, _ = goterm.Println(goterm.Color(v, goterm.YELLOW))
+				_, _ = goterm.
+					Println(goterm.Color(v, goterm.YELLOW))
 			} else {
-				// Print this item.
-				_, _ = goterm.Println(v)
+				// Check if it is selected.
+				found := false
+				if multiple {
+					for e := selectedItems.Front(); e != nil; e = e.Next() {
+						if e.Value.(string) == v {
+							found = true
+							break
+						}
+					}
+				}
+
+				// Print this item in a different color depending if it is highlighted or not.
+				if found {
+					_, _ = goterm.Println(goterm.Color(v, goterm.CYAN))
+				} else {
+					_, _ = goterm.Println(v)
+				}
 			}
 		}
 
@@ -87,7 +124,24 @@ func FuzzySelector(question string, items []string, stdin io.Reader) string {
 			case 13:
 				// Enter
 				if len(matched) != 0 {
-					return matched[highlightIndex]
+					if !multiple {
+						// If we aren't to match multiple, enter means we should return it.
+						return []string{matched[highlightIndex]}
+					}
+
+					// Handle the selection in a multiple context.
+					item := matched[highlightIndex]
+					found := false
+					for e := selectedItems.Front(); e != nil; e = e.Next() {
+						if e.Value.(string) == item {
+							selectedItems.Remove(e)
+							found = true
+							break
+						}
+					}
+					if !found {
+						selectedItems.PushBack(item)
+					}
 				}
 			default:
 				// Character
@@ -111,4 +165,15 @@ func FuzzySelector(question string, items []string, stdin io.Reader) string {
 			}
 		}
 	}
+	// TODO: Handle escape for multiple!
+}
+
+// FuzzySelector is used to create a selector which also fuzzy searches the items and allows for the selection of one item.
+func FuzzySelector(question string, items []string, stdin io.Reader) string {
+	return selectorComponent(question, items, stdin, false)[0]
+}
+
+// FuzzyMultiSelector is used to create a selector which also fuzzy searches the items and allows for the selection of multiple items.
+func FuzzyMultiSelector(question string, items []string, stdin io.Reader) []string {
+	return selectorComponent(question, items, stdin, true)
 }

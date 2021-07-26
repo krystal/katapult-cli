@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/krystal/go-katapult"
 	"log"
 	"os"
 
@@ -60,12 +61,18 @@ func run() error {
 		return err
 	}
 
+	cobra.OnInitialize(func() {
+		// TODO: We probably want to fix the config to remove this without regressions!
+		cl.(*katapult.Client).APIKey = configAPIKey
+	})
+
 	rootCmd.AddCommand(
 		versionCommand(),
 		configCommand(conf),
 		dataCentersCmd(core.NewDataCentersClient(cl)),
 		networksCmd(core.NewNetworksClient(cl)),
 		organizationsCmd(core.NewOrganizationsClient(cl)),
+		createCmd(core.NewOrganizationsClient(cl), core.NewDataCentersClient(cl), core.NewVirtualMachinePackagesClient(cl)),
 	)
 
 	return rootCmd.Execute()
