@@ -79,36 +79,20 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 				ref.SubDomain = subdomain
 			}
 
-			stdout := cmd.OutOrStdout()
-
-			page := 1
-			perPage := 30
-			for {
-				vms, resp, err := client.List(cmd.Context(), ref, &core.ListOptions{
-					Page:    page,
-					PerPage: perPage,
-				})
+			out := cmd.OutOrStdout()
+			totalPages := 1
+			for pageNum := 1; pageNum <= totalPages; pageNum++ {
+				vms, resp, err := client.List(
+					cmd.Context(), ref, &core.ListOptions{Page: pageNum},
+				)
 				if err != nil {
 					return err
 				}
-
-				// Ensure all the data for the pagination is correct.
-				pagination := resp.Pagination
-				page = pagination.CurrentPage + 1
-				perPage = pagination.PerPage
-				end := pagination.TotalPages == 0 || pagination.CurrentPage == pagination.TotalPages
-
-				for _, vm := range vms {
-					fqdn := vm.FQDN
-					if fqdn == "" {
-						fqdn = "<no fqdn specified>"
-					}
-					_, _ = fmt.Fprintf(stdout, " - %s (%s) [%s]: %s\n", vm.Name, fqdn, vm.ID, vm.Package.Name)
+				if resp.Pagination != nil {
+					totalPages = resp.Pagination.TotalPages
 				}
-
-				if end {
-					// We are done with the pages.
-					break
+				for _, vm := range vms {
+					_, _ = fmt.Fprintf(out, " - %s (%s) [%s]: %s\n", vm.Name, vm.FQDN, vm.ID, vm.Package.Name)
 				}
 			}
 
