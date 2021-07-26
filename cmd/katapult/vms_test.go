@@ -60,15 +60,15 @@ func (v *vmsClient) List(_ context.Context, org core.OrganizationRef, opts *core
 	}
 	page := pages[opts.Page-1]
 
-	// Return the pages.
-	totalPages := 0
+	// Return the items.
+	totalItems := 0
 	for _, v := range pages {
-		totalPages += len(v)
+		totalItems += len(v)
 	}
 	return page, &katapult.Response{Pagination: &katapult.Pagination{
 		CurrentPage: opts.Page,
 		TotalPages:  len(pages),
-		Total:       totalPages,
+		Total:       totalItems,
 		PerPage:     len(page),
 	}}, nil
 }

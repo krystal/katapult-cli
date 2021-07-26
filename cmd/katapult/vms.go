@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/krystal/go-katapult"
@@ -42,7 +43,7 @@ type virtualMachinesClient interface {
 	) (*core.Task, *katapult.Response, error)
 }
 
-func vmFlag(cmd *cobra.Command) (core.VirtualMachineRef, error) {
+func getVMRef(cmd *cobra.Command) (core.VirtualMachineRef, error) {
 	id := cmd.Flag("id").Value.String()
 	ref := core.VirtualMachineRef{ID: id}
 	if id == "" {
@@ -55,8 +56,8 @@ func vmFlag(cmd *cobra.Command) (core.VirtualMachineRef, error) {
 	return ref, nil
 }
 
-func vmNotFoundHandlingError(err error, resp *katapult.Response) error {
-	if resp != nil && resp.StatusCode == 404 {
+func vmNotFoundHandlingError(err error) error {
+	if errors.Is(err, core.ErrVirtualMachineNotFound) {
 		return fmt.Errorf("unknown virtual machine")
 	}
 	return err
@@ -125,13 +126,12 @@ func virtualMachinesPoweroffCmd(client virtualMachinesClient) *cobra.Command {
 		Short: "Used to power off a virtual machine.",
 		Long:  "Used to power off a virtual machine.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ref, err := vmFlag(cmd)
+			ref, err := getVMRef(cmd)
 			if err != nil {
 				return err
 			}
-			_, resp, err := client.Shutdown(cmd.Context(), ref)
-			if err != nil {
-				return vmNotFoundHandlingError(err, resp)
+			if _, _, err = client.Shutdown(cmd.Context(), ref); err != nil {
+				return vmNotFoundHandlingError(err)
 			}
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully powered down.")
 			return nil
@@ -148,13 +148,12 @@ func virtualMachinesStartCmd(client virtualMachinesClient) *cobra.Command {
 		Short: "Used to start a virtual machine.",
 		Long:  "Used to start a virtual machine.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ref, err := vmFlag(cmd)
+			ref, err := getVMRef(cmd)
 			if err != nil {
 				return err
 			}
-			_, resp, err := client.Start(cmd.Context(), ref)
-			if err != nil {
-				return vmNotFoundHandlingError(err, resp)
+			if _, _, err = client.Start(cmd.Context(), ref); err != nil {
+				return vmNotFoundHandlingError(err)
 			}
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully started.")
 			return nil
@@ -171,13 +170,12 @@ func virtualMachinesStopCmd(client virtualMachinesClient) *cobra.Command {
 		Short: "Used to stop a virtual machine.",
 		Long:  "Used to stop a virtual machine.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ref, err := vmFlag(cmd)
+			ref, err := getVMRef(cmd)
 			if err != nil {
 				return err
 			}
-			_, resp, err := client.Stop(cmd.Context(), ref)
-			if err != nil {
-				return vmNotFoundHandlingError(err, resp)
+			if _, _, err = client.Stop(cmd.Context(), ref); err != nil {
+				return vmNotFoundHandlingError(err)
 			}
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully stopped.")
 			return nil
@@ -194,13 +192,12 @@ func virtualMachinesResetCmd(client virtualMachinesClient) *cobra.Command {
 		Short: "Used to reset a virtual machine.",
 		Long:  "Used to reset a virtual machine.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ref, err := vmFlag(cmd)
+			ref, err := getVMRef(cmd)
 			if err != nil {
 				return err
 			}
-			_, resp, err := client.Reset(cmd.Context(), ref)
-			if err != nil {
-				return vmNotFoundHandlingError(err, resp)
+			if _, _, err = client.Reset(cmd.Context(), ref); err != nil {
+				return vmNotFoundHandlingError(err)
 			}
 			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully reset.")
 			return nil
