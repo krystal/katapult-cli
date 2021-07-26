@@ -187,7 +187,7 @@ func TestVMs_List(t *testing.T) {
 					},
 				},
 			},
-			args: []string{"list", "--id=1"},
+			args: []string{"list", "--org-id=1"},
 			want: " - My Blog (my-blog.acme-labs.katapult.cloud) [vm_rrmEoG6CKUX0IKgX]: test\n",
 		},
 		{
@@ -206,7 +206,7 @@ func TestVMs_List(t *testing.T) {
 					},
 				},
 			},
-			args: []string{"list", "--subdomain=1"},
+			args: []string{"list", "1"},
 			want: " - My Blog (my-blog.acme-labs.katapult.cloud) [vm_rrmEoG6CKUX0IKgX]: test\n",
 		},
 		{
@@ -243,7 +243,7 @@ func TestVMs_List(t *testing.T) {
 					},
 				},
 			},
-			args: []string{"list", "--subdomain=1"},
+			args: []string{"list", "1"},
 			want: ` - test (test.example.com) [0]: test
  - test1 (test1.example.com) [1]: test1
  - test2 (test2.example.com) [2]: test2
@@ -251,7 +251,7 @@ func TestVMs_List(t *testing.T) {
 		},
 		{
 			name:    "test not found",
-			args:    []string{"list", "--subdomain=not_exists"},
+			args:    []string{"list", "not_exists"},
 			wantErr: "katapult: not_found",
 		},
 	}

@@ -67,16 +67,16 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 	list := &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
+		Args:    cobra.MaximumNArgs(1),
 		Short:   "Get a list of virtual machines from an organization",
-		Long:    "Get a list of virtual machines from an organization.",
+		Long:    "Get a list of virtual machines from an organization. By default, the argument is used as the sub-domain and is used if the ID is not specified.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			ref := core.OrganizationRef{ID: cmd.Flags().Lookup("id").Value.String()}
+			ref := core.OrganizationRef{ID: cmd.Flags().Lookup("org-id").Value.String()}
 			if ref.ID == "" {
-				subdomain := cmd.Flags().Lookup("subdomain").Value.String()
-				if subdomain == "" {
+				if len(args) == 0 || args[0] == "" {
 					return fmt.Errorf("both ID and subdomain are unset")
 				}
-				ref.SubDomain = subdomain
+				ref.SubDomain = args[0]
 			}
 
 			out := cmd.OutOrStdout()
@@ -99,8 +99,7 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 			return nil
 		},
 	}
-	list.Flags().String("id", "", "The ID of the organization. If set, this takes priority over the sub-domain.")
-	list.Flags().String("subdomain", "", "The sub-domain of the organization.")
+	list.Flags().String("org-id", "", "The ID of the organization. If set, this takes priority over the sub-domain.")
 	return list
 }
 
