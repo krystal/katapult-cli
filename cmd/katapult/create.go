@@ -32,8 +32,45 @@ func listAllVMPackages(ctx context.Context, vmPackagesClient virtualMachinePacka
 	return allPackages, nil
 }
 
+type virtualMachineDiskTemplatesClient interface {
+	List(
+		ctx context.Context,
+		org core.OrganizationRef,
+		opts *core.DiskTemplateListOptions,
+	) ([]*core.DiskTemplate, *katapult.Response, error)
+}
+
+func listAllDiskTemplates(ctx context.Context, org core.OrganizationRef, diskTemplatesClient virtualMachineDiskTemplatesClient) ([]*core.DiskTemplate, error) {
+	totalPages := 1
+	allImages := make([]*core.DiskTemplate, 0)
+	for pageNum := 1; pageNum <= totalPages; pageNum++ {
+		images, resp, err := diskTemplatesClient.List(ctx, org, &core.DiskTemplateListOptions{Page: pageNum, IncludeUniversal: true})
+		if err != nil {
+			return nil, err
+		}
+		if resp.Pagination != nil {
+			totalPages = resp.Pagination.TotalPages
+		}
+		allImages = append(allImages, images...)
+	}
+	return allImages, nil
+}
+
+func getStringIndex(needle string, haystack []string) int {
+	for i, v := range haystack {
+		if v == needle {
+			return i
+		}
+	}
+	return -1
+}
+
 // TODO: Move this!
-func createCmd(orgsClient organisationsClient, dcsClient dataCentersClient, vmPackagesClient virtualMachinePackagesClient) *cobra.Command {
+func createCmd(
+	orgsClient organisationsClient, dcsClient dataCentersClient,
+	vmPackagesClient virtualMachinePackagesClient,
+	diskTemplatesClient virtualMachineDiskTemplatesClient,
+) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
 		Short:   "!! TEMPORARY UNTIL VM COMMANDS EXIST !!",
@@ -53,13 +90,7 @@ func createCmd(orgsClient organisationsClient, dcsClient dataCentersClient, vmPa
 				orgStrs[i] = fmt.Sprintf("%s (%s) [%s]", org.Name, org.SubDomain, org.ID)
 			}
 			orgStr := console.FuzzySelector("Which organisation would you like to deploy the VM in?", orgStrs, cmd.InOrStdin())
-			index := 0
-			for i, v := range orgStrs {
-				if v == orgStr {
-					index = i
-					break
-				}
-			}
+			index := getStringIndex(orgStr, orgStrs)
 			org := orgs[index]
 
 			// List the datacenters.
@@ -74,12 +105,7 @@ func createCmd(orgsClient organisationsClient, dcsClient dataCentersClient, vmPa
 				dcStrs[i] = fmt.Sprintf("%s (%s) [%s] / %s", dc.Name, dc.Permalink, dc.ID, dc.Country.Name)
 			}
 			dcStr := console.FuzzySelector("Which DC would you like to deploy the VM in?", dcStrs, cmd.InOrStdin())
-			for i, v := range dcStrs {
-				if v == dcStr {
-					index = i
-					break
-				}
-			}
+			index = getStringIndex(dcStr, dcStrs)
 			dc := dcs[index]
 
 			// List the packages.
@@ -94,16 +120,24 @@ func createCmd(orgsClient organisationsClient, dcsClient dataCentersClient, vmPa
 					package_.MemoryInGB, package_.ID)
 			}
 			packageStr := console.FuzzySelector("Which VM package would you like?", packageStrs, cmd.InOrStdin())
-			for i, v := range packageStrs {
-				if v == packageStr {
-					index = i
-					break
-				}
-			}
+			index = getStringIndex(packageStr, packageStrs)
 			package_ := packages[index]
 
+			// Ask about the distribution.
+			distributions, err := listAllDiskTemplates(cmd.Context(), core.OrganizationRef{ID: org.ID}, diskTemplatesClient)
+			if err != nil {
+				return err
+			}
+			distributionStrs := make([]string, len(distributions))
+			for i, distribution := range distributions {
+				distributionStrs[i] = fmt.Sprintf("%s [%s]", distribution.Name, distribution.ID)
+			}
+			distributionStr := console.FuzzySelector("Which distribution would you like?", distributionStrs, cmd.InOrStdin())
+			index = getStringIndex(distributionStr, distributionStrs)
+			distribution := distributions[index]
+
 			// TODO
-			fmt.Println(org, dc, packages, package_)
+			fmt.Println(org, dc, package_, distribution)
 
 			// Return no errors.
 			return nil
