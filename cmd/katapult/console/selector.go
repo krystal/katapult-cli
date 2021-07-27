@@ -17,6 +17,13 @@ const (
 	clarificationStringMultiple = " (Press ENTER to select items and ESC when you are done with your selections): "
 )
 
+func intMin(x, y int) int {
+	if x > y {
+		return y
+	}
+	return x
+}
+
 func selectorComponent(question string, items []string, stdin io.Reader, multiple bool) []string {
 	// Pre-initialise things we need below.
 	query := ""
@@ -26,6 +33,11 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 	if multiple {
 		// Allocate a list for selections.
 		selectedItems = list.New()
+	}
+	usableItemRows := goterm.Height() - 2
+	if 0 >= usableItemRows {
+		// Weird. Return status code 1.
+		os.Exit(1)
 	}
 
 	// Loop until we match.
@@ -72,7 +84,16 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		}
 
 		// Display the rest of the items.
-		for i, v := range matched {
+		matchedLen := len(matched)
+		matchedStart := 0
+		if highlightIndex >= usableItemRows {
+			matchedStart = highlightIndex - usableItemRows + 1
+		}
+		for i := matchedStart; i < intMin(matchedLen, matchedStart + usableItemRows); i++ {
+			// Get the match.
+			v := matched[i]
+
+			// Handle rendering the item.
 			if i == highlightIndex {
 				// Highlight this item.
 				_, _ = goterm.
@@ -95,6 +116,14 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 				} else {
 					_, _ = goterm.Println(v)
 				}
+			}
+		}
+
+		// Print a bunch of new lines if there's less items than console rows.
+		if usableItemRows > matchedLen {
+			blankLines := usableItemRows - matchedLen
+			for i := 0; i < blankLines; i++ {
+				_, _ = goterm.Println()
 			}
 		}
 

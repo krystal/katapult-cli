@@ -16,6 +16,22 @@ type virtualMachinePackagesClient interface {
 	) ([]*core.VirtualMachinePackage, *katapult.Response, error)
 }
 
+func listAllVMPackages(ctx context.Context, vmPackagesClient virtualMachinePackagesClient) ([]*core.VirtualMachinePackage, error) {
+	totalPages := 1
+	allPackages := make([]*core.VirtualMachinePackage, 0)
+	for pageNum := 1; pageNum <= totalPages; pageNum++ {
+		packages, resp, err := vmPackagesClient.List(ctx, &core.ListOptions{Page: pageNum})
+		if err != nil {
+			return nil, err
+		}
+		if resp.Pagination != nil {
+			totalPages = resp.Pagination.TotalPages
+		}
+		allPackages = append(allPackages, packages...)
+	}
+	return allPackages, nil
+}
+
 // TODO: Move this!
 func createCmd(orgsClient organisationsClient, dcsClient dataCentersClient, vmPackagesClient virtualMachinePackagesClient) *cobra.Command {
 	cmd := &cobra.Command{
@@ -67,9 +83,27 @@ func createCmd(orgsClient organisationsClient, dcsClient dataCentersClient, vmPa
 			dc := dcs[index]
 
 			// List the packages.
-			vmPackagesClient.List(cmd.Context(), &core.ListOptions{})
-			// TODO: Handle this
-			fmt.Println(org, dc)
+			packages, err := listAllVMPackages(cmd.Context(), vmPackagesClient)
+			if err != nil {
+				return err
+			}
+			packageStrs := make([]string, len(packages))
+			for i, package_ := range packages {
+				packageStrs[i] = fmt.Sprintf(
+					"%s (%d cores, %d GB RAM) [%s]", package_.Name, package_.CPUCores,
+					package_.MemoryInGB, package_.ID)
+			}
+			packageStr := console.FuzzySelector("Which VM package would you like?", packageStrs, cmd.InOrStdin())
+			for i, v := range packageStrs {
+				if v == packageStr {
+					index = i
+					break
+				}
+			}
+			package_ := packages[index]
+
+			// TODO
+			fmt.Println(org, dc, packages, package_)
 
 			// Return no errors.
 			return nil
