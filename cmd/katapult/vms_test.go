@@ -12,6 +12,12 @@ import (
 type vmPages [][]*core.VirtualMachine
 
 type vmsClient struct {
+	// Defines a ID that should be not found.
+	idNotFound string
+
+	// Defines an FQDN that should be not found.
+	fqdnNotFound string
+
 	// Defines the power state of the VM's.
 	powerStates map[string]bool
 
@@ -73,7 +79,19 @@ func (v *vmsClient) List(_ context.Context, org core.OrganizationRef, opts *core
 	}}, nil
 }
 
+func (v *vmsClient) ensureFound(ref core.VirtualMachineRef) error {
+	if (ref.FQDN != "" && v.fqdnNotFound == ref.FQDN) || (ref.ID != "" && v.idNotFound == ref.ID) {
+		return katapult.ErrNotFound
+	}
+	return nil
+}
+
 func (v *vmsClient) Shutdown(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+	// Pre-execution checks.
+	if err := v.ensureFound(ref); err != nil {
+		return nil, nil, err
+	}
+
 	// Get the key and if it's an FQDN.
 	fqdn := false
 	id := ref.ID
@@ -100,6 +118,11 @@ func (v *vmsClient) Stop(_ context.Context, ref core.VirtualMachineRef) (*core.T
 }
 
 func (v *vmsClient) Start(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+	// Pre-execution checks.
+	if err := v.ensureFound(ref); err != nil {
+		return nil, nil, err
+	}
+
 	// Get the key and if it's an FQDN.
 	fqdn := false
 	id := ref.ID
@@ -121,6 +144,11 @@ func (v *vmsClient) Start(_ context.Context, ref core.VirtualMachineRef) (*core.
 }
 
 func (v *vmsClient) Reset(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+	// Pre-execution checks.
+	if err := v.ensureFound(ref); err != nil {
+		return nil, nil, err
+	}
+
 	// Get the key and if it's an FQDN.
 	fqdn := false
 	id := ref.ID
@@ -145,6 +173,11 @@ func (v *vmsClient) Reset(_ context.Context, ref core.VirtualMachineRef) (*core.
 func (v *vmsClient) Delete(_ context.Context, ref core.VirtualMachineRef) (
 	*core.TrashObject, *katapult.Response, error,
 ) {
+	// Pre-execution checks.
+	if err := v.ensureFound(ref); err != nil {
+		return nil, nil, err
+	}
+
 	switch {
 	case ref.ID != "":
 		delete(v.powerStates, "i"+ref.ID)
@@ -270,6 +303,9 @@ func TestVMs_Poweroff(t *testing.T) {
 	tests := []struct {
 		name string
 
+		idNotFound   string
+		fqdnNotFound string
+
 		args        []string
 		want        string
 		poweredDown *struct {
@@ -333,10 +369,22 @@ func TestVMs_Poweroff(t *testing.T) {
 			}{key: "1", fqdn: false},
 			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered on",
 		},
+		{
+			name:         "test fqdn not found",
+			fqdnNotFound: "not_exists",
+			args:         []string{"poweroff", "--fqdn=not_exists"},
+			wantErr:      "katapult: not_found",
+		},
+		{
+			name:       "test id not found",
+			idNotFound: "not_exists",
+			args:       []string{"poweroff", "--id=not_exists"},
+			wantErr:    "katapult: not_found",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &vmsClient{}
+			client := &vmsClient{fqdnNotFound: tt.fqdnNotFound, idNotFound: tt.idNotFound}
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
@@ -354,6 +402,9 @@ func TestVMs_Stop(t *testing.T) {
 	successMessage := "Virtual machine successfully stopped.\n"
 	tests := []struct {
 		name string
+
+		idNotFound   string
+		fqdnNotFound string
 
 		args        []string
 		want        string
@@ -418,10 +469,22 @@ func TestVMs_Stop(t *testing.T) {
 			}{key: "1", fqdn: false},
 			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered on",
 		},
+		{
+			name:         "test fqdn not found",
+			fqdnNotFound: "not_exists",
+			args:         []string{"stop", "--fqdn=not_exists"},
+			wantErr:      "katapult: not_found",
+		},
+		{
+			name:       "test id not found",
+			idNotFound: "not_exists",
+			args:       []string{"stop", "--id=not_exists"},
+			wantErr:    "katapult: not_found",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &vmsClient{}
+			client := &vmsClient{idNotFound: tt.idNotFound, fqdnNotFound: tt.fqdnNotFound}
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
@@ -439,6 +502,9 @@ func TestVMs_Start(t *testing.T) {
 	successMessage := "Virtual machine successfully started.\n"
 	tests := []struct {
 		name string
+
+		idNotFound   string
+		fqdnNotFound string
 
 		args        []string
 		want        string
@@ -503,10 +569,22 @@ func TestVMs_Start(t *testing.T) {
 			args:    []string{"start", "--id=1"},
 			wantErr: "katapult: not_acceptable: task_queueing_error: VM was powered on",
 		},
+		{
+			name:         "test fqdn not found",
+			fqdnNotFound: "not_exists",
+			args:         []string{"poweroff", "--fqdn=not_exists"},
+			wantErr:      "katapult: not_found",
+		},
+		{
+			name:       "test id not found",
+			idNotFound: "not_exists",
+			args:       []string{"poweroff", "--id=not_exists"},
+			wantErr:    "katapult: not_found",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &vmsClient{}
+			client := &vmsClient{fqdnNotFound: tt.fqdnNotFound, idNotFound: tt.idNotFound}
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
@@ -524,6 +602,9 @@ func TestVMs_Reset(t *testing.T) {
 	successMessage := "Virtual machine successfully reset.\n"
 	tests := []struct {
 		name string
+
+		idNotFound   string
+		fqdnNotFound string
 
 		args        []string
 		want        string
@@ -588,10 +669,22 @@ func TestVMs_Reset(t *testing.T) {
 			}{key: "1", fqdn: false},
 			wantErr: "katapult: not_acceptable: task_queueing_error: VM was not powered off",
 		},
+		{
+			name:         "test fqdn not found",
+			fqdnNotFound: "not_exists",
+			args:         []string{"poweroff", "--fqdn=not_exists"},
+			wantErr:      "katapult: not_found",
+		},
+		{
+			name:       "test id not found",
+			idNotFound: "not_exists",
+			args:       []string{"poweroff", "--id=not_exists"},
+			wantErr:    "katapult: not_found",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client := &vmsClient{}
+			client := &vmsClient{fqdnNotFound: tt.fqdnNotFound, idNotFound: tt.idNotFound}
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
