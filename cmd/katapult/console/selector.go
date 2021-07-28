@@ -24,7 +24,7 @@ func intMin(x, y int) int {
 	return x
 }
 
-func selectorComponent(question string, items []string, stdin io.Reader, multiple bool) []string {
+func selectorComponent(question string, items []string, stdin io.Reader, multiple bool, onRender func()) []string {
 	// Pre-initialise things we need below.
 	query := ""
 	buf := make([]byte, 3)
@@ -127,6 +127,11 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		// Flush out the output.
 		goterm.Flush()
 
+		// Call the on render event if it exists.
+		if onRender != nil {
+			onRender()
+		}
+
 		// Wait for user input.
 		raw, err := terminal.MakeRaw(0)
 		if err != nil {
@@ -207,10 +212,10 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 
 // FuzzySelector is used to create a selector which also fuzzy searches the items and allows for the selection of one item.
 func FuzzySelector(question string, items []string, stdin io.Reader) string {
-	return selectorComponent(question, items, stdin, false)[0]
+	return selectorComponent(question, items, stdin, false, nil)[0]
 }
 
 // FuzzyMultiSelector is used to create a selector which also fuzzy searches the items and allows for the selection of multiple items.
 func FuzzyMultiSelector(question string, items []string, stdin io.Reader) []string {
-	return selectorComponent(question, items, stdin, true)
+	return selectorComponent(question, items, stdin, true, nil)
 }
