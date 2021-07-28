@@ -42,6 +42,7 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 
 	// Loop until we match.
 	for {
+		loopStart:
 		// Get the matched items.
 		var matched []string
 		queryLower := strings.ToLower(query)
@@ -93,29 +94,25 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 			// Get the match.
 			v := matched[i]
 
-			// Handle rendering the item.
-			if i == highlightIndex {
-				// Highlight this item.
-				_, _ = goterm.
-					Println(goterm.Color(v, goterm.YELLOW))
-			} else {
-				// Check if it is selected.
-				found := false
-				if multiple {
-					for e := selectedItems.Front(); e != nil; e = e.Next() {
-						if e.Value.(string) == v {
-							found = true
-							break
-						}
+			// Handle rendering selections in a multiple context.
+			if multiple {
+				for e := selectedItems.Front(); e != nil; e = e.Next() {
+					if e.Value.(string) == v {
+						_, _ = goterm.Print(goterm.Color("[*] ", goterm.GREEN))
+						goto renderItem
 					}
 				}
+				_, _ = goterm.Print(goterm.Color("[ ] ", goterm.RED))
+			}
 
-				// Print this item in a different color depending if it is highlighted or not.
-				if found {
-					_, _ = goterm.Println(goterm.Color(v, goterm.CYAN))
-				} else {
-					_, _ = goterm.Println(v)
-				}
+			// Handle rendering the item.
+			renderItem:
+			if i == highlightIndex {
+				// Highlight this item.
+				_, _ = goterm.Println(goterm.Color(v, goterm.YELLOW))
+			} else {
+				// Print the item.
+				_, _ = goterm.Println(v)
 			}
 		}
 
@@ -141,12 +138,6 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		if n == 1 {
 			// Standard input.
 			switch buf[0] {
-			case 127:
-				// Backspace
-				if len(query) == 0 {
-					continue
-				}
-				query = query[:len(query)-1]
 			case 3:
 				// CTRL+C
 				os.Exit(1)
@@ -171,7 +162,25 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 					if !found {
 						selectedItems.PushBack(item)
 					}
+					goto loopStart
 				}
+			case 27:
+				// Escape
+				if multiple {
+					a := make([]string, selectedItems.Len())
+					i := 0
+					for e := selectedItems.Front(); e != nil; e = e.Next() {
+						a[i] = e.Value.(string)
+						i++
+					}
+					return a
+				}
+			case 127:
+				// Backspace
+				if len(query) == 0 {
+					continue
+				}
+				query = query[:len(query)-1]
 			default:
 				// Character
 				query += string(buf[0])
@@ -194,7 +203,6 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 			}
 		}
 	}
-	// TODO: Handle escape for multiple!
 }
 
 // FuzzySelector is used to create a selector which also fuzzy searches the items and allows for the selection of one item.
