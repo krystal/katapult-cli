@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/buger/goterm v1.0.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/krystal/go-katapult v0.1.5
+	github.com/krystal/go-katapult v0.1.6-0.20210803112233-232e29436452
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/pelletier/go-toml v1.8.1 // indirect
