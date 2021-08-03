@@ -15,6 +15,7 @@ func Question(question string, blankAcceptable bool, bufferedStdin *bufio.Reader
 
 		// Read stdin.
 		text, _ := bufferedStdin.ReadString('\n')
+		text = text[:len(text)-1]
 		if text != "" || blankAcceptable {
 			return strings.TrimSuffix(text, "\r")
 		}

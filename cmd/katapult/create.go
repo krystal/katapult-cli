@@ -199,18 +199,23 @@ func createCmd(
 			distribution := distributions[index]
 
 			// Handle networking if there's IP addresses.
-			//ips, err := listAllIPAddresses(cmd.Context(), core.OrganizationRef{ID: org.ID}, ipAddressesClient)
-			//if err != nil {
-			//	return err
-			//}
-			//if len(ips) != 0 {
-			//	ipStrs := make([]string, len(ips))
-			//	for i, ip := range ips {
-			//		// TODO: Finish this when issues solved
-			//		ipStrs[i] = fmt.Sprintf("%s (%s) [%s]", ip.Address, ip.ReverseDNS, ip.ID)
-			//	}
-			//	console.FuzzyMultiSelector("Please select any IP addresses you wish to add.", ipStrs, os.Stdin)
-			//}
+			ips, err := listAllIPAddresses(cmd.Context(), core.OrganizationRef{ID: org.ID}, ipAddressesClient)
+			if err != nil {
+				return err
+			}
+			ipIds := []string{}
+			if len(ips) != 0 {
+				ipStrs := make([]string, len(ips))
+				for i, ip := range ips {
+					// TODO: Finish this when issues solved
+					ipStrs[i] = fmt.Sprintf("%s (%s) [%s]", ip.Address, ip.ReverseDNS, ip.ID)
+				}
+				selectedIps := console.FuzzyMultiSelector("Please select any IP addresses you wish to add.", ipStrs, os.Stdin)
+				ipIds = make([]string, len(selectedIps))
+				for i, keyDescription := range selectedIps {
+					ipIds[i] = ips[getStringIndex(keyDescription, ipStrs)].ID
+				}
+			}
 
 			// List the SSH keys.
 			keys, _, err := sshKeysClient.List(cmd.Context(), core.OrganizationRef{ID: org.ID}, &core.ListOptions{
@@ -222,30 +227,22 @@ func createCmd(
 			}
 
 			// Ask about the SSH keys.
-			ids := []string{}
+			keyIds := []string{}
 			if len(keys) != 0 {
 				keyStrs := make([]string, len(keys))
 				for i, key := range keys {
 					keyStrs[i] = fmt.Sprintf("%s (%s) [%s]", key.Name, key.Fingerprint, key.ID)
 				}
 				selectedKeys := console.FuzzyMultiSelector("Which organisation SSH keys do you wish to add?", keyStrs, os.Stdin)
-				ids = make([]string, len(selectedKeys))
+				keyIds = make([]string, len(selectedKeys))
 				for i, keyDescription := range selectedKeys {
-					ids[i] = keys[getStringIndex(keyDescription, keyStrs)].ID
+					keyIds[i] = keys[getStringIndex(keyDescription, keyStrs)].ID
 				}
 			}
 
 			// Clear the terminal.
 			goterm.Clear()
-
-			// Get the buffered stdin.
-			bufferedStdin := bufio.NewReader(cmd.InOrStdin())
-
-			// Ask for the hostname.
-			hostname := console.Question("What hostname do you want to use?", false, bufferedStdin, cmd.OutOrStdout())
-
-			// Ask for the description.
-			description := console.Question("If you want a description, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
+			goterm.Flush()
 
 			// Ask for the tags.
 			tags, err := listAllTags(cmd.Context(), core.OrganizationRef{ID: org.ID}, tagsClient)
@@ -256,8 +253,25 @@ func createCmd(
 			for i, v := range tags {
 				tagStrs[i] = fmt.Sprintf("%s [%s]", v.Name, v.ID)
 			}
-			responses := console.FuzzyMultiSelector("Do you wish to add any tags?", tagStrs, bufferedStdin)
-			fmt.Println(hostname, description, responses, distribution, package_, dc)
+			tagIds := []string{}
+			if len(tags) != 0 {
+				selectedTags := console.FuzzyMultiSelector("Do you wish to add any tags?", tagStrs, cmd.InOrStdin())
+				tagIds = make([]string, len(selectedTags))
+				for i, keyDescription := range selectedTags {
+					keyIds[i] = keys[getStringIndex(keyDescription, selectedTags)].ID
+				}
+			}
+
+			// Get the buffered stdin.
+			bufferedStdin := bufio.NewReader(cmd.InOrStdin())
+
+			// Ask for the hostname.
+			hostname := console.Question("What hostname do you want to use?", false, bufferedStdin, cmd.OutOrStdout())
+
+			// Ask for the description.
+			description := console.Question("If you want a description, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
+
+			fmt.Println(hostname, description, tagIds, distribution, package_, dc)
 
 			// Return no errors.
 			return nil
