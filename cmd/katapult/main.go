@@ -86,7 +86,8 @@ func run() error {
 			core.NewDiskTemplatesClient(cl),
 			core.NewIPAddressesClient(cl),
 			core.NewSSHKeysClient(cl),
-			core.NewTagsClient(cl)))
+			core.NewTagsClient(cl),
+			core.NewVirtualMachineBuildsClient(cl)))
 
 	return rootCmd.Execute()
 }

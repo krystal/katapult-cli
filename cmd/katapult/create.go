@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/buger/goterm"
 	"github.com/krystal/go-katapult"
+	"github.com/krystal/go-katapult/buildspec"
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/cmd/katapult/console"
 	"github.com/spf13/cobra"
@@ -124,6 +125,14 @@ type tagsClient interface {
 	) ([]*core.Tag, *katapult.Response, error)
 }
 
+type virtualMachinesBuilderClient interface {
+	CreateFromSpec(
+		ctx context.Context,
+		org core.OrganizationRef,
+		spec *buildspec.VirtualMachineSpec,
+	) (*core.VirtualMachineBuild, *katapult.Response, error)
+}
+
 // TODO: Move this!
 func createCmd(
 	orgsClient organisationsListClient, dcsClient dataCentersClient,
@@ -132,6 +141,7 @@ func createCmd(
 	ipAddressesClient virtualMachineIPAddressesClient,
 	sshKeysClient     sshKeysListClient,
 	tagsClient        tagsClient,
+	vmBuilderClient   virtualMachinesBuilderClient,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "create",
@@ -265,18 +275,56 @@ func createCmd(
 			// Get the buffered stdin.
 			bufferedStdin := bufio.NewReader(cmd.InOrStdin())
 
+			// Ask for the name.
+			name := console.Question("What would you like the virtual machine to be called?", false, bufferedStdin, cmd.OutOrStdout())
+
 			// Ask for the hostname.
-			hostname := console.Question("What hostname do you want to use?", false, bufferedStdin, cmd.OutOrStdout())
+			hostname := console.Question("If you want a hostname, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
 
 			// Ask for the description.
 			description := console.Question("If you want a description, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
 
-			fmt.Println(hostname, description, tagIds, distribution, package_, dc)
+			// Build the virtual machine spec.
+			ifaces := make([]*buildspec.NetworkInterface, len(ipIds))
+			for i, id := range ipIds {
+				ifaces[i] = &buildspec.NetworkInterface{
+					IPAddressAllocations: []*buildspec.IPAddressAllocation{
+						{
+							IPAddress: &buildspec.IPAddress{
+								Address: id,
+							},
+						},
+					},
+				}
+			}
+			spec := &buildspec.VirtualMachineSpec{
+				DataCenter:        &buildspec.DataCenter{ID: dc.ID},
+				Resources:         &buildspec.Resources{Package: &buildspec.Package{ID: package_.ID}},
+				DiskTemplate:      &buildspec.DiskTemplate{ID: distribution.ID, Options: []*buildspec.DiskTemplateOption{
+					{
+						Key:   "install_agent",
+						Value: "true",
+					},
+				}},
+				NetworkInterfaces: ifaces,
+				Hostname:          hostname,
+				Name:              name,
+				Description:       description,
+				AuthorizedKeys:    &buildspec.AuthorizedKeys{SSHKeys: keyIds},
+				Tags:              tagIds,
+			}
+
+			// ✨ Build the virtual machine.
+			_, _, err = vmBuilderClient.CreateFromSpec(cmd.Context(), core.OrganizationRef{ID: org.ID}, spec)
+			if err != nil {
+				return err
+			}
 
 			// Return no errors.
 			return nil
 		},
 	}
 
+	// Return the command.
 	return cmd
 }
