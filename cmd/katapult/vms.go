@@ -63,6 +63,9 @@ func vmNotFoundHandlingError(err error) error {
 	return err
 }
 
+const virtualMachineListFormat = "{{ range $vm := . }}" +
+	" - {{ .Name }} ({{ .FQDN }}) [{{.ID }}]: {{ .Package.Name }}\n{{ end }}"
+
 func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 	list := &cobra.Command{
 		Use:     "list",
@@ -71,34 +74,35 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 		Short:   "Get a list of virtual machines from an organization",
 		Long: "Get a list of virtual machines from an organization. By default, " +
 			"the argument is used as the sub-domain and is used if the ID is not specified.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref := core.OrganizationRef{ID: cmd.Flags().Lookup("org-id").Value.String()}
 			if ref.ID == "" {
 				if len(args) == 0 || args[0] == "" {
-					return fmt.Errorf("both ID and subdomain are unset")
+					return nil, fmt.Errorf("both ID and subdomain are unset")
 				}
 				ref.SubDomain = args[0]
 			}
 
-			out := cmd.OutOrStdout()
 			totalPages := 1
+			allVms := make([]*core.VirtualMachine, 0)
 			for pageNum := 1; pageNum <= totalPages; pageNum++ {
 				vms, resp, err := client.List(
 					cmd.Context(), ref, &core.ListOptions{Page: pageNum},
 				)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				if resp.Pagination != nil {
 					totalPages = resp.Pagination.TotalPages
 				}
-				for _, vm := range vms {
-					_, _ = fmt.Fprintf(out, " - %s (%s) [%s]: %s\n", vm.Name, vm.FQDN, vm.ID, vm.Package.Name)
-				}
+				allVms = append(allVms, vms...)
 			}
 
-			return nil
-		},
+			return genericOutput{
+				item: allVms,
+				tpl:  virtualMachineListFormat,
+			}, nil
+		}),
 	}
 	list.Flags().String("org-id", "", "The ID of the organization. If set, this takes priority over the sub-domain.")
 	return list
@@ -109,17 +113,20 @@ func virtualMachinesPoweroffCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "poweroff",
 		Short: "Used to power off a virtual machine.",
 		Long:  "Used to power off a virtual machine.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			if _, _, err = client.Shutdown(cmd.Context(), ref); err != nil {
-				return vmNotFoundHandlingError(err)
+			task, _, err := client.Shutdown(cmd.Context(), ref)
+			if err != nil {
+				return nil, vmNotFoundHandlingError(err)
 			}
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully powered down.")
-			return nil
-		},
+			return genericOutput{
+				item: task,
+				tpl:  "Virtual machine successfully powered down.\n",
+			}, nil
+		}),
 	}
 	poweroff.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	poweroff.Flags().String("fqdn", "", "The FQDN of the server.")
@@ -131,17 +138,20 @@ func virtualMachinesStartCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "start",
 		Short: "Used to start a virtual machine.",
 		Long:  "Used to start a virtual machine.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			if _, _, err = client.Start(cmd.Context(), ref); err != nil {
-				return vmNotFoundHandlingError(err)
+			task, _, err := client.Start(cmd.Context(), ref)
+			if err != nil {
+				return nil, vmNotFoundHandlingError(err)
 			}
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully started.")
-			return nil
-		},
+			return genericOutput{
+				item: task,
+				tpl:  "Virtual machine successfully started.\n",
+			}, nil
+		}),
 	}
 	start.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	start.Flags().String("fqdn", "", "The FQDN of the server.")
@@ -153,17 +163,20 @@ func virtualMachinesStopCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "stop",
 		Short: "Used to stop a virtual machine.",
 		Long:  "Used to stop a virtual machine.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			if _, _, err = client.Stop(cmd.Context(), ref); err != nil {
-				return vmNotFoundHandlingError(err)
+			task, _, err := client.Stop(cmd.Context(), ref)
+			if err != nil {
+				return nil, vmNotFoundHandlingError(err)
 			}
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully stopped.")
-			return nil
-		},
+			return genericOutput{
+				item: task,
+				tpl:  "Virtual machine successfully stopped.\n",
+			}, nil
+		}),
 	}
 	stop.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	stop.Flags().String("fqdn", "", "The FQDN of the server.")
@@ -175,17 +188,20 @@ func virtualMachinesResetCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "reset",
 		Short: "Used to reset a virtual machine.",
 		Long:  "Used to reset a virtual machine.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			if _, _, err = client.Reset(cmd.Context(), ref); err != nil {
-				return vmNotFoundHandlingError(err)
+			task, _, err := client.Reset(cmd.Context(), ref)
+			if err != nil {
+				return nil, vmNotFoundHandlingError(err)
 			}
-			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Virtual machine successfully reset.")
-			return nil
-		},
+			return genericOutput{
+				item: task,
+				tpl:  "Virtual machine successfully reset.\n",
+			}, nil
+		}),
 	}
 	reset.Flags().String("id", "", "The ID of the server. If set, this takes priority over the FQDN.")
 	reset.Flags().String("fqdn", "", "The FQDN of the server.")
