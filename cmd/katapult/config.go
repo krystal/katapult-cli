@@ -13,7 +13,7 @@ func configCommand(conf *config.Config) *cobra.Command {
 		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			return genericOutput{
 				item: conf.AllSettings(),
-				tpl:  "",
+				tpl:  "{{ range $key, $value := . }}{{ $key }}: {{ $value }}\n{{ end }}",
 			}, nil
 		}),
 	}

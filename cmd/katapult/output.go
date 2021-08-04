@@ -10,6 +10,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var outputFlag, templateFlag string
+
 // Output is used to define the interface of outputs.
 type Output interface {
 	// JSON is used to return a string of the JSON output.
@@ -73,17 +75,17 @@ func (g genericOutput) Text(template string) (string, error) {
 // Used to render a console output of a single option. Passes through errors.
 func renderOption(f func(cmd *cobra.Command, args []string) (Output, error)) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
+		// Get the objects we require from the cache.
+		out := cmd.OutOrStdout()
+
+		// Call the function.
 		output, err := f(cmd, args)
 		if err != nil {
 			return err
 		}
-		flags := cmd.PersistentFlags()
-		out := cmd.OutOrStdout()
-		renderType, err := flags.GetString("output")
-		if err != nil {
-			return err
-		}
-		switch strings.ToLower(renderType) {
+
+		// Handle calling the correct render function.
+		switch strings.ToLower(outputFlag) {
 		case "json":
 			b, err := output.JSON()
 			if err != nil {
@@ -97,11 +99,7 @@ func renderOption(f func(cmd *cobra.Command, args []string) (Output, error)) fun
 			}
 			return yaml.NewEncoder(out).Encode(b)
 		default:
-			tpl, err := flags.GetString("template")
-			if err != nil {
-				return err
-			}
-			s, err := output.Text(tpl)
+			s, err := output.Text(templateFlag)
 			if err != nil {
 				return err
 			}
