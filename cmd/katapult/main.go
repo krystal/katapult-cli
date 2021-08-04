@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/krystal/go-katapult"
 	"log"
+	"net/url"
 	"os"
 
 	"github.com/krystal/go-katapult/core"
@@ -71,6 +73,18 @@ func run() error {
 		organizationsCmd(core.NewOrganizationsClient(cl)),
 		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
 	)
+
+	cobra.OnInitialize(func() {
+		// TODO: We probably want to fix the config to remove this without regressions!
+		cl.(*katapult.Client).APIKey = configAPIKey
+		if configURLFlag != "" {
+			u, err := url.Parse(configURLFlag)
+			if err != nil {
+				panic(err)
+			}
+			cl.(*katapult.Client).BaseURL = u
+		}
+	})
 
 	return rootCmd.Execute()
 }

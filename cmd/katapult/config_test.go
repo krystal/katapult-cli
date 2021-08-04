@@ -8,62 +8,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const mockConfigFormat = `---
-api_key: %s
+const mockConfigFormat = `api_key: %s
 api_url: %s
-
 `
 
 func TestConfig(t *testing.T) {
-	formatYaml := func(apiKey, apiURL string) string {
-		expectedAPIKey := apiKey
-		if expectedAPIKey == "" {
-			expectedAPIKey = "\"\""
-		}
-		expectedAPIURL := apiURL
-		if expectedAPIURL == "" {
-			expectedAPIURL = "\"\""
-		}
-		return fmt.Sprintf(mockConfigFormat, expectedAPIKey, expectedAPIURL)
-	}
-
 	tests := []struct {
 		name string
 
 		apiKey string
 		apiURL string
-		args   []string
+		output string
 		wants  string
 	}{
 		{
 			name:   "empty values",
 			apiKey: "",
 			apiURL: "",
-			wants:  formatYaml("", ""),
+			wants:   fmt.Sprintf(mockConfigFormat, "", ""),
 		},
 		{
 			name:   "only API URL blank",
 			apiKey: "test",
 			apiURL: "",
-			wants:  formatYaml("test", ""),
+			wants:  fmt.Sprintf(mockConfigFormat, "test", ""),
 		},
 		{
 			name:   "both fields present",
 			apiKey: "test",
 			apiURL: "test",
-			wants:  formatYaml("test", "test"),
+			wants:  fmt.Sprintf(mockConfigFormat, "test", "test"),
 		},
 		{
 			name:   "only API key blank",
 			apiKey: "",
 			apiURL: "test",
-			wants:  formatYaml("", "test"),
+			wants:  fmt.Sprintf(mockConfigFormat, "", "test"),
 		},
 		{
 			name:   "test JSON output",
 			apiKey: "test",
 			apiURL: "test",
-			args:   []string{"-o", "json"},
+			output: "json",
 			wants:  getTestData(t, "test_JSON_output.json"),
 		},
 	}
@@ -74,11 +60,9 @@ func TestConfig(t *testing.T) {
 			conf.SetDefault("api_key", tt.apiKey)
 			conf.SetDefault("api_url", tt.apiURL)
 			cmd := configCommand(conf)
-			if tt.args == nil {
-				tt.args = []string{}
-			}
-			cmd.SetArgs(tt.args)
+			outputFlag = tt.output
 			assertCobraCommand(t, cmd, "", tt.wants, "")
+			outputFlag = ""
 		})
 	}
 }

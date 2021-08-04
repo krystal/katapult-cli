@@ -14,6 +14,11 @@ type dataCentersClient interface {
 	Get(ctx context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error)
 }
 
+const dataCentersFormat = "{{ range $dc := . }}" +
+	" - {{ $dc.Name }} ({{ $dc.Permalink }}) [{{ $dc.ID }}] / {{ $dc.Country.Name }}\n{{ end }}"
+
+const getDataCenterFormat = "{{ .Name }} ({{ .Permalink }}) [{{ .ID }}] / {{ .Country.Name }}\n"
+
 func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
@@ -28,7 +33,7 @@ func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 
 			return genericOutput{
 				item: dcs,
-				tpl:  "",
+				tpl:  dataCentersFormat,
 			}, nil
 		}),
 	}
@@ -49,7 +54,7 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 				return nil, err
 			}
 
-			return genericOutput{item: dc}, nil
+			return genericOutput{item: dc, tpl: getDataCenterFormat}, nil
 		}),
 	}
 }

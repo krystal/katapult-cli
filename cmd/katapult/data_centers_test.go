@@ -63,7 +63,7 @@ func TestDataCenters_List(t *testing.T) {
 	tests := []struct {
 		name string
 
-		args    []string
+		output  string
 		dcs     []*core.DataCenter
 		want    string
 		stderr  string
@@ -79,7 +79,7 @@ func TestDataCenters_List(t *testing.T) {
 		},
 		{
 			name: "data center json list",
-			args: []string{"list", "-o", "json"},
+			output: "json",
 			dcs:  fixtureDataCenters,
 			want: getTestData(t, "data_center_JSON_list.json"),
 		},
@@ -89,7 +89,7 @@ func TestDataCenters_List(t *testing.T) {
 		},
 		{
 			name: "empty data centers json",
-			args: []string{"list", "-o", "json"},
+			output: "json",
 			dcs:  []*core.DataCenter{},
 			want: "[]\n",
 		},
@@ -106,12 +106,10 @@ func TestDataCenters_List(t *testing.T) {
 			stderr := &bytes.Buffer{}
 			cmd.SetOut(stdout)
 			cmd.SetErr(stderr)
-			if tt.args == nil {
-				cmd.SetArgs([]string{"list"})
-			} else {
-				cmd.SetArgs(tt.args)
-			}
+			cmd.SetArgs([]string{"list"})
+			outputFlag = tt.output
 			err := cmd.Execute()
+			outputFlag = ""
 
 			if tt.wantErr != "" {
 				require.EqualError(t, err, tt.wantErr)
@@ -130,6 +128,7 @@ func TestDataCenters_Get(t *testing.T) {
 		name string
 
 		args    []string
+		output  string
 		dc      string
 		want    string
 		stderr  string
@@ -142,17 +141,19 @@ func TestDataCenters_Get(t *testing.T) {
 		},
 		{
 			name: "display POG1 json",
-			args: []string{"get", "POG1", "-o", "json"},
+			args: []string{"get", "POG1"},
+			output: "json",
 			want: getTestData(t, "display_POG1_json.json"),
 		},
 		{
 			name: "display GB1 json",
-			args: []string{"get", "GB1", "-o", "json"},
+			args: []string{"get", "GB1"},
+			output: "json",
 			want: getTestData(t, "display_GB1_json.json"),
 		},
 		{
 			name: "display GB1 human readable",
-			args: []string{"get", "GB1", "-o", "yaml"},
+			args: []string{"get", "GB1"},
 			want: "hello (GB1) [dc_9UVoPiUQoI1cqtR0] / United Kingdom\n",
 		},
 		{
@@ -167,7 +168,9 @@ func TestDataCenters_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd.SetArgs(tt.args)
+			outputFlag = tt.output
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			outputFlag = ""
 		})
 	}
 }

@@ -15,6 +15,13 @@ type networksListClient interface {
 	) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error)
 }
 
+const listTemplate = `Networks:{{ range $net := .networks }}
+ - {{ $net.Name }} [{{ $net.ID }}]{{ end }}
+---
+Virtual Networks:{{ range $vnet := .virtual_networks }}
+ - {{ $vnet.Name }} [{{ $vnet.ID }}]{{ end }}
+`
+
 func networksCmd(client networksListClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "networks",
@@ -44,12 +51,15 @@ func networksCmd(client networksListClient) *cobra.Command {
 				return nil, err
 			}
 
+			if vnets == nil {
+				vnets = []*core.VirtualNetwork{}
+			}
 			return genericOutput{
 				item: map[string]interface{}{
-					"nets":  nets,
-					"vnets": vnets,
+					"networks":  nets,
+					"virtual_networks": vnets,
 				},
-				tpl:  "",
+				tpl:  listTemplate,
 			}, nil
 		}),
 	}

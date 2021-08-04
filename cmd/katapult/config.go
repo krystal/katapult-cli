@@ -5,6 +5,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const configFormat = "{{ range $key, $value := . }}" +
+	"{{ $key }}: {{ $value }}\n{{ end }}"
+
 func configCommand(conf *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "config",
@@ -13,7 +16,7 @@ func configCommand(conf *config.Config) *cobra.Command {
 		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			return genericOutput{
 				item: conf.AllSettings(),
-				tpl:  "{{ range $key, $value := . }}{{ $key }}: {{ $value }}\n{{ end }}",
+				tpl:  configFormat,
 			}, nil
 		}),
 	}

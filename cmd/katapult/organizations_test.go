@@ -38,7 +38,7 @@ func TestOrganizations_List(t *testing.T) {
 	tests := []struct {
 		name string
 
-		args    []string
+		output   string
 		orgs    []*core.Organization
 		want    string
 		stderr  string
@@ -55,7 +55,7 @@ func TestOrganizations_List(t *testing.T) {
 		{
 			name: "organizations list json",
 			orgs: fixtureOrganizations,
-			args: []string{"list", "-o", "json"},
+			output: "json",
 			want: getTestData(t, "organizations_list_json.json"),
 		},
 		{
@@ -65,7 +65,7 @@ func TestOrganizations_List(t *testing.T) {
 		{
 			name: "empty organizations json",
 			orgs: []*core.Organization{},
-			args: []string{"list", "-o", "json"},
+			output: "json",
 			want: "[]\n",
 		},
 		{
@@ -77,12 +77,10 @@ func TestOrganizations_List(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := organizationsCmd(mockOrganizationsListClient{orgs: tt.orgs, throws: tt.throws})
-			if tt.args == nil {
-				cmd.SetArgs([]string{"list"})
-			} else {
-				cmd.SetArgs(tt.args)
-			}
+			outputFlag = tt.output
+			cmd.SetArgs([]string{"list"})
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			outputFlag = ""
 		})
 	}
 }

@@ -13,9 +13,8 @@ type organizationsClient interface {
 	) ([]*core.Organization, *katapult.Response, error)
 }
 
-const organizationsListFormat = ` {{ for $org := range . }}
-{{ $org }}
-{{ end }}`
+const organizationsListFormat = "{{ range $org := . }} - {{ $org.Name }} " +
+	"({{ $org.SubDomain }}) [{{ $org.ID }}]\n{{ end }}"
 
 func organizationsCmd(client organizationsClient) *cobra.Command {
 	cmd := &cobra.Command{
