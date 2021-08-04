@@ -57,7 +57,7 @@ func (v *vmsClient) List(_ context.Context, org core.OrganizationRef, opts *core
 	case org.SubDomain != "":
 		pages = v.organizationSubdomainPages[org.SubDomain]
 	default:
-		return nil, nil, katapult.ErrNotFound
+		return nil, nil, core.ErrOrganizationNotFound
 	}
 
 	// Get the VM page.
@@ -81,7 +81,7 @@ func (v *vmsClient) List(_ context.Context, org core.OrganizationRef, opts *core
 
 func (v *vmsClient) ensureFound(ref core.VirtualMachineRef) error {
 	if (ref.FQDN != "" && v.fqdnNotFound == ref.FQDN) || (ref.ID != "" && v.idNotFound == ref.ID) {
-		return katapult.ErrNotFound
+		return core.ErrVirtualMachineNotFound
 	}
 	return nil
 }
@@ -373,13 +373,13 @@ func TestVMs_Poweroff(t *testing.T) {
 			name:         "test fqdn not found",
 			fqdnNotFound: "not_exists",
 			args:         []string{"poweroff", "--fqdn=not_exists"},
-			wantErr:      "katapult: not_found",
+			wantErr:      "unknown virtual machine",
 		},
 		{
 			name:       "test id not found",
 			idNotFound: "not_exists",
 			args:       []string{"poweroff", "--id=not_exists"},
-			wantErr:    "katapult: not_found",
+			wantErr:    "unknown virtual machine",
 		},
 	}
 	for _, tt := range tests {
@@ -473,13 +473,13 @@ func TestVMs_Stop(t *testing.T) {
 			name:         "test fqdn not found",
 			fqdnNotFound: "not_exists",
 			args:         []string{"stop", "--fqdn=not_exists"},
-			wantErr:      "katapult: not_found",
+			wantErr:      "unknown virtual machine",
 		},
 		{
 			name:       "test id not found",
 			idNotFound: "not_exists",
 			args:       []string{"stop", "--id=not_exists"},
-			wantErr:    "katapult: not_found",
+			wantErr:    "unknown virtual machine",
 		},
 	}
 	for _, tt := range tests {
@@ -573,13 +573,13 @@ func TestVMs_Start(t *testing.T) {
 			name:         "test fqdn not found",
 			fqdnNotFound: "not_exists",
 			args:         []string{"poweroff", "--fqdn=not_exists"},
-			wantErr:      "katapult: not_found",
+			wantErr:      "unknown virtual machine",
 		},
 		{
 			name:       "test id not found",
 			idNotFound: "not_exists",
 			args:       []string{"poweroff", "--id=not_exists"},
-			wantErr:    "katapult: not_found",
+			wantErr:    "unknown virtual machine",
 		},
 	}
 	for _, tt := range tests {
@@ -673,13 +673,13 @@ func TestVMs_Reset(t *testing.T) {
 			name:         "test fqdn not found",
 			fqdnNotFound: "not_exists",
 			args:         []string{"poweroff", "--fqdn=not_exists"},
-			wantErr:      "katapult: not_found",
+			wantErr:      "unknown virtual machine",
 		},
 		{
 			name:       "test id not found",
 			idNotFound: "not_exists",
 			args:       []string{"poweroff", "--id=not_exists"},
-			wantErr:    "katapult: not_found",
+			wantErr:    "unknown virtual machine",
 		},
 	}
 	for _, tt := range tests {
