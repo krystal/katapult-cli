@@ -22,12 +22,12 @@ var fixtureOrganizations = []*core.Organization{
 	},
 }
 
-type mockOrganisationsListClient struct {
+type mockOrganizationsListClient struct {
 	orgs   []*core.Organization
 	throws string
 }
 
-func (m mockOrganisationsListClient) List(context.Context) ([]*core.Organization, *katapult.Response, error) {
+func (m mockOrganizationsListClient) List(context.Context) ([]*core.Organization, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
 	}
@@ -63,7 +63,7 @@ func TestOrganizations_List(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := organizationsCmd(mockOrganisationsListClient{orgs: tt.orgs, throws: tt.throws})
+			cmd := organizationsCmd(mockOrganizationsListClient{orgs: tt.orgs, throws: tt.throws})
 			cmd.SetArgs([]string{"list"})
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})

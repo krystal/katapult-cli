@@ -134,7 +134,6 @@ Virtual Networks:
 			stderr:  "Error: both ID and subdomain are unset\n",
 			wantErr: "both ID and subdomain are unset",
 		},
-		// TODO
 	}
 
 	for _, tt := range tests {
