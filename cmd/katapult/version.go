@@ -1,10 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -61,28 +58,15 @@ func versionCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Print the version",
 		Long:  `Print the version number of katapult CLI tool.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			prettyVersion.Populate()
 
-			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
-				j, err := json.Marshal(prettyVersion)
-				if err != nil {
-					return err
-				}
-				fmt.Println(string(j))
-			} else {
-				fmt.Printf("katapult %s (katapult-cli)\n", prettyVersion.Version)
-				fmt.Println("---")
-				fmt.Printf("Version: %s\n", prettyVersion.Version)
-				fmt.Printf("GitCommit: %s\n", prettyVersion.Commit)
-				fmt.Printf("BuildDate: %s\n", prettyVersion.Date)
-			}
-			return nil
-		},
+			return genericOutput{
+				item: prettyVersion,
+				tpl:  "",
+			}, nil
+		}),
 	}
-
-	flags := versionCmd.PersistentFlags()
-	flags.StringP("output", "o", "text", "Defines the output type of the config. Can be text or json.")
 
 	return versionCmd
 }

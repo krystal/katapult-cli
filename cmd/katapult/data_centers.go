@@ -2,11 +2,8 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
-
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -23,75 +20,40 @@ func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "List data centers",
 		Long:    "List data centers.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			dcs, _, err := client.List(cmd.Context())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
-				j, err := json.Marshal(dcs)
-				if err != nil {
-					return err
-				}
-				_, _ = cmd.OutOrStdout().Write(append(j, '\n'))
-			} else {
-				for _, dc := range dcs {
-					_, _ = fmt.Fprintf(
-						cmd.OutOrStdout(),
-						" - %s (%s) [%s] / %s\n",
-						dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
-					)
-				}
-			}
-
-			return nil
-		},
+			return genericOutput{
+				item: dcs,
+				tpl:  "",
+			}, nil
+		}),
 	}
-
-	flags := cmd.PersistentFlags()
-	flags.StringP("output", "o", "text", "Defines the output type of the data centers. Can be text or json.")
 
 	return cmd
 }
 
 func getDataCenterCmd(client dataCentersClient) *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:   "get",
 		Args:  cobra.ExactArgs(1),
 		Short: "Get details for a data center",
 		Long:  "Get details for a data center.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE:  renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			dc, _, err := client.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
 			if err != nil {
 				if errors.Is(err, katapult.ErrNotFound) {
-					return fmt.Errorf("unknown datacentre")
+					return nil, fmt.Errorf("unknown datacentre")
 				}
-				return err
+				return nil, err
 			}
 
-			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
-				j, err := json.Marshal(dc)
-				if err != nil {
-					return err
-				}
-				_, _ = cmd.OutOrStdout().Write(append(j, '\n'))
-			} else {
-				_, _ = fmt.Fprintf(
-					cmd.OutOrStdout(),
-					"%s (%s) [%s] / %s\n",
-					dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
-				)
-			}
-
-			return nil
-		},
+			return genericOutput{item: dc}, nil
+		}),
 	}
-
-	flags := cmd.PersistentFlags()
-	flags.StringP("output", "o", "text", "Defines the output type of the data centers. Can be text or json.")
-
-	return cmd
 }
 
 func dataCentersCmd(client dataCentersClient) *cobra.Command {

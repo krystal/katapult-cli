@@ -2,10 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"strings"
-
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -30,30 +26,18 @@ func organizationsCmd(client organisationsClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "Get list of organizations",
 		Long:    "Get list of organizations.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			orgs, _, err := client.List(cmd.Context())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			out := cmd.OutOrStdout()
-			if strings.ToLower(cmd.Flag("output").Value.String()) == jsonOutput {
-				j, err := json.Marshal(orgs)
-				if err != nil {
-					return err
-				}
-				_, _ = out.Write(append(j, '\n'))
-			} else {
-				for _, org := range orgs {
-					_, _ = fmt.Fprintf(out, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
-				}
-			}
-
-			return nil
-		},
+			return genericOutput{
+				item: orgs,
+				tpl:  "",
+			}, nil
+		}),
 	}
-	listFlags := list.PersistentFlags()
-	listFlags.StringP("output", "o", "text", "Defines the output type of the data centers. Can be text or json.")
 	cmd.AddCommand(list)
 
 	return cmd

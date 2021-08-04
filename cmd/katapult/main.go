@@ -42,6 +42,9 @@ func run() error {
 
 	rootFlags := rootCmd.PersistentFlags()
 
+	rootFlags.String("output", "", "output type (yaml, json, text)")
+	rootFlags.String("template", "", "defines the output template for text")
+
 	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
 
