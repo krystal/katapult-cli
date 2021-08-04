@@ -3,6 +3,7 @@ package console
 import (
 	"container/list"
 	"io"
+	"math"
 	"os"
 	"strings"
 
@@ -35,15 +36,20 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		// Allocate a list for selections.
 		selectedItems = list.New()
 	}
-	usableItemRows := goterm.Height() - 2
-	if 0 >= usableItemRows {
-		// Weird. Return status code 1.
-		os.Exit(1)
-	}
 
 	// Loop until we match.
 	for {
 		loopStart:
+		// Get the usable item rows.
+		usableItemRows := goterm.Height() - 1
+		if 0 >= usableItemRows {
+			// Weird. Return status code 1.
+			os.Exit(1)
+		}
+
+		// Get the width.
+		width := goterm.Width()
+
 		// Get the matched items.
 		var matched []string
 		queryLower := strings.ToLower(query)
@@ -64,26 +70,33 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		goterm.Clear()
 
 		// Asks the question.
+		var questionFormatted string
 		if multiple {
 			// Add the multiple clarification string onto the question.
-			_, _ = goterm.Print(goterm.Color(question+clarificationStringMultiple, goterm.GREEN))
+			questionFormatted = goterm.Color(question+clarificationStringMultiple, goterm.GREEN)
 		} else {
 			// Add the single clarification string on o the question.
-			_, _ = goterm.Print(goterm.Color(question+clarificationStringSingle, goterm.GREEN))
+			questionFormatted = goterm.Color(question+clarificationStringSingle, goterm.GREEN)
 		}
+		_, _ = goterm.Print(questionFormatted)
 
 		// Format the query.
+		var suggestionLen int
 		if len(matched) == 0 {
 			// There's no matches, we should just just print the users input.
 			_, _ = goterm.Println(query)
+			suggestionLen = len(query)
 		} else {
 			// We should print it inside the highlighted result.
 			highlighted := matched[highlightIndex]
+			suggestionLen = len(highlighted)
 			index := strings.Index(strings.ToLower(highlighted), queryLower)
 			start := highlighted[:index]
 			end := highlighted[index+len(query):]
 			_, _ = goterm.Println(goterm.Color(start, goterm.BLUE) + query + goterm.Color(end, goterm.BLUE))
 		}
+		roughLines := int(math.Ceil(float64(len(questionFormatted) + suggestionLen) / float64(width)))
+		usableItemRows -= roughLines
 
 		// Display the rest of the items.
 		matchedLen := len(matched)
