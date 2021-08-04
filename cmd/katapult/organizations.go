@@ -13,6 +13,10 @@ type organisationsClient interface {
 	) ([]*core.Organization, *katapult.Response, error)
 }
 
+const organizationsListFormat = ` {{ for $org := range . }}
+{{ $org }}
+{{ end }}`
+
 func organizationsCmd(client organisationsClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "org",
@@ -34,7 +38,7 @@ func organizationsCmd(client organisationsClient) *cobra.Command {
 
 			return genericOutput{
 				item: orgs,
-				tpl:  "",
+				tpl:  organizationsListFormat,
 			}, nil
 		}),
 	}

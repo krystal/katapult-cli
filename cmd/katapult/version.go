@@ -52,6 +52,13 @@ func (v *versionInfo) Populate() {
 	v.populated = true
 }
 
+const versionFormat = `katapult {{ .Version }} (katapult-cli)
+---
+Version: {{ .Version }}
+Git Commit: {{ .Commit }}
+Build Date: {{ .Date }}
+`
+
 func versionCommand() *cobra.Command {
 	prettyVersion := &versionInfo{}
 	versionCmd := &cobra.Command{
@@ -63,7 +70,7 @@ func versionCommand() *cobra.Command {
 
 			return genericOutput{
 				item: prettyVersion,
-				tpl:  "",
+				tpl:  versionFormat,
 			}, nil
 		}),
 	}

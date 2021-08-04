@@ -15,7 +15,7 @@ type dataCentersClient interface {
 }
 
 func listDataCentersCmd(client dataCentersClient) *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List data centers",
@@ -32,8 +32,6 @@ func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 			}, nil
 		}),
 	}
-
-	return cmd
 }
 
 func getDataCenterCmd(client dataCentersClient) *cobra.Command {
