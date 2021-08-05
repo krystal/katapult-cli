@@ -93,13 +93,13 @@ func Test_renderOption(t *testing.T) {
 			name:       "json flag",
 			item:       map[string]int{"a": 1, "b": 2},
 			outputType: "json",
-			wants:     	getTestData(t, "flag.json"),
+			wants:      getTestData(t, "flag.json"),
 		},
 		{
 			name:       "yaml flag",
 			item:       map[string]int{"a": 1, "b": 2},
 			outputType: "yaml",
-			wants: 		getTestData(t, "flag.yaml"),
+			wants:      getTestData(t, "flag.yaml"),
 		},
 		{
 			name:    "test throw",
