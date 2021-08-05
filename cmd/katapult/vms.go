@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	_ "embed"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -63,8 +65,8 @@ func vmNotFoundHandlingError(err error) error {
 	return err
 }
 
-const virtualMachineListFormat = "{{ range $vm := . }}" +
-	" - {{ .Name }} ({{ .FQDN }}) [{{.ID }}]: {{ .Package.Name }}\n{{ end }}"
+//go:embed formatdata/vm/list.txt
+var virtualMachineListFormat string
 
 func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 	list := &cobra.Command{

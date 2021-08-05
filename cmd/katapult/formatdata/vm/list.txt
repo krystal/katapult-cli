@@ -1,0 +1,2 @@
+{{ range $vm := . }} - {{ .Name }} ({{ .FQDN }}) [{{.ID }}]: {{ .Package.Name }}
+{{ end }}

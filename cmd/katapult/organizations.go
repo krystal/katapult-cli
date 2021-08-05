@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 
+	_ "embed"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -14,8 +16,8 @@ type organizationsClient interface {
 	) ([]*core.Organization, *katapult.Response, error)
 }
 
-const organizationsListFormat = "{{ range $org := . }} - {{ $org.Name }} " +
-	"({{ $org.SubDomain }}) [{{ $org.ID }}]\n{{ end }}"
+//go:embed formatdata/orgs/list.txt
+var organizationsListFormat string
 
 func organizationsCmd(client organizationsClient) *cobra.Command {
 	cmd := &cobra.Command{

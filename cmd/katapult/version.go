@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"time"
 
+	_ "embed"
+
 	"github.com/spf13/cobra"
 )
 
@@ -52,12 +54,8 @@ func (v *versionInfo) Populate() {
 	v.populated = true
 }
 
-const versionFormat = `katapult {{ .Version }} (katapult-cli)
----
-Version: {{ .Version }}
-Git Commit: {{ .Commit }}
-Build Date: {{ .Date }}
-`
+//go:embed formatdata/version.txt
+var versionFormat string
 
 func versionCommand() *cobra.Command {
 	prettyVersion := &versionInfo{}

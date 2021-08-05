@@ -1,12 +1,14 @@
 package main
 
 import (
+	_ "embed"
+
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
 
-const configFormat = "{{ range $key, $value := . }}" +
-	"{{ $key }}: {{ $value }}\n{{ end }}"
+//go:embed formatdata/config.txt
+var configFormat string
 
 func configCommand(conf *config.Config) *cobra.Command {
 	return &cobra.Command{

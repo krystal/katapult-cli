@@ -1,0 +1,2 @@
+{{ range $org := . }} - {{ $org.Name }} ({{ $org.SubDomain }}) [{{ $org.ID }}]
+{{ end }}

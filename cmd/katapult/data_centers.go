@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 
+	_ "embed"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -15,10 +17,11 @@ type dataCentersClient interface {
 	Get(ctx context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error)
 }
 
-const dataCentersFormat = "{{ range $dc := . }}" +
-	" - {{ $dc.Name }} ({{ $dc.Permalink }}) [{{ $dc.ID }}] / {{ $dc.Country.Name }}\n{{ end }}"
+//go:embed formatdata/dcs/list.txt
+var dataCentersFormat string
 
-const getDataCenterFormat = "{{ .Name }} ({{ .Permalink }}) [{{ .ID }}] / {{ .Country.Name }}\n"
+//go:embed formatdata/dcs/get.txt
+var getDataCenterFormat string
 
 func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 	return &cobra.Command{

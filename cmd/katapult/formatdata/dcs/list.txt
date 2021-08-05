@@ -1,0 +1,2 @@
+{{ range $dc := . }} - {{ $dc.Name }} ({{ $dc.Permalink }}) [{{ $dc.ID }}] / {{ $dc.Country.Name }}
+{{ end }}
