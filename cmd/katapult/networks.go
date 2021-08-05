@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -56,10 +57,10 @@ func networksCmd(client networksListClient) *cobra.Command {
 			}
 			return genericOutput{
 				item: map[string]interface{}{
-					"networks":  nets,
+					"networks":         nets,
 					"virtual_networks": vnets,
 				},
-				tpl:  listTemplate,
+				tpl: listTemplate,
 			}, nil
 		}),
 	}

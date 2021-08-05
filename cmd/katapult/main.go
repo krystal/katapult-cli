@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/krystal/go-katapult"
 	"log"
 	"net/url"
 	"os"
+
+	"github.com/krystal/go-katapult"
 
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
@@ -44,7 +45,7 @@ func run() error {
 
 	rootFlags := rootCmd.PersistentFlags()
 
-	rootFlags.StringVarP(&outputFlag, "output",  "o", "", "output type (yaml, json, text)")
+	rootFlags.StringVarP(&outputFlag, "output", "o", "", "output type (yaml, json, text)")
 	rootFlags.StringVarP(&templateFlag, "template", "t", "", "defines the output template for text")
 
 	rootFlags.StringVarP(&configFileFlag, "config", "c", "",

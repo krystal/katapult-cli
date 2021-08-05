@@ -25,7 +25,7 @@ func TestConfig(t *testing.T) {
 			name:   "empty values",
 			apiKey: "",
 			apiURL: "",
-			wants:   fmt.Sprintf(mockConfigFormat, "", ""),
+			wants:  fmt.Sprintf(mockConfigFormat, "", ""),
 		},
 		{
 			name:   "only API URL blank",

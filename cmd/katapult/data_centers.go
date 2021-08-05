@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
@@ -45,7 +46,7 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Short: "Get details for a data center",
 		Long:  "Get details for a data center.",
-		RunE:  renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			dc, _, err := client.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
 			if err != nil {
 				if errors.Is(err, katapult.ErrNotFound) {

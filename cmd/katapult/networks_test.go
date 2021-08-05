@@ -123,10 +123,10 @@ Virtual Networks:
 `,
 		},
 		{
-			name: "Test listing pog-id json",
-			args: []string{"ls", "--id", "pog-id"},
+			name:   "Test listing pog-id json",
+			args:   []string{"ls", "--id", "pog-id"},
 			output: "json",
-			want: getTestData(t, "test_listing_pog-id_JSON.json"),
+			want:   getTestData(t, "test_listing_pog-id_JSON.json"),
 		},
 		{
 			name: "Test listing pog-subdomain human readable",
@@ -139,10 +139,10 @@ Virtual Networks:
 `,
 		},
 		{
-			name: "Test listing pog-subdomain json",
-			args: []string{"ls", "--subdomain", "pog-subdomain"},
+			name:   "Test listing pog-subdomain json",
+			args:   []string{"ls", "--subdomain", "pog-subdomain"},
 			output: "json",
-			want: getTestData(t, "test_listing_pog-subdomain_JSON.json"),
+			want:   getTestData(t, "test_listing_pog-subdomain_JSON.json"),
 		},
 		{
 			name:    "No flags provided",

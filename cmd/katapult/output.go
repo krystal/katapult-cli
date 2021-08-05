@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/spf13/cobra"
 	"strings"
 	"text/template"
 
+	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 

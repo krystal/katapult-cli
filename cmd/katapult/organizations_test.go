@@ -38,7 +38,7 @@ func TestOrganizations_List(t *testing.T) {
 	tests := []struct {
 		name string
 
-		output   string
+		output  string
 		orgs    []*core.Organization
 		want    string
 		stderr  string
@@ -53,20 +53,20 @@ func TestOrganizations_List(t *testing.T) {
 `,
 		},
 		{
-			name: "organizations list json",
-			orgs: fixtureOrganizations,
+			name:   "organizations list json",
+			orgs:   fixtureOrganizations,
 			output: "json",
-			want: getTestData(t, "organizations_list_json.json"),
+			want:   getTestData(t, "organizations_list_json.json"),
 		},
 		{
 			name: "empty organizations human readable",
 			orgs: []*core.Organization{},
 		},
 		{
-			name: "empty organizations json",
-			orgs: []*core.Organization{},
+			name:   "empty organizations json",
+			orgs:   []*core.Organization{},
 			output: "json",
-			want: "[]\n",
+			want:   "[]\n",
 		},
 		{
 			name:    "organization error",
