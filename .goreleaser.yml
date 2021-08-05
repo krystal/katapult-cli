@@ -10,6 +10,7 @@ builds:
       - linux
       - windows
       - darwin
+    binary: katapult
     main: ./cmd/katapult
 
 dockers:
@@ -47,7 +48,7 @@ changelog:
 brews:
   -
     name: katapult-cli
-    test: katapult version
+    test: system "#{bin}/katapult version"
     commit_author:
       name: github-actions
       email: github-actions@github.com
