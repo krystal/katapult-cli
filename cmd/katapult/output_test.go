@@ -19,15 +19,13 @@ func TestGenericOutput_JSON(t *testing.T) {
 
 func TestGenericOutput_YAML(t *testing.T) {
 	g := genericOutput{item: []string{"hello", "world"}}
-	b, err := g.YAML()
+	s, err := g.YAML()
 	assert.NoError(t, err)
-	assert.Equal(t, []byte(`- hello
-- world
-`), []byte(b))
+	assert.Equal(t, getTestData(t, "output.yaml"), s)
 }
 
 func Test_renderTemplate(t *testing.T) {
-	s, err := renderTemplate("{{ . }}", "Hello World!")
+	s, err := renderTemplate("{{.}}", "Hello World!")
 	assert.NoError(t, err)
 	assert.Equal(t, "Hello World!", s)
 }
@@ -44,14 +42,14 @@ func TestGenericOutput_Text(t *testing.T) {
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
-			defaultTemplate: "{{ range $key, $value := . }}{{ $key }}{{ $value }}{{ end }}",
-			wants:           "a1b2",
+			defaultTemplate: getTestData(t, "for_map_tpl.txt"),
+			wants:           "a1b2\n",
 		},
 		{
 			name:        "template override",
 			item:        map[string]int{"a": 1, "b": 2},
-			templateArg: "{{ range $key, $value := . }}{{ $key }}{{ $value }}{{ end }}",
-			wants:       "a1b2",
+			templateArg: getTestData(t, "for_map_tpl.txt"),
+			wants:       "a1b2\n",
 		},
 	}
 	for _, tt := range tests {
@@ -82,29 +80,26 @@ func Test_renderOption(t *testing.T) {
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
-			defaultTemplate: "{{ range $key, $value := . }}{{ $key }}{{ $value }}{{ end }}",
-			wants:           "a1b2",
+			defaultTemplate: getTestData(t, "for_map_tpl.txt"),
+			wants:           "a1b2\n",
 		},
 		{
 			name:         "template override",
 			item:         map[string]int{"a": 1, "b": 2},
-			templateFlag: "{{ range $key, $value := . }}{{ $key }}{{ $value }}{{ end }}",
-			wants:        "a1b2",
+			templateFlag: getTestData(t, "for_map_tpl.txt"),
+			wants:        "a1b2\n",
 		},
 		{
 			name:       "json flag",
 			item:       map[string]int{"a": 1, "b": 2},
 			outputType: "json",
-			wants:      "{\"a\":1,\"b\":2}\n",
+			wants:     	getTestData(t, "flag.json"),
 		},
 		{
 			name:       "yaml flag",
 			item:       map[string]int{"a": 1, "b": 2},
 			outputType: "yaml",
-			wants: `|
-  a: 1
-  b: 2
-`,
+			wants: 		getTestData(t, "flag.yaml"),
 		},
 		{
 			name:    "test throw",
