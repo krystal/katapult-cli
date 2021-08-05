@@ -49,6 +49,7 @@ brews:
   -
     name: katapult-cli
     test: system "#{bin}/katapult version"
+    install: bin.install "katapult"
     commit_author:
       name: github-actions
       email: github-actions@github.com
