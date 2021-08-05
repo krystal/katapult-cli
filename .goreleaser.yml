@@ -43,3 +43,15 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+brews:
+  name: katapult-cli
+  test: katapult version
+  commit_author:
+    name: github-actions
+    email: github-actions@github.com
+  description: The official CLI for Katapult.
+  tap:
+    owner: krystal
+    name: homebrew-taps
+    token: "{{ .Env.KRYSTALBOT_REPO_PAT }}"
