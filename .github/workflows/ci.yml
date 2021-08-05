@@ -98,6 +98,8 @@ jobs:
           distribution: goreleaser
           version: latest
           args: --snapshot --rm-dist
+        env:
+          KRYSTALBOT_REPO_PAT: ${{ secrets.KRYSTALBOT_REPO_PAT }}
       - uses: actions/upload-artifact@v2
         with:
           name: binaries
