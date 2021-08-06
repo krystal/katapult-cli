@@ -1,5 +1,5 @@
 FROM alpine
 RUN apk add ca-certificates
-ENTRYPOINT ["/usr/local/bin/katapult-cli"]
+ENTRYPOINT ["/usr/local/bin/katapult"]
 WORKDIR /katapult
-COPY katapult-cli /usr/local/bin/katapult-cli
+COPY katapult /usr/local/bin/katapult

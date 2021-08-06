@@ -10,6 +10,7 @@ builds:
       - linux
       - windows
       - darwin
+    binary: katapult
     main: ./cmd/katapult
 
 dockers:
@@ -43,3 +44,17 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+
+brews:
+  -
+    name: katapult-cli
+    test: system "#{bin}/katapult version"
+    install: bin.install "katapult"
+    commit_author:
+      name: github-actions
+      email: github-actions@github.com
+    description: The official CLI for Katapult.
+    tap:
+      owner: krystal
+      name: homebrew-taps
+      token: "{{ .Env.KRYSTALBOT_REPO_PAT }}"

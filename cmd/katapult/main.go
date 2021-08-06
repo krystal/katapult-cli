@@ -87,7 +87,9 @@ func run() error {
 			core.NewIPAddressesClient(cl),
 			core.NewSSHKeysClient(cl),
 			core.NewTagsClient(cl),
-			core.NewVirtualMachineBuildsClient(cl)))
+			core.NewVirtualMachineBuildsClient(cl)),
+		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
+	)
 
 	return rootCmd.Execute()
 }
