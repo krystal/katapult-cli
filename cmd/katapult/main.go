@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/url"
 	"os"
 
-	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
@@ -23,23 +21,14 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	if configFileFlag != "" {
-		conf.SetConfigFile(configFileFlag)
-	}
 
-	err = conf.Load()
-	if err != nil {
-		return err
-	}
-
-	cl, err := newClient(conf)
-	if err != nil {
-		return err
-	}
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
 		Long:  `katapult is a CLI tool for the katapult.io hosting platform.`,
+		FParseErrWhitelist: cobra.FParseErrWhitelist{
+			UnknownFlags: true,
+		},
 	}
 
 	rootFlags := rootCmd.PersistentFlags()
@@ -62,17 +51,24 @@ func run() error {
 		return err
 	}
 
-	cobra.OnInitialize(func() {
-		// TODO: We probably want to fix the config to remove this without regressions!
-		cl.(*katapult.Client).APIKey = configAPIKey
-		if configURLFlag != "" {
-			u, err := url.Parse(configURLFlag)
-			if err != nil {
-				panic(err)
-			}
-			cl.(*katapult.Client).BaseURL = u
-		}
-	})
+	err = rootCmd.ParseFlags(os.Args)
+	if err != nil {
+		return err
+	}
+
+	if configFileFlag != "" {
+		conf.SetConfigFile(configFileFlag)
+	}
+
+	err = conf.Load()
+	if err != nil {
+		return err
+	}
+
+	cl, err := newClient(conf)
+	if err != nil {
+		return err
+	}
 
 	rootCmd.AddCommand(
 		versionCommand(),
