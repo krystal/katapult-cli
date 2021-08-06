@@ -5,9 +5,20 @@ import (
 	"log"
 	"os"
 
+	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
+
+type setup interface {
+	Setup(cl core.RequestMaker)
+}
+
+func runSetups(cl core.RequestMaker, setupHandler ...setup) {
+	for _, v := range setupHandler {
+		v.Setup(cl)
+	}
+}
 
 func run() error {
 	var (
@@ -67,10 +78,7 @@ func run() error {
 			log.Printf("A fatal error occurred: %s", err)
 			os.Exit(1)
 		}
-		dcsClient.Setup(cl)
-		networksClient.Setup(cl)
-		orgsClient.Setup(cl)
-		vmsClient.Setup(cl)
+		runSetups(cl, dcsClient, networksClient, orgsClient, vmsClient)
 	})
 
 	rootCmd.AddCommand(
