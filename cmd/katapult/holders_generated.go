@@ -10,14 +10,30 @@ type DataCentersClientHolder struct {
 	*core.DataCentersClient
 }
 
+func (h *DataCentersClientHolder) Setup(cl core.RequestMaker) {
+	h.DataCentersClient = core.NewDataCentersClient(cl)
+}
+
 type NetworksClientHolder struct {
 	*core.NetworksClient
+}
+
+func (h *NetworksClientHolder) Setup(cl core.RequestMaker) {
+	h.NetworksClient = core.NewNetworksClient(cl)
 }
 
 type OrganizationsClientHolder struct {
 	*core.OrganizationsClient
 }
 
+func (h *OrganizationsClientHolder) Setup(cl core.RequestMaker) {
+	h.OrganizationsClient = core.NewOrganizationsClient(cl)
+}
+
 type VirtualMachinesClientHolder struct {
 	*core.VirtualMachinesClient
+}
+
+func (h *VirtualMachinesClientHolder) Setup(cl core.RequestMaker) {
+	h.VirtualMachinesClient = core.NewVirtualMachinesClient(cl)
 }

@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
@@ -68,10 +67,10 @@ func run() error {
 			log.Printf("A fatal error occurred: %s", err)
 			os.Exit(1)
 		}
-		dcsClient.DataCentersClient = core.NewDataCentersClient(cl)
-		networksClient.NetworksClient = core.NewNetworksClient(cl)
-		orgsClient.OrganizationsClient = core.NewOrganizationsClient(cl)
-		vmsClient.VirtualMachinesClient = core.NewVirtualMachinesClient(cl)
+		dcsClient.Setup(cl)
+		networksClient.Setup(cl)
+		orgsClient.Setup(cl)
+		vmsClient.Setup(cl)
 	})
 
 	rootCmd.AddCommand(

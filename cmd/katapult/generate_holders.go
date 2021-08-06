@@ -21,6 +21,10 @@ import "github.com/krystal/go-katapult/core"
 
 const holder = `type {{ . }}Holder struct {
 	*core.{{ . }}
+}
+
+func (h *{{ . }}Holder) Setup(cl core.RequestMaker) {
+	h.{{ . }} = core.New{{ . }}(cl)
 }`
 
 var types = []string{
