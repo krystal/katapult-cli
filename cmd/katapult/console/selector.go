@@ -135,31 +135,36 @@ func selectorComponent(question string, columns []string, items interface{}, std
 		usableItemRows -= roughLines
 
 		// Handle column rendering.
-		renderColumns := func(row []string) {
+		renderColumns := func(row []string, highlight bool) {
 			// Get the length per column.
 			lengthPerColumn := width / len(row)
 
 			// Go through each column.
+			content := ""
 			for _, column := range row {
 				// Check if we need to truncate or pad.
 				if len(column) >= lengthPerColumn {
 					// Truncate
-					_, _ = goterm.Print(column[:lengthPerColumn])
+					content += column[:lengthPerColumn]
 				} else {
 					// Pad
 					padding := make([]byte, lengthPerColumn - len(column))
 					for i := range padding {
 						padding[i] = ' '
 					}
-					_, _ = goterm.Print(column, padding)
+					content += column
+					content += string(padding)
 				}
 			}
-			_, _ = goterm.Println()
+			if highlight {
+				content = goterm.Color(content, goterm.YELLOW)
+			}
+			_, _ = goterm.Println(content)
 		}
 
 		// Render the title of each column.
 		if columns != nil {
-			renderColumns(columns)
+			renderColumns(columns, false)
 			usableItemRows--
 		}
 
@@ -203,14 +208,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 				}
 			} else {
 				// Handle column rendering.
-				a := v.([]string)
-				if i == highlightIndex {
-					// Highlight the columns.
-					for i, x := range columns {
-						a[i] = goterm.Color(x, goterm.YELLOW)
-					}
-				}
-				renderColumns(a)
+				renderColumns(v.([]string), i == highlightIndex)
 			}
 		}
 
@@ -256,7 +254,6 @@ func selectorComponent(question string, columns []string, items interface{}, std
 					}
 
 					// Handle the selection in a multiple context.
-					// Get the match.
 					var item interface{}
 					switch x := matched.(type) {
 					case []string:
@@ -266,7 +263,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 					}
 					found := false
 					for e := selectedItems.Front(); e != nil; e = e.Next() {
-						if e.Value.(string) == item {
+						if e.Value == item {
 							selectedItems.Remove(e)
 							found = true
 							break
