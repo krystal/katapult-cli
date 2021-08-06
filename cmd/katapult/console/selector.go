@@ -39,7 +39,7 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 
 	// Loop until we match.
 	for {
-		loopStart:
+	loopStart:
 		// Get the usable item rows.
 		usableItemRows := goterm.Height() - 1
 		if 0 >= usableItemRows {
@@ -95,7 +95,7 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 			end := highlighted[index+len(query):]
 			_, _ = goterm.Println(goterm.Color(start, goterm.BLUE) + query + goterm.Color(end, goterm.BLUE))
 		}
-		roughLines := int(math.Ceil(float64(len(questionFormatted) + suggestionLen) / float64(width)))
+		roughLines := int(math.Ceil(float64(len(questionFormatted)+suggestionLen) / float64(width)))
 		usableItemRows -= roughLines
 
 		// Display the rest of the items.
@@ -104,7 +104,7 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		if highlightIndex >= usableItemRows {
 			matchedStart = highlightIndex - usableItemRows + 1
 		}
-		for i := matchedStart; i < intMin(matchedLen, matchedStart + usableItemRows); i++ {
+		for i := matchedStart; i < intMin(matchedLen, matchedStart+usableItemRows); i++ {
 			// Get the match.
 			v := matched[i]
 
@@ -120,7 +120,7 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 			}
 
 			// Handle rendering the item.
-			renderItem:
+		renderItem:
 			if i == highlightIndex {
 				// Highlight this item.
 				_, _ = goterm.Println(goterm.Color(v, goterm.YELLOW))

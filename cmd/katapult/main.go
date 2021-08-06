@@ -2,11 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/krystal/go-katapult"
 	"log"
 	"net/url"
 	"os"
 
+	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
@@ -80,7 +80,9 @@ func run() error {
 		dataCentersCmd(core.NewDataCentersClient(cl)),
 		networksCmd(core.NewNetworksClient(cl)),
 		organizationsCmd(core.NewOrganizationsClient(cl)),
-		createCmd(core.NewOrganizationsClient(cl),
+		virtualMachinesCmd(
+			core.NewVirtualMachinesClient(cl),
+			core.NewOrganizationsClient(cl),
 			core.NewDataCentersClient(cl),
 			core.NewVirtualMachinePackagesClient(cl),
 			core.NewDiskTemplatesClient(cl),
@@ -88,7 +90,6 @@ func run() error {
 			core.NewSSHKeysClient(cl),
 			core.NewTagsClient(cl),
 			core.NewVirtualMachineBuildsClient(cl)),
-		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
 	)
 
 	return rootCmd.Execute()
