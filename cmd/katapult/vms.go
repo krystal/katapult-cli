@@ -276,6 +276,22 @@ func listAllTags(ctx context.Context, org core.OrganizationRef, tagsClient tagsC
 	return allTags, nil
 }
 
+func listAllSSHKeys(ctx context.Context, org core.OrganizationRef, sshKeysClient sshKeysListClient) ([]*core.AuthSSHKey, error) {
+	totalPages := 1
+	allKeys := make([]*core.AuthSSHKey, 0)
+	for pageNum := 1; pageNum <= totalPages; pageNum++ {
+		keys, resp, err := sshKeysClient.List(ctx, org, &core.ListOptions{Page: pageNum})
+		if err != nil {
+			return nil, err
+		}
+		if resp.Pagination != nil {
+			totalPages = resp.Pagination.TotalPages
+		}
+		allKeys = append(allKeys, keys...)
+	}
+	return allKeys, nil
+}
+
 func getStringIndex(needle string, haystack []string) int {
 	for i, v := range haystack {
 		if v == needle {
@@ -410,10 +426,7 @@ func virtualMachinesCreateCmd(
 			}
 
 			// List the SSH keys.
-			keys, _, err := sshKeysClient.List(cmd.Context(), core.OrganizationRef{ID: org.ID}, &core.ListOptions{
-				Page:    1,
-				PerPage: 100,
-			}) // TODO
+			keys, err := listAllSSHKeys(cmd.Context(), core.OrganizationRef{ID: org.ID}, sshKeysClient)
 			if err != nil {
 				return err
 			}
