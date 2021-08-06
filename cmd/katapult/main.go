@@ -66,7 +66,7 @@ func run() error {
 		return err
 	}
 
-	// We use holders for the clients instead of the actual clients and then initialise them on launch.
+	// We use holders for the clients instead of the actual clients and then initialize them on launch.
 	// The reason behind this is that cobra likes to launch asynchronously, so this works without a global.
 	dcsClient := &DataCentersClientHolder{}
 	networksClient := &NetworksClientHolder{}
