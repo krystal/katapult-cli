@@ -313,7 +313,7 @@ type sshKeysListClient interface {
 	List(
 		ctx context.Context,
 		org core.OrganizationRef,
-		opts *core.ListOptions, // TODO: Implement this!
+		opts *core.ListOptions,
 	) ([]*core.AuthSSHKey, *katapult.Response, error)
 }
 
