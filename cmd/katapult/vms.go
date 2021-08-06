@@ -8,11 +8,10 @@ import (
 	"os"
 
 	"github.com/buger/goterm"
-	"github.com/krystal/go-katapult/buildspec"
-	"github.com/krystal/katapult-cli/cmd/katapult/console"
-
 	"github.com/krystal/go-katapult"
+	"github.com/krystal/go-katapult/buildspec"
 	"github.com/krystal/go-katapult/core"
+	"github.com/krystal/katapult-cli/cmd/katapult/console"
 	"github.com/spf13/cobra"
 )
 
