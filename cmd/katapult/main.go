@@ -30,10 +30,6 @@ func run() error {
 		return err
 	}
 
-	cl, err := newClient(conf)
-	if err != nil {
-		return err
-	}
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
@@ -60,13 +56,31 @@ func run() error {
 		return err
 	}
 
+	// We use holders for the clients instead of the actual clients and then initialise them on launch.
+	// The reason behind this is that cobra likes to launch asynchronously, so this works without a global.
+	dcsClient := &DataCentersClientHolder{}
+	networksClient := &NetworksClientHolder{}
+	orgsClient := &OrganizationsClientHolder{}
+	vmsClient := &VirtualMachinesClientHolder{}
+	cobra.OnInitialize(func() {
+		cl, err := newClient(conf)
+		if err != nil {
+			log.Printf("A fatal error occurred: %s", err)
+			os.Exit(1)
+		}
+		dcsClient.DataCentersClient = core.NewDataCentersClient(cl)
+		networksClient.NetworksClient = core.NewNetworksClient(cl)
+		orgsClient.OrganizationsClient = core.NewOrganizationsClient(cl)
+		vmsClient.VirtualMachinesClient = core.NewVirtualMachinesClient(cl)
+	})
+
 	rootCmd.AddCommand(
 		versionCommand(),
 		configCommand(conf),
-		dataCentersCmd(core.NewDataCentersClient(cl)),
-		networksCmd(core.NewNetworksClient(cl)),
-		organizationsCmd(core.NewOrganizationsClient(cl)),
-		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
+		dataCentersCmd(dcsClient),
+		networksCmd(networksClient),
+		organizationsCmd(orgsClient),
+		virtualMachinesCmd(vmsClient),
 	)
 
 	return rootCmd.Execute()
