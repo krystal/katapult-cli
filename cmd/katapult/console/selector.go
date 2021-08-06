@@ -26,7 +26,8 @@ func intMin(x, y int) int {
 	return x
 }
 
-func selectorComponent(question string, items []string, stdin io.Reader, multiple bool, onRender func()) []string {
+// items is either []string or [][]string (if columns isn't nil)
+func selectorComponent(question string, columns []string, items interface{}, stdin io.Reader, multiple bool, onRender func()) interface{} {
 	// Pre-initialise things we need below.
 	query := ""
 	buf := make([]byte, 3)
@@ -51,18 +52,48 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		width := goterm.Width()
 
 		// Get the matched items.
-		var matched []string
+		var matched interface{}
 		queryLower := strings.ToLower(query)
-		for _, v := range items {
-			if strings.Contains(strings.ToLower(v), query) {
-				// The query is contained in the string.
-				matched = append(matched, v)
+		if columns == nil {
+			// Handle string matches.
+			for _, v := range items.([]string) {
+				if strings.Contains(strings.ToLower(v), query) {
+					// The query is contained in the string.
+					a, _ := matched.([]string)
+					matched = append(a, v)
+				}
+			}
+		} else {
+			// Handle string array matches.
+			for _, v := range items.([][]string) {
+				found := false
+				for _, x := range v {
+					if strings.Contains(strings.ToLower(x), query) {
+						found = true
+						break
+					}
+				}
+				if found {
+					// The query is contained in one of the strings.
+					a, _ := matched.([][]string)
+					matched = append(a, v)
+				}
 			}
 		}
 		if matched == nil {
-			matched = []string{}
+			if columns == nil {
+				matched = []string{}
+			} else {
+				matched = [][]string{}
+			}
 		}
-		if highlightIndex >= len(matched) {
+		stackLen := func(iface interface{}) int {
+			if columns == nil {
+				return len(matched.([]string))
+			}
+			return len(matched.([][]string))
+		}
+		if highlightIndex >= stackLen(matched) {
 			highlightIndex = 0
 		}
 
@@ -82,13 +113,18 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 
 		// Format the query.
 		var suggestionLen int
-		if len(matched) == 0 {
+		if stackLen(matched) == 0 {
 			// There's no matches, we should just just print the users input.
 			_, _ = goterm.Println(query)
 			suggestionLen = len(query)
 		} else {
 			// We should print it inside the highlighted result.
-			highlighted := matched[highlightIndex]
+			var highlighted string
+			if columns == nil {
+				highlighted = matched.([]string)[highlightIndex]
+			} else {
+				highlighted = strings.Join(matched.([][]string)[highlightIndex], " / ")
+			}
 			suggestionLen = len(highlighted)
 			index := strings.Index(strings.ToLower(highlighted), queryLower)
 			start := highlighted[:index]
@@ -98,20 +134,55 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 		roughLines := int(math.Ceil(float64(len(questionFormatted)+suggestionLen) / float64(width)))
 		usableItemRows -= roughLines
 
+		// Handle column rendering.
+		renderColumns := func(row []string) {
+			// Get the length per column.
+			lengthPerColumn := width / len(row)
+
+			// Go through each column.
+			for _, column := range row {
+				// Check if we need to truncate or pad.
+				if len(column) >= lengthPerColumn {
+					// Truncate
+					_, _ = goterm.Print(column[:lengthPerColumn])
+				} else {
+					// Pad
+					padding := make([]byte, lengthPerColumn - len(column))
+					for i := range padding {
+						padding[i] = ' '
+					}
+					_, _ = goterm.Print(column, padding)
+				}
+			}
+			_, _ = goterm.Println()
+		}
+
+		// Render the title of each column.
+		if columns != nil {
+			renderColumns(columns)
+			usableItemRows--
+		}
+
 		// Display the rest of the items.
-		matchedLen := len(matched)
+		matchedLen := stackLen(matched)
 		matchedStart := 0
 		if highlightIndex >= usableItemRows {
 			matchedStart = highlightIndex - usableItemRows + 1
 		}
 		for i := matchedStart; i < intMin(matchedLen, matchedStart+usableItemRows); i++ {
 			// Get the match.
-			v := matched[i]
+			var v interface{}
+			switch x := matched.(type) {
+			case []string:
+				v = x[i]
+			case [][]string:
+				v = x[i]
+			}
 
 			// Handle rendering selections in a multiple context.
 			if multiple {
 				for e := selectedItems.Front(); e != nil; e = e.Next() {
-					if e.Value.(string) == v {
+					if e.Value == v {
 						_, _ = goterm.Print(goterm.Color("[*] ", goterm.GREEN))
 						goto renderItem
 					}
@@ -121,12 +192,25 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 
 			// Handle rendering the item.
 		renderItem:
-			if i == highlightIndex {
-				// Highlight this item.
-				_, _ = goterm.Println(goterm.Color(v, goterm.YELLOW))
+			if columns == nil {
+				// Handle string rendering.
+				if i == highlightIndex {
+					// Highlight this item.
+					_, _ = goterm.Println(goterm.Color(v.(string), goterm.YELLOW))
+				} else {
+					// Print the item.
+					_, _ = goterm.Println(v)
+				}
 			} else {
-				// Print the item.
-				_, _ = goterm.Println(v)
+				// Handle column rendering.
+				a := v.([]string)
+				if i == highlightIndex {
+					// Highlight the columns.
+					for i, x := range columns {
+						a[i] = goterm.Color(x, goterm.YELLOW)
+					}
+				}
+				renderColumns(a)
 			}
 		}
 
@@ -162,14 +246,24 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 				os.Exit(1)
 			case 13:
 				// Enter
-				if len(matched) != 0 {
+				if stackLen(matched) != 0 {
 					if !multiple {
 						// If we aren't to match multiple, enter means we should return it.
-						return []string{matched[highlightIndex]}
+						if columns == nil {
+							return []string{matched.([]string)[highlightIndex]}
+						}
+						return [][]string{matched.([][]string)[highlightIndex]}
 					}
 
 					// Handle the selection in a multiple context.
-					item := matched[highlightIndex]
+					// Get the match.
+					var item interface{}
+					switch x := matched.(type) {
+					case []string:
+						 item = x[highlightIndex]
+					case [][]string:
+						item = x[highlightIndex]
+					}
 					found := false
 					for e := selectedItems.Front(); e != nil; e = e.Next() {
 						if e.Value.(string) == item {
@@ -226,10 +320,20 @@ func selectorComponent(question string, items []string, stdin io.Reader, multipl
 
 // FuzzySelector is used to create a selector which also fuzzy searches the items and allows for the selection of one item.
 func FuzzySelector(question string, items []string, stdin io.Reader) string {
-	return selectorComponent(question, items, stdin, false, nil)[0]
+	return selectorComponent(question, nil, items, stdin, false, nil).([]string)[0]
 }
 
 // FuzzyMultiSelector is used to create a selector which also fuzzy searches the items and allows for the selection of multiple items.
 func FuzzyMultiSelector(question string, items []string, stdin io.Reader) []string {
-	return selectorComponent(question, items, stdin, true, nil)
+	return selectorComponent(question, nil, items, stdin, true, nil).([]string)
+}
+
+// FuzzyTableSelector is used to create a selector which also fuzzy searches the table and allows for the selection of one item.
+func FuzzyTableSelector(question string, columns []string, items [][]string, stdin io.Reader) []string {
+	return selectorComponent(question, columns, items, stdin, false, nil).([][]string)[0]
+}
+
+// FuzzyTableMultiSelector is used to create a selector which also fuzzy searches the table and allows for the selection of multiple items.
+func FuzzyTableMultiSelector(question string, columns []string, items [][]string, stdin io.Reader) [][]string {
+	return selectorComponent(question, columns, items, stdin, true, nil).([][]string)
 }
