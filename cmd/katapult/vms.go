@@ -411,12 +411,17 @@ func virtualMachinesCreateCmd(
 			if err != nil {
 				return err
 			}
+			allIps := ips
+			ips = make([]*core.IPAddress, 0)
+			for _, v := range allIps {
+				if v.AllocationID == "" {
+					ips = append(ips, v)
+				}
+			}
 			selectedIps := []*core.IPAddress{}
 			if len(ips) != 0 {
 				ipStrs := make([]string, len(ips))
 				for i, ip := range ips {
-					// TODO: Finish this when issues solved
-					fmt.Println(ip)
 					ipStrs[i] = fmt.Sprintf("%s (%s) [%s]", ip.Address, ip.ReverseDNS, ip.ID)
 				}
 				ipStrs = console.FuzzyMultiSelector("Please select any IP addresses you wish to add.", ipStrs, os.Stdin)
