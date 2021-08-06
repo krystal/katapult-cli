@@ -411,17 +411,18 @@ func virtualMachinesCreateCmd(
 			if err != nil {
 				return err
 			}
-			ipIds := []string{}
+			selectedIps := []*core.IPAddress{}
 			if len(ips) != 0 {
 				ipStrs := make([]string, len(ips))
 				for i, ip := range ips {
 					// TODO: Finish this when issues solved
+					fmt.Println(ip)
 					ipStrs[i] = fmt.Sprintf("%s (%s) [%s]", ip.Address, ip.ReverseDNS, ip.ID)
 				}
-				selectedIps := console.FuzzyMultiSelector("Please select any IP addresses you wish to add.", ipStrs, os.Stdin)
-				ipIds = make([]string, len(selectedIps))
-				for i, keyDescription := range selectedIps {
-					ipIds[i] = ips[getStringIndex(keyDescription, ipStrs)].ID
+				ipStrs = console.FuzzyMultiSelector("Please select any IP addresses you wish to add.", ipStrs, os.Stdin)
+				selectedIps = make([]*core.IPAddress, len(ipStrs))
+				for i, keyDescription := range ipStrs {
+					selectedIps[i] = ips[getStringIndex(keyDescription, ipStrs)]
 				}
 			}
 
@@ -480,16 +481,19 @@ func virtualMachinesCreateCmd(
 			description := console.Question("If you want a description, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
 
 			// Build the virtual machine spec.
-			ifaces := make([]*buildspec.NetworkInterface, len(ipIds))
-			for i, id := range ipIds {
+			ifaces := make([]*buildspec.NetworkInterface, len(selectedIps))
+			for i, ip := range selectedIps {
+				if ip.Network == nil {
+					return errors.New("ip address not assigned to network")
+				}
 				ifaces[i] = &buildspec.NetworkInterface{
 					IPAddressAllocations: []*buildspec.IPAddressAllocation{
 						{
-							IPAddress: &buildspec.IPAddress{
-								Address: id,
-							},
+							IPAddress: &buildspec.IPAddress{ID: ip.ID},
+							Type: buildspec.ExistingIPAddressAllocation,
 						},
 					},
+					Network: &buildspec.Network{ID: ip.Network.ID},
 				}
 			}
 			spec := &buildspec.VirtualMachineSpec{
