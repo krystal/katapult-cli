@@ -94,7 +94,7 @@ func run() error {
 
 func main() {
 	// TODO: Remove this
-	console.FuzzyTableSelector("testing", []string{"hello", "world"}, [][]string{
+	console.FuzzyTableMultiSelector("testing", []string{"testing testing", "123"}, [][]string{
 		{
 			"a", "b",
 		},

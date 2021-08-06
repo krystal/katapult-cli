@@ -2,13 +2,12 @@ package console
 
 import (
 	"container/list"
+	"github.com/buger/goterm"
+	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"math"
 	"os"
 	"strings"
-
-	"github.com/buger/goterm"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -24,6 +23,17 @@ func intMin(x, y int) int {
 		return y
 	}
 	return x
+}
+
+func exactCompare(a, b interface{}) bool {
+	switch x := a.(type) {
+	case []string:
+		// The logic behind this: A string slice is just a fancy pointer with some extra data.
+		// If we compare the pointers, we can tell if they are equal.
+		return &x[0] == &b.([]string)[0]
+	default:
+		return a == b
+	}
 }
 
 // items is either []string or [][]string (if columns isn't nil)
@@ -135,12 +145,12 @@ func selectorComponent(question string, columns []string, items interface{}, std
 		usableItemRows -= roughLines
 
 		// Handle column rendering.
-		renderColumns := func(row []string, highlight bool) {
+		renderColumns := func(row []string, offset int, highlight bool) {
 			// Get the length per column.
-			lengthPerColumn := width / len(row)
+			lengthPerColumn := (width / len(row)) - offset
 
 			// Go through each column.
-			content := ""
+			content := strings.Repeat(" ", offset)
 			for _, column := range row {
 				// Check if we need to truncate or pad.
 				if len(column) >= lengthPerColumn {
@@ -148,12 +158,8 @@ func selectorComponent(question string, columns []string, items interface{}, std
 					content += column[:lengthPerColumn]
 				} else {
 					// Pad
-					padding := make([]byte, lengthPerColumn - len(column))
-					for i := range padding {
-						padding[i] = ' '
-					}
 					content += column
-					content += string(padding)
+					content += strings.Repeat(" ", lengthPerColumn - len(column))
 				}
 			}
 			if highlight {
@@ -164,7 +170,12 @@ func selectorComponent(question string, columns []string, items interface{}, std
 
 		// Render the title of each column.
 		if columns != nil {
-			renderColumns(columns, false)
+			offset := 0
+			if multiple {
+				// If there is multiple items, we want to offset the items by the checkbox size.
+				offset = 4
+			}
+			renderColumns(columns, offset, false)
 			usableItemRows--
 		}
 
@@ -187,7 +198,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 			// Handle rendering selections in a multiple context.
 			if multiple {
 				for e := selectedItems.Front(); e != nil; e = e.Next() {
-					if e.Value == v {
+					if exactCompare(e.Value, v) {
 						_, _ = goterm.Print(goterm.Color("[*] ", goterm.GREEN))
 						goto renderItem
 					}
@@ -208,7 +219,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 				}
 			} else {
 				// Handle column rendering.
-				renderColumns(v.([]string), i == highlightIndex)
+				renderColumns(v.([]string), 0, i == highlightIndex)
 			}
 		}
 
@@ -263,7 +274,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 					}
 					found := false
 					for e := selectedItems.Front(); e != nil; e = e.Next() {
-						if e.Value == item {
+						if exactCompare(e.Value, item) {
 							selectedItems.Remove(e)
 							found = true
 							break
@@ -303,6 +314,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 				// Arrow up
 				highlightIndex--
 				if highlightIndex == -1 {
+					// Don't let people try and access index -1.
 					highlightIndex = 0
 				}
 			case string([]byte{27, 91, 66}):
