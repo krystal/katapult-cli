@@ -2,12 +2,13 @@ package console
 
 import (
 	"container/list"
-	"github.com/buger/goterm"
-	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"math"
 	"os"
 	"strings"
+
+	"github.com/buger/goterm"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
