@@ -311,10 +311,22 @@ func selectorComponent(question string, columns []string, items interface{}, std
 			case 27:
 				// Escape
 				if multiple {
-					a := make([]string, selectedItems.Len())
+					if columns == nil {
+						// These aren't rows. Treat them as strings.
+						a := make([]string, selectedItems.Len())
+						i := 0
+						for e := selectedItems.Front(); e != nil; e = e.Next() {
+							a[i] = e.Value.(string)
+							i++
+						}
+						return a
+					}
+
+					// Treat these as rows.
+					a := make([][]string, selectedItems.Len())
 					i := 0
 					for e := selectedItems.Front(); e != nil; e = e.Next() {
-						a[i] = e.Value.(string)
+						a[i] = e.Value.([]string)
 						i++
 					}
 					return a
