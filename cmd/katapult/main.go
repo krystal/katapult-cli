@@ -96,7 +96,10 @@ func main() {
 	// TODO: Remove this
 	console.FuzzyTableMultiSelector("testing", []string{"testing testing", "123"}, [][]string{
 		{
-			"a", "b",
+			"hello", "world",
+		},
+		{
+			"testing", "123",
 		},
 	}, os.Stdin)
 	err := run()

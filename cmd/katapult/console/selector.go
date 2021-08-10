@@ -145,12 +145,27 @@ func selectorComponent(question string, columns []string, items interface{}, std
 		usableItemRows -= roughLines
 
 		// Handle column rendering.
-		renderColumns := func(row []string, offset int, highlight bool) {
+		renderColumns := func(row []string, offset, highlight int) {
+			// Get the remaining width by subtracting the offset from the console width.
+			remainingWidth := width
+			if offset > 0 {
+				// Subtract the offset from the width.
+				remainingWidth = width - offset
+			}
+
 			// Get the length per column.
-			lengthPerColumn := (width / len(row)) - offset
+			lengthPerColumn := remainingWidth / len(row)
+			if 0 > offset {
+				// Subtract the offset from column length.
+				lengthPerColumn += offset
+			}
 
 			// Go through each column.
-			content := strings.Repeat(" ", offset)
+			content := ""
+			if offset > 0 {
+				// Pad out for the offset.
+				content = strings.Repeat(" ", offset)
+			}
 			for _, column := range row {
 				// Check if we need to truncate or pad.
 				if len(column) >= lengthPerColumn {
@@ -158,12 +173,16 @@ func selectorComponent(question string, columns []string, items interface{}, std
 					content += column[:lengthPerColumn]
 				} else {
 					// Pad
-					content += column
-					content += strings.Repeat(" ", lengthPerColumn - len(column))
+					content += column + strings.Repeat(" ", lengthPerColumn - len(column))
 				}
 			}
-			if highlight {
+			switch highlight {
+			case 1:
+				// Content highlight
 				content = goterm.Color(content, goterm.YELLOW)
+			case 2:
+				// Title highlight
+				content = goterm.Color(content, goterm.CYAN)
 			}
 			_, _ = goterm.Println(content)
 		}
@@ -175,7 +194,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 				// If there is multiple items, we want to offset the items by the checkbox size.
 				offset = 4
 			}
-			renderColumns(columns, offset, false)
+			renderColumns(columns, offset, 2)
 			usableItemRows--
 		}
 
@@ -219,7 +238,11 @@ func selectorComponent(question string, columns []string, items interface{}, std
 				}
 			} else {
 				// Handle column rendering.
-				renderColumns(v.([]string), 0, i == highlightIndex)
+				highlightValue := 0
+				if i == highlightIndex {
+					highlightValue = 1
+				}
+				renderColumns(v.([]string), -2, highlightValue)
 			}
 		}
 
