@@ -190,7 +190,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 
 		// Render the title of each column.
 		if columns != nil {
-			offset := 0
+			offset := -2
 			if multiple {
 				// If there is multiple items, we want to offset the items by the checkbox size.
 				offset = 4

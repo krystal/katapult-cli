@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
 
 	"github.com/buger/goterm"
 	"github.com/krystal/go-katapult"
@@ -301,6 +302,15 @@ func getStringIndex(needle string, haystack []string) int {
 	return -1
 }
 
+func getArrayIndex(needle []string, haystack [][]string) int {
+	for i, v := range haystack {
+		if &v[0] == &needle[0] {
+			return i
+		}
+	}
+	return -1
+}
+
 type virtualMachineIPAddressesClient interface {
 	List(
 		ctx context.Context,
@@ -355,12 +365,12 @@ func virtualMachinesCreateCmd(
 			}
 
 			// Create a fuzzy searcher for organisations.
-			orgStrs := make([]string, len(orgs))
+			orgRows := make([][]string, len(orgs))
 			for i, org := range orgs {
-				orgStrs[i] = fmt.Sprintf("%s (%s) [%s]", org.Name, org.SubDomain, org.ID)
+				orgRows[i] = []string{org.Name, org.SubDomain}
 			}
-			orgStr := console.FuzzySelector("Which organisation would you like to deploy the VM in?", orgStrs, cmd.InOrStdin())
-			index := getStringIndex(orgStr, orgStrs)
+			orgArr := console.FuzzyTableSelector("Which organisation would you like to deploy the VM in?", []string{"Name", "Subdomain"}, orgRows, cmd.InOrStdin())
+			index := getArrayIndex(orgArr, orgRows)
 			org := orgs[index]
 
 			// List the datacenters.
@@ -370,12 +380,12 @@ func virtualMachinesCreateCmd(
 			}
 
 			// Create a fuzzy searcher for data centres.
-			dcStrs := make([]string, len(dcs))
+			dcRows := make([][]string, len(dcs))
 			for i, dc := range dcs {
-				dcStrs[i] = fmt.Sprintf("%s (%s) [%s] / %s", dc.Name, dc.Permalink, dc.ID, dc.Country.Name)
+				dcRows[i] = []string{dc.Name, dc.Country.Name}
 			}
-			dcStr := console.FuzzySelector("Which DC would you like to deploy the VM in?", dcStrs, cmd.InOrStdin())
-			index = getStringIndex(dcStr, dcStrs)
+			dcArr := console.FuzzyTableSelector("Which DC would you like to deploy the VM in?", []string{"Name", "Country"}, dcRows, cmd.InOrStdin())
+			index = getArrayIndex(dcArr, dcRows)
 			dc := dcs[index]
 
 			// List the packages.
@@ -383,14 +393,12 @@ func virtualMachinesCreateCmd(
 			if err != nil {
 				return err
 			}
-			packageStrs := make([]string, len(packages))
+			packageRows := make([][]string, len(packages))
 			for i, package_ := range packages {
-				packageStrs[i] = fmt.Sprintf(
-					"%s (%d cores, %d GB RAM) [%s]", package_.Name, package_.CPUCores,
-					package_.MemoryInGB, package_.ID)
+				packageRows[i] = []string{package_.Name, strconv.Itoa(package_.CPUCores), strconv.Itoa(package_.MemoryInGB)+"GB"}
 			}
-			packageStr := console.FuzzySelector("Which VM package would you like?", packageStrs, cmd.InOrStdin())
-			index = getStringIndex(packageStr, packageStrs)
+			packageArr := console.FuzzyTableSelector("Which VM package would you like?", []string{"Name", "CPU Cores", "RAM"}, packageRows, cmd.InOrStdin())
+			index = getArrayIndex(packageArr, packageRows)
 			package_ := packages[index]
 
 			// Ask about the distribution.
@@ -400,7 +408,7 @@ func virtualMachinesCreateCmd(
 			}
 			distributionStrs := make([]string, len(distributions))
 			for i, distribution := range distributions {
-				distributionStrs[i] = fmt.Sprintf("%s [%s]", distribution.Name, distribution.ID)
+				distributionStrs[i] = distribution.Name
 			}
 			distributionStr := console.FuzzySelector("Which distribution would you like?", distributionStrs, cmd.InOrStdin())
 			index = getStringIndex(distributionStr, distributionStrs)
@@ -420,14 +428,14 @@ func virtualMachinesCreateCmd(
 			}
 			selectedIps := []*core.IPAddress{}
 			if len(ips) != 0 {
-				ipStrs := make([]string, len(ips))
+				ipRows := make([][]string, len(ips))
 				for i, ip := range ips {
-					ipStrs[i] = fmt.Sprintf("%s (%s) [%s]", ip.Address, ip.ReverseDNS, ip.ID)
+					ipRows[i] = []string{ip.Address, ip.ReverseDNS}
 				}
-				ipStrs = console.FuzzyMultiSelector("Please select any IP addresses you wish to add.", ipStrs, os.Stdin)
-				selectedIps = make([]*core.IPAddress, len(ipStrs))
-				for i, keyDescription := range ipStrs {
-					selectedIps[i] = ips[getStringIndex(keyDescription, ipStrs)]
+				selectedIpRows := console.FuzzyTableMultiSelector("Please select any IP addresses you wish to add.", []string{"Address", "Reverse DNS"}, ipRows, os.Stdin)
+				selectedIps = make([]*core.IPAddress, len(selectedIpRows))
+				for i, arr := range selectedIpRows {
+					selectedIps[i] = ips[getArrayIndex(arr, ipRows)]
 				}
 			}
 
@@ -436,18 +444,16 @@ func virtualMachinesCreateCmd(
 			if err != nil {
 				return err
 			}
-
-			// Ask about the SSH keys.
 			keyIds := []string{}
 			if len(keys) != 0 {
-				keyStrs := make([]string, len(keys))
+				keyRows := make([][]string, len(keys))
 				for i, key := range keys {
-					keyStrs[i] = fmt.Sprintf("%s (%s) [%s]", key.Name, key.Fingerprint, key.ID)
+					keyRows[i] = []string{key.Name, key.Fingerprint}
 				}
-				selectedKeys := console.FuzzyMultiSelector("Which organisation SSH keys do you wish to add?", keyStrs, os.Stdin)
+				selectedKeys := console.FuzzyTableMultiSelector("Which organisation SSH keys do you wish to add?", []string{"Name", "Fingerprint"}, keyRows, os.Stdin)
 				keyIds = make([]string, len(selectedKeys))
-				for i, keyDescription := range selectedKeys {
-					keyIds[i] = keys[getStringIndex(keyDescription, keyStrs)].ID
+				for i, arr := range selectedKeys {
+					keyIds[i] = keys[getArrayIndex(arr, keyRows)].ID
 				}
 			}
 
@@ -462,14 +468,14 @@ func virtualMachinesCreateCmd(
 			}
 			tagStrs := make([]string, len(tags))
 			for i, v := range tags {
-				tagStrs[i] = fmt.Sprintf("%s [%s]", v.Name, v.ID)
+				tagStrs[i] = v.Name
 			}
 			tagIds := []string{}
 			if len(tags) != 0 {
 				selectedTags := console.FuzzyMultiSelector("Do you wish to add any tags?", tagStrs, cmd.InOrStdin())
 				tagIds = make([]string, len(selectedTags))
-				for i, keyDescription := range selectedTags {
-					keyIds[i] = keys[getStringIndex(keyDescription, selectedTags)].ID
+				for i, tagName := range selectedTags {
+					tagIds[i] = tags[getStringIndex(tagName, selectedTags)].ID
 				}
 			}
 
