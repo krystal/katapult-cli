@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/krystal/katapult-cli/cmd/katapult/console"
 	"log"
 	"os"
 
@@ -93,15 +92,6 @@ func run() error {
 }
 
 func main() {
-	// TODO: Remove this
-	console.FuzzyTableMultiSelector("testing", []string{"testing testing", "123"}, [][]string{
-		{
-			"hello", "world",
-		},
-		{
-			"testing", "123",
-		},
-	}, os.Stdin)
 	err := run()
 	if err != nil {
 		log.Printf("A fatal error occurred: %s", err)
