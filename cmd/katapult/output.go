@@ -28,7 +28,7 @@ type Output interface {
 	Text(template string) (string, error)
 }
 
-// Used when an item can just output YAML for the user readable output.
+// Used to implement Output for a variety of test cases.
 type genericOutput struct {
 	item interface{}
 	tpl  string
