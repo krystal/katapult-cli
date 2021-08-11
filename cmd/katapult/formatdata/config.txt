@@ -1,2 +1,1 @@
-{{ range $key, $value := . }}{{ $key }}: {{ $value }}
-{{ end }}
+{{ Table (StringSlice "Key" "Value") (KVMap .) }}

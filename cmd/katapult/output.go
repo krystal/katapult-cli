@@ -3,9 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"reflect"
 	"strings"
 	"text/template"
 
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
@@ -48,9 +51,67 @@ func (g genericOutput) YAML() (string, error) {
 	return string(b), nil
 }
 
+// Used to render a table.
+func table(columns []string, rows [][]interface{}) string {
+	buf := &bytes.Buffer{}
+	t := tablewriter.NewWriter(buf)
+	t.SetHeader(columns)
+	strrows := make([][]string, len(rows))
+	for i, row := range rows {
+		strrow := make([]string, len(row))
+		for x, v := range row {
+			strrow[x] = fmt.Sprint(v)
+		}
+		strrows[i] = strrow
+	}
+	t.AppendBulk(strrows)
+	t.Render()
+	return buf.String()
+}
+
+// Handle mapping a KV to an array.
+func kvMap(m map[string]interface{}) [][]interface{} {
+	a := make([][]interface{}, len(m))
+	i := 0
+	for k, v := range m {
+		a[i] = []interface{}{k, v}
+		i++
+	}
+	return a
+}
+
+// Used to make a string slice.
+func stringSlice(items ...string) []string {
+	return items
+}
+
+// Used to return a single row.
+func singleRow(items ...interface{}) [][]interface{} {
+	return [][]interface{}{items}
+}
+
+// Used to return multiple rows.
+func multipleRows(items interface{}, keys ...string) [][]interface{} {
+	a := make([][]interface{}, len(keys))
+	itemsReflect := reflect.ValueOf(items)
+	for i := 0; i < itemsReflect.Len(); i++ {
+		x := make([]interface{}, len(keys))
+		value := reflect.Indirect(itemsReflect.Index(i))
+		for i, k := range keys {
+			dotsplit := strings.Split(k, ".")
+			for i := 0; i < len(dotsplit)-1; i++ {
+				value = reflect.Indirect(value.FieldByName(dotsplit[i]))
+			}
+			x[i] = value.FieldByName(dotsplit[len(dotsplit)-1]).Interface()
+		}
+		a[i] = x
+	}
+	return a
+}
+
 // Used to render the template.
 func renderTemplate(tpl string, data interface{}) (string, error) {
-	parsed, err := template.New("tpl").Parse(tpl)
+	parsed, err := template.New("tpl").Funcs(template.FuncMap{"Table": table, "KVMap": kvMap, "StringSlice": stringSlice, "SingleRow": singleRow, "MultipleRows": multipleRows}).Parse(tpl)
 	if err != nil {
 		return "", err
 	}

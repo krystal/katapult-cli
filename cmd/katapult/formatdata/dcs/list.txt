@@ -1,2 +1,1 @@
-{{ range $dc := . }} - {{ $dc.Name }} ({{ $dc.Permalink }}) [{{ $dc.ID }}] / {{ $dc.Country.Name }}
-{{ end }}
+{{ Table (StringSlice "Name" "Permalink" "Country Name") (MultipleRows . "Name" "Permalink" "Country.Name") }}

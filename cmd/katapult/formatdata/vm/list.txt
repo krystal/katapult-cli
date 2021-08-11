@@ -1,2 +1,1 @@
-{{ range $vm := . }} - {{ .Name }} ({{ .FQDN }}) [{{.ID }}]: {{ .Package.Name }}
-{{ end }}
+{{ Table (StringSlice "Name" "FQDN") (MultipleRows . "Name" "FQDN") }}
