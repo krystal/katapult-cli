@@ -40,7 +40,6 @@ func TestOrganizations_List(t *testing.T) {
 
 		output  string
 		orgs    []*core.Organization
-		want    string
 		stderr  string
 		throws  string
 		wantErr string
@@ -48,15 +47,11 @@ func TestOrganizations_List(t *testing.T) {
 		{
 			name: "organizations list human readable",
 			orgs: fixtureOrganizations,
-			want: ` - Loge Enthusiasts (loge) [loge]
- - testing, testing, 123 (test) [testing]
-`,
 		},
 		{
 			name:   "organizations list json",
 			orgs:   fixtureOrganizations,
 			output: "json",
-			want:   getTestData(t, "organizations_list_json.json"),
 		},
 		{
 			name: "empty organizations human readable",
@@ -66,7 +61,6 @@ func TestOrganizations_List(t *testing.T) {
 			name:   "empty organizations json",
 			orgs:   []*core.Organization{},
 			output: "json",
-			want:   "[]\n",
 		},
 		{
 			name:    "organization error",
@@ -79,7 +73,7 @@ func TestOrganizations_List(t *testing.T) {
 			cmd := organizationsCmd(mockOrganizationsListClient{orgs: tt.orgs, throws: tt.throws})
 			outputFlag = tt.output
 			cmd.SetArgs([]string{"list"})
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			outputFlag = ""
 		})
 	}

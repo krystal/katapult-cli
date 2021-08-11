@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"github.com/krystal/katapult-cli/internal/golden"
 	"testing"
 
 	"github.com/spf13/cobra"
@@ -21,7 +22,11 @@ func TestGenericOutput_YAML(t *testing.T) {
 	g := genericOutput{item: []string{"hello", "world"}}
 	s, err := g.YAML()
 	assert.NoError(t, err)
-	assert.Equal(t, getTestData(t, "output.yaml"), s)
+	if golden.Update() {
+		golden.Set(t, []byte(s))
+		return
+	}
+	assert.Equal(t, string(golden.Get(t)), s)
 }
 
 func Test_renderTemplate(t *testing.T) {
@@ -37,19 +42,16 @@ func TestGenericOutput_Text(t *testing.T) {
 		item            interface{}
 		defaultTemplate string
 		templateArg     string
-		wants           string
 	}{
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
 			defaultTemplate: getTestData(t, "for_map_tpl.txt"),
-			wants:           "a1b2\n",
 		},
 		{
 			name:        "template override",
 			item:        map[string]int{"a": 1, "b": 2},
 			templateArg: getTestData(t, "for_map_tpl.txt"),
-			wants:       "a1b2\n",
 		},
 	}
 	for _, tt := range tests {
@@ -60,7 +62,11 @@ func TestGenericOutput_Text(t *testing.T) {
 			}
 			text, err := g.Text(tt.templateArg)
 			assert.NoError(t, err)
-			assert.Equal(t, text, tt.wants)
+			if golden.Update() {
+				golden.Set(t, []byte(text))
+				return
+			}
+			assert.Equal(t, text, string(golden.Get(t)))
 		})
 	}
 }
@@ -74,32 +80,27 @@ func Test_renderOption(t *testing.T) {
 		defaultTemplate string
 		templateFlag    string
 		throws          string
-		wants           string
 		wantErr         string
 	}{
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
 			defaultTemplate: getTestData(t, "for_map_tpl.txt"),
-			wants:           "a1b2\n",
 		},
 		{
 			name:         "template override",
 			item:         map[string]int{"a": 1, "b": 2},
 			templateFlag: getTestData(t, "for_map_tpl.txt"),
-			wants:        "a1b2\n",
 		},
 		{
 			name:       "json flag",
 			item:       map[string]int{"a": 1, "b": 2},
 			outputType: "json",
-			wants:      getTestData(t, "flag.json"),
 		},
 		{
 			name:       "yaml flag",
 			item:       map[string]int{"a": 1, "b": 2},
 			outputType: "yaml",
-			wants:      getTestData(t, "flag.yaml"),
 		},
 		{
 			name:    "test throw",
@@ -140,7 +141,10 @@ func Test_renderOption(t *testing.T) {
 			templateFlag = ""
 
 			// Check stdout.
-			assert.Equal(t, tt.wants, buf.String())
+			if golden.Update() {
+				golden.Set(t, buf.Bytes())
+			}
+			assert.Equal(t, golden.Get(t), buf.Bytes())
 		})
 	}
 }

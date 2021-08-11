@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -73,7 +74,15 @@ func table(columns []string, rows [][]interface{}) string {
 func kvMap(m map[string]interface{}) [][]interface{} {
 	a := make([][]interface{}, len(m))
 	i := 0
-	for k, v := range m {
+	orderedKeys := make([]string, len(m))
+	for k := range m {
+		orderedKeys[i] = k
+		i++
+	}
+	sort.Strings(orderedKeys)
+	i = 0
+	for _, k := range orderedKeys {
+		v := m[k]
 		a[i] = []interface{}{k, v}
 		i++
 	}
@@ -92,20 +101,42 @@ func singleRow(items ...interface{}) [][]interface{} {
 
 // Used to return multiple rows.
 func multipleRows(items interface{}, keys ...string) [][]interface{} {
-	a := make([][]interface{}, len(keys))
+	// Use reflect to get the items. We are using this with the slice since we might need to handle many different slice types.
 	itemsReflect := reflect.ValueOf(items)
+
+	// Create a slice of all of the rows.
+	a := make([][]interface{}, itemsReflect.Len())
+
+	// Go through each length items.
 	for i := 0; i < itemsReflect.Len(); i++ {
+		// Create the row.
 		x := make([]interface{}, len(keys))
-		value := reflect.Indirect(itemsReflect.Index(i))
+
+		// Get the value using reflect so we can access fields.
+		outerValue := reflect.Indirect(itemsReflect.Index(i))
+
+		// Go through each key which we want from the field.
 		for i, k := range keys {
+			// Get the locally scoped value.
+			value := outerValue
+
+			// Split by dots so we can get properties.
 			dotsplit := strings.Split(k, ".")
+
+			// Traverse through each field in the key. len-1 is safe here since split will always return at least 1 item.
 			for x := 0; x < len(dotsplit)-1; x++ {
 				value = reflect.Indirect(value.FieldByName(dotsplit[x]))
 			}
+
+			// Get the item from the struct.
 			x[i] = value.FieldByName(dotsplit[len(dotsplit)-1]).Interface()
 		}
+
+		// Add to the array.
 		a[i] = x
 	}
+
+	// Return the rows array.
 	return a
 }
 
