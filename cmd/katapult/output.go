@@ -99,8 +99,8 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 		value := reflect.Indirect(itemsReflect.Index(i))
 		for i, k := range keys {
 			dotsplit := strings.Split(k, ".")
-			for i := 0; i < len(dotsplit)-1; i++ {
-				value = reflect.Indirect(value.FieldByName(dotsplit[i]))
+			for x := 0; x < len(dotsplit)-1; x++ {
+				value = reflect.Indirect(value.FieldByName(dotsplit[x]))
 			}
 			x[i] = value.FieldByName(dotsplit[len(dotsplit)-1]).Interface()
 		}
@@ -111,7 +111,13 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 
 // Used to render the template.
 func renderTemplate(tpl string, data interface{}) (string, error) {
-	parsed, err := template.New("tpl").Funcs(template.FuncMap{"Table": table, "KVMap": kvMap, "StringSlice": stringSlice, "SingleRow": singleRow, "MultipleRows": multipleRows}).Parse(tpl)
+	parsed, err := template.New("tpl").Funcs(template.FuncMap{
+		"Table":        table,
+		"KVMap":        kvMap,
+		"StringSlice":  stringSlice,
+		"SingleRow":    singleRow,
+		"MultipleRows": multipleRows,
+	}).Parse(tpl)
 	if err != nil {
 		return "", err
 	}
