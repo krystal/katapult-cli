@@ -28,7 +28,7 @@ type Output interface {
 	Text(template string) (string, error)
 }
 
-// Used to implement Output for a variety of test cases.
+// Used to implement Output for a variety of use cases.
 type genericOutput struct {
 	item interface{}
 	tpl  string
