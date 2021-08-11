@@ -3,9 +3,9 @@ package main
 import (
 	"bytes"
 	"errors"
-	"github.com/krystal/katapult-cli/internal/golden"
 	"testing"
 
+	"github.com/krystal/katapult-cli/internal/golden"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -46,12 +46,12 @@ func TestGenericOutput_Text(t *testing.T) {
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
-			defaultTemplate: getTestData(t, "for_map_tpl.txt"),
+			defaultTemplate: getForMapTpl(t),
 		},
 		{
 			name:        "template override",
 			item:        map[string]int{"a": 1, "b": 2},
-			templateArg: getTestData(t, "for_map_tpl.txt"),
+			templateArg: getForMapTpl(t),
 		},
 	}
 	for _, tt := range tests {
@@ -85,12 +85,12 @@ func Test_renderOption(t *testing.T) {
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
-			defaultTemplate: getTestData(t, "for_map_tpl.txt"),
+			defaultTemplate: getForMapTpl(t),
 		},
 		{
 			name:         "template override",
 			item:         map[string]int{"a": 1, "b": 2},
-			templateFlag: getTestData(t, "for_map_tpl.txt"),
+			templateFlag: getForMapTpl(t),
 		},
 		{
 			name:       "json flag",

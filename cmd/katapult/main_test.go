@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"embed"
-	"github.com/krystal/katapult-cli/internal/golden"
 	"path"
 	"testing"
 
+	"github.com/krystal/katapult-cli/internal/golden"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,9 +37,9 @@ func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, stderrResul
 //go:embed testdata
 var testdata embed.FS
 
-func getTestData(t *testing.T, filename string) string {
+func getForMapTpl(t *testing.T) string {
 	t.Helper()
-	fp := path.Join("testdata", t.Name(), filename)
+	fp := path.Join("testdata", "for_map_tpl.txt")
 	b, err := testdata.ReadFile(fp)
 	if err != nil {
 		t.Fatal(err)

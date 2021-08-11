@@ -101,7 +101,8 @@ func singleRow(items ...interface{}) [][]interface{} {
 
 // Used to return multiple rows.
 func multipleRows(items interface{}, keys ...string) [][]interface{} {
-	// Use reflect to get the items. We are using this with the slice since we might need to handle many different slice types.
+	// Use reflect to get the items.
+	// We are using this with the slice since we might need to handle many different slice types.
 	itemsReflect := reflect.ValueOf(items)
 
 	// Create a slice of all of the rows.
@@ -123,7 +124,8 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 			// Split by dots so we can get properties.
 			dotsplit := strings.Split(k, ".")
 
-			// Traverse through each field in the key. len-1 is safe here since split will always return at least 1 item.
+			// Traverse through each field in the key. len-1 is safe here since split
+			// will always return at least 1 item.
 			for x := 0; x < len(dotsplit)-1; x++ {
 				value = reflect.Indirect(value.FieldByName(dotsplit[x]))
 			}

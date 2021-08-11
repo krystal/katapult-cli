@@ -5,11 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/krystal/katapult-cli/internal/golden"
 	"testing"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
+	"github.com/krystal/katapult-cli/internal/golden"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
