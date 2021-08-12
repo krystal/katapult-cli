@@ -475,7 +475,7 @@ func virtualMachinesCreateCmd(
 				}
 			}
 
-            // Clear the terminal.
+			// Clear the terminal.
 			goterm.Clear()
 			goterm.Flush()
 
