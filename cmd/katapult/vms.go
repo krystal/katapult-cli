@@ -457,10 +457,6 @@ func virtualMachinesCreateCmd(
 				}
 			}
 
-			// Clear the terminal.
-			goterm.Clear()
-			goterm.Flush()
-
 			// Ask for the tags.
 			tags, err := listAllTags(cmd.Context(), core.OrganizationRef{ID: org.ID}, tagsClient)
 			if err != nil {
@@ -478,6 +474,10 @@ func virtualMachinesCreateCmd(
 					tagIds[i] = tags[getStringIndex(tagName, selectedTags)].ID
 				}
 			}
+
+            // Clear the terminal.
+			goterm.Clear()
+			goterm.Flush()
 
 			// Get the buffered stdin.
 			bufferedStdin := bufio.NewReader(cmd.InOrStdin())
