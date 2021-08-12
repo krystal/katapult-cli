@@ -19,6 +19,19 @@ const (
 	clarificationStringMultiple = " (Press ENTER to select items and ESC when you are done with your selections): "
 )
 
+// Defines a interface for a compatible terminal. Used for unit testing.
+type terminalInterface interface {
+	Height() int
+	Width() int
+	Print(items ...interface{}) (int, error)
+	Println(items ...interface{}) (int, error)
+	Clear()
+	Flush()
+	SignalInterrupt()
+	MakeRaw() (*term.State, error)
+}
+
+
 func intMin(x, y int) int {
 	if x > y {
 		return y
@@ -85,11 +98,11 @@ func getQueryMatches(query string, hasColumns bool, items interface{}) (interfac
 }
 
 // Formats the user prompt. Returns the rough line count.
-func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched interface{}, query, queryLower string) int {
+func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched interface{}, query, queryLower string, terminal terminalInterface) int {
 	var suggestionLen int
 	if length == 0 {
 		// There's no matches, we should just just print the users input.
-		_, _ = goterm.Println(query)
+		_, _ = terminal.Println(query)
 		suggestionLen = len(query)
 	} else {
 		// We should print it inside the highlighted result.
@@ -103,13 +116,13 @@ func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched inter
 		index := strings.Index(strings.ToLower(highlighted), queryLower)
 		start := highlighted[:index]
 		end := highlighted[index+len(query):]
-		_, _ = goterm.Println(goterm.Color(start, goterm.BLUE) + query + goterm.Color(end, goterm.BLUE))
+		_, _ = terminal.Println(goterm.Color(start, goterm.BLUE) + query + goterm.Color(end, goterm.BLUE))
 	}
 	return suggestionLen
 }
 
 // Handles column rendering.
-func renderColumns(row []string, offset, highlight, width int) {
+func renderColumns(row []string, offset, highlight, width int, terminal terminalInterface) {
 	// Get the remaining width by subtracting the offset from the console width.
 	remainingWidth := width
 	if offset > 0 {
@@ -148,16 +161,24 @@ func renderColumns(row []string, offset, highlight, width int) {
 		// Title highlight
 		content = goterm.Color(content, goterm.CYAN)
 	}
-	_, _ = goterm.Println(content)
+	_, _ = terminal.Println(content)
 }
 
 // Handle a standard input.
-func handleStandardInput(buf []byte, matchedLen int, multiple, hasColumns bool,
-	highlightIndex *int, selectedItems *list.List, matched interface{}, query *string) interface{} {
+func handleStandardInput(
+	buf []byte, matchedLen int, multiple, hasColumns bool,
+	highlightIndex *int, selectedItems *list.List, matched interface{}, query *string,
+	terminal terminalInterface,
+) interface{} {
 	switch buf[0] {
 	case 3:
 		// CTRL+C
-		os.Exit(1)
+		terminal.SignalInterrupt()
+		if hasColumns {
+			return [][]string{}
+		} else {
+			return []string{}
+		}
 	case 13:
 		// Enter
 		if matchedLen != 0 {
@@ -230,11 +251,11 @@ func handleStandardInput(buf []byte, matchedLen int, multiple, hasColumns bool,
 // Handle the inputs.
 func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *int,
 	hasColumns bool, selectedItems *list.List, query *string,
-	matched interface{}) interface{} {
+	matched interface{}, terminal terminalInterface) interface{} {
 	if n == 1 {
 		// Standard input.
 		return handleStandardInput(buf, matchedLen, multiple, hasColumns, highlightIndex,
-			selectedItems, matched, query)
+			selectedItems, matched, query, terminal)
 	}
 
 	// AT&T style key input.
@@ -256,32 +277,66 @@ func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *i
 }
 
 // Renders a row item.
-func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}) {
+func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}, terminal terminalInterface) {
 	if hasColumn {
 		// Handle column rendering.
 		highlightValue := 0
 		if i == highlightIndex {
 			highlightValue = 1
 		}
-		renderColumns(v.([]string), -2, highlightValue, width)
+		renderColumns(v.([]string), -2, highlightValue, width, terminal)
 		return
 	}
 
 	// Handle string rendering.
 	if i == highlightIndex {
 		// Highlight this item.
-		_, _ = goterm.Println(goterm.Color(v.(string), goterm.YELLOW))
+		_, _ = terminal.Println(goterm.Color(v.(string), goterm.YELLOW))
 	} else {
 		// Print the item.
-		_, _ = goterm.Println(v)
+		_, _ = terminal.Println(v)
 	}
 }
 
+type gotermTerminal struct {}
+
+func (gotermTerminal) Height() int {
+	return goterm.Height()
+}
+
+func (gotermTerminal) Width() int {
+	return goterm.Width()
+}
+
+func (gotermTerminal) Print(items ...interface{}) (int, error) {
+	return goterm.Print(items...)
+}
+
+func (gotermTerminal) Clear() {
+	goterm.Clear()
+}
+
+func (gotermTerminal) Println(items ...interface{}) (int, error) {
+	return goterm.Println(items...)
+}
+
+func (gotermTerminal) Flush() {
+	goterm.Flush()
+}
+
+func (gotermTerminal) SignalInterrupt() {
+	os.Exit(1)
+}
+
+func (gotermTerminal) MakeRaw() (*term.State, error) {
+	return term.MakeRaw(0)
+}
+
 // items is either []string or [][]string (if columns isn't nil).
-//nolint:unparam,funlen
+//nolint:funlen
 func selectorComponent(
 	question string, columns []string, items interface{},
-	stdin io.Reader, multiple bool, onRender func(),
+	stdin io.Reader, multiple bool, terminal terminalInterface,
 ) interface{} {
 	// Pre-initialize things we need below.
 	query := ""
@@ -296,14 +351,15 @@ func selectorComponent(
 	// Loop until we match.
 	for {
 		// Get the usable item rows.
-		usableItemRows := goterm.Height() - 1
+		usableItemRows := terminal.Height() - 1
 		if 0 >= usableItemRows {
 			// Weird. Return status code 1.
-			os.Exit(1)
+			terminal.SignalInterrupt()
+			return nil
 		}
 
 		// Get the width.
-		width := goterm.Width()
+		width := terminal.Width()
 
 		// Get the matched items.
 		matched, queryLower, matchedLen := getQueryMatches(query, columns != nil, items)
@@ -314,7 +370,7 @@ func selectorComponent(
 		}
 
 		// Clear the terminal.
-		goterm.Clear()
+		terminal.Clear()
 
 		// Asks the question.
 		var questionFormatted string
@@ -325,10 +381,11 @@ func selectorComponent(
 			// Add the single clarification string on o the question.
 			questionFormatted = goterm.Color(question+clarificationStringSingle, goterm.GREEN)
 		}
-		_, _ = goterm.Print(questionFormatted)
+		_, _ = terminal.Print(questionFormatted)
 
 		// Format the query.
-		suggestionLen := formatUserPrompt(matchedLen, highlightIndex, columns != nil, matched, query, queryLower)
+		suggestionLen := formatUserPrompt(matchedLen, highlightIndex, columns != nil,
+			matched, query, queryLower, terminal)
 		roughLines := int(math.Ceil(float64(len(questionFormatted)+suggestionLen) / float64(width)))
 		usableItemRows -= roughLines
 
@@ -339,7 +396,7 @@ func selectorComponent(
 				// If there is multiple items, we want to offset the items by the checkbox size.
 				offset = 4
 			}
-			renderColumns(columns, offset, 2, width)
+			renderColumns(columns, offset, 2, width, terminal)
 			usableItemRows--
 		}
 
@@ -362,43 +419,40 @@ func selectorComponent(
 			if multiple {
 				for e := selectedItems.Front(); e != nil; e = e.Next() {
 					if exactCompare(e.Value, v) {
-						_, _ = goterm.Print(goterm.Color("[*] ", goterm.GREEN))
+						_, _ = terminal.Print(goterm.Color("[*] ", goterm.GREEN))
 						goto renderItem
 					}
 				}
-				_, _ = goterm.Print(goterm.Color("[ ] ", goterm.RED))
+				_, _ = terminal.Print(goterm.Color("[ ] ", goterm.RED))
 			}
 
 			// Handle rendering the item.
 		renderItem:
-			renderRowItem(columns != nil, highlightIndex, i, width, v)
+			renderRowItem(columns != nil, highlightIndex, i, width, v, terminal)
 		}
 
 		// Print a bunch of new lines if there's less items than console rows.
 		if usableItemRows > matchedLen {
 			blankLines := usableItemRows - matchedLen
 			for i := 0; i < blankLines; i++ {
-				_, _ = goterm.Println()
+				_, _ = terminal.Println()
 			}
 		}
 
 		// Flush out the output.
-		goterm.Flush()
-
-		// Call the on render event if it exists.
-		if onRender != nil {
-			onRender()
-		}
+		terminal.Flush()
 
 		// Wait for user input.
-		raw, err := term.MakeRaw(0)
+		raw, err := terminal.MakeRaw()
 		if err != nil {
 			panic(err)
 		}
 		n, _ := stdin.Read(buf)
-		_ = term.Restore(0, raw)
+		if raw != nil {
+			_ = term.Restore(0, raw)
+		}
 		if x := handleInput(buf, multiple, matchedLen,
-			n, &highlightIndex, columns != nil, selectedItems, &query, matched); x != nil {
+			n, &highlightIndex, columns != nil, selectedItems, &query, matched, terminal); x != nil {
 			return x
 		}
 	}
@@ -406,20 +460,20 @@ func selectorComponent(
 
 // FuzzySelector is used to create a selector.
 func FuzzySelector(question string, items []string, stdin io.Reader) string {
-	return selectorComponent(question, nil, items, stdin, false, nil).([]string)[0]
+	return selectorComponent(question, nil, items, stdin, false, gotermTerminal{}).([]string)[0]
 }
 
 // FuzzyMultiSelector is used to create a selector with multiple items.
 func FuzzyMultiSelector(question string, items []string, stdin io.Reader) []string {
-	return selectorComponent(question, nil, items, stdin, true, nil).([]string)
+	return selectorComponent(question, nil, items, stdin, true, gotermTerminal{}).([]string)
 }
 
-// FuzzyTableMultiSelector is used to create a selector with a table.
+// FuzzyTableSelector is used to create a selector with a table.
 func FuzzyTableSelector(question string, columns []string, items [][]string, stdin io.Reader) []string {
-	return selectorComponent(question, columns, items, stdin, false, nil).([][]string)[0]
+	return selectorComponent(question, columns, items, stdin, false, gotermTerminal{}).([][]string)[0]
 }
 
 // FuzzyTableMultiSelector is used to create a selector with a table and multiple items.
 func FuzzyTableMultiSelector(question string, columns []string, items [][]string, stdin io.Reader) [][]string {
-	return selectorComponent(question, columns, items, stdin, true, nil).([][]string)
+	return selectorComponent(question, columns, items, stdin, true, gotermTerminal{}).([][]string)
 }

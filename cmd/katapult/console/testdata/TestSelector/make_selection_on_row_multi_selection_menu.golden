@@ -1,0 +1,45 @@
+[2J[32mtest (Press ENTER to select items and ESC when you are done with your selections): [0m[34m[0m[34mhello / a[0m
+[36m    test                                                                                              123                                                                                               [0m
+[31m[ ] [0m[33mhello                                                                                             a                                                                                                 [0m
+[31m[ ] [0mworld                                                                                             b                                                                                                 
+[31m[ ] [0mxd                                                                                                c                                                                                                 
+
+
+
+
+[2J[32mtest (Press ENTER to select items and ESC when you are done with your selections): [0m[34m[0m[34mhello / a[0m
+[36m    test                                                                                              123                                                                                               [0m
+[32m[*] [0m[33mhello                                                                                             a                                                                                                 [0m
+[31m[ ] [0mworld                                                                                             b                                                                                                 
+[31m[ ] [0mxd                                                                                                c                                                                                                 
+
+
+
+
+[2J[32mtest (Press ENTER to select items and ESC when you are done with your selections): [0m[34m[0m[34mworld / b[0m
+[36m    test                                                                                              123                                                                                               [0m
+[32m[*] [0mhello                                                                                             a                                                                                                 
+[31m[ ] [0m[33mworld                                                                                             b                                                                                                 [0m
+[31m[ ] [0mxd                                                                                                c                                                                                                 
+
+
+
+
+[2J[32mtest (Press ENTER to select items and ESC when you are done with your selections): [0m[34m[0m[34mworld / b[0m
+[36m    test                                                                                              123                                                                                               [0m
+[32m[*] [0mhello                                                                                             a                                                                                                 
+[32m[*] [0m[33mworld                                                                                             b                                                                                                 [0m
+[31m[ ] [0mxd                                                                                                c                                                                                                 
+
+
+
+
+[2J[32mtest (Press ENTER to select items and ESC when you are done with your selections): [0m[34m[0m[34mxd / c[0m
+[36m    test                                                                                              123                                                                                               [0m
+[32m[*] [0mhello                                                                                             a                                                                                                 
+[32m[*] [0mworld                                                                                             b                                                                                                 
+[31m[ ] [0m[33mxd                                                                                                c                                                                                                 [0m
+
+
+
+
