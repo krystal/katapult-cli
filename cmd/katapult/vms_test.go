@@ -291,7 +291,7 @@ func TestVMs_List(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cmd := virtualMachinesCmd(&vmsClient{organizationIDPages: tt.id, organizationSubdomainPages: tt.subdomains})
+			cmd := virtualMachinesCmd(&vmsClient{organizationIDPages: tt.id, organizationSubdomainPages: tt.subdomains}, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 		})
@@ -388,7 +388,7 @@ func TestVMs_Poweroff(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 			if tt.validate != nil {
@@ -488,7 +488,7 @@ func TestVMs_Stop(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 			if tt.validate != nil {
@@ -588,7 +588,7 @@ func TestVMs_Start(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 			if tt.validate != nil {
@@ -688,7 +688,7 @@ func TestVMs_Reset(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
 			if tt.validate != nil {
