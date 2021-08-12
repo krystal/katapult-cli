@@ -205,7 +205,8 @@ type virtualMachinePackagesClient interface {
 	) ([]*core.VirtualMachinePackage, *katapult.Response, error)
 }
 
-func listAllVMPackages(ctx context.Context, vmPackagesClient virtualMachinePackagesClient) ([]*core.VirtualMachinePackage, error) {
+func listAllVMPackages(ctx context.Context,
+	vmPackagesClient virtualMachinePackagesClient) ([]*core.VirtualMachinePackage, error) {
 	totalPages := 1
 	allPackages := make([]*core.VirtualMachinePackage, 0)
 	for pageNum := 1; pageNum <= totalPages; pageNum++ {
@@ -221,7 +222,8 @@ func listAllVMPackages(ctx context.Context, vmPackagesClient virtualMachinePacka
 	return allPackages, nil
 }
 
-func listAllIPAddresses(ctx context.Context, org core.OrganizationRef, ipAddressesClient virtualMachineIPAddressesClient) ([]*core.IPAddress, error) {
+func listAllIPAddresses(ctx context.Context, org core.OrganizationRef,
+	ipAddressesClient virtualMachineIPAddressesClient) ([]*core.IPAddress, error) {
 	totalPages := 1
 	allAddresses := make([]*core.IPAddress, 0)
 	for pageNum := 1; pageNum <= totalPages; pageNum++ {
@@ -245,11 +247,13 @@ type virtualMachineDiskTemplatesClient interface {
 	) ([]*core.DiskTemplate, *katapult.Response, error)
 }
 
-func listAllDiskTemplates(ctx context.Context, org core.OrganizationRef, diskTemplatesClient virtualMachineDiskTemplatesClient) ([]*core.DiskTemplate, error) {
+func listAllDiskTemplates(ctx context.Context, org core.OrganizationRef,
+	diskTemplatesClient virtualMachineDiskTemplatesClient) ([]*core.DiskTemplate, error) {
 	totalPages := 1
 	allImages := make([]*core.DiskTemplate, 0)
 	for pageNum := 1; pageNum <= totalPages; pageNum++ {
-		images, resp, err := diskTemplatesClient.List(ctx, org, &core.DiskTemplateListOptions{Page: pageNum, IncludeUniversal: true})
+		images, resp, err := diskTemplatesClient.List(
+			ctx, org, &core.DiskTemplateListOptions{Page: pageNum, IncludeUniversal: true})
 		if err != nil {
 			return nil, err
 		}
@@ -277,7 +281,8 @@ func listAllTags(ctx context.Context, org core.OrganizationRef, tagsClient tagsC
 	return allTags, nil
 }
 
-func listAllSSHKeys(ctx context.Context, org core.OrganizationRef, sshKeysClient sshKeysListClient) ([]*core.AuthSSHKey, error) {
+func listAllSSHKeys(ctx context.Context, org core.OrganizationRef,
+	sshKeysClient sshKeysListClient) ([]*core.AuthSSHKey, error) {
 	totalPages := 1
 	allKeys := make([]*core.AuthSSHKey, 0)
 	for pageNum := 1; pageNum <= totalPages; pageNum++ {
@@ -343,14 +348,17 @@ type virtualMachinesBuilderClient interface {
 	) (*core.VirtualMachineBuild, *katapult.Response, error)
 }
 
+//nolint:funlen,gocyclo
 func virtualMachinesCreateCmd(
-	orgsClient organisationsListClient, dcsClient dataCentersClient,
+	orgsClient organisationsListClient,
+	dcsClient dataCentersClient,
 	vmPackagesClient virtualMachinePackagesClient,
 	diskTemplatesClient virtualMachineDiskTemplatesClient,
 	ipAddressesClient virtualMachineIPAddressesClient,
 	sshKeysClient sshKeysListClient,
 	tagsClient tagsClient,
-	vmBuilderClient virtualMachinesBuilderClient) *cobra.Command {
+	vmBuilderClient virtualMachinesBuilderClient,
+) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Allows you to create a VM.",
@@ -358,18 +366,20 @@ func virtualMachinesCreateCmd(
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// TODO: Accept argument from env var.
 
-			// List the organisations.
+			// List the organizations.
 			orgs, _, err := orgsClient.List(cmd.Context())
 			if err != nil {
 				return err
 			}
 
-			// Create a fuzzy searcher for organisations.
+			// Create a fuzzy searcher for organizations.
 			orgRows := make([][]string, len(orgs))
 			for i, org := range orgs {
 				orgRows[i] = []string{org.Name, org.SubDomain}
 			}
-			orgArr := console.FuzzyTableSelector("Which organisation would you like to deploy the VM in?", []string{"Name", "Subdomain"}, orgRows, cmd.InOrStdin())
+			orgArr := console.FuzzyTableSelector(
+				"Which organization would you like to deploy the VM in?",
+				[]string{"Name", "Subdomain"}, orgRows, cmd.InOrStdin())
 			index := getArrayIndex(orgArr, orgRows)
 			org := orgs[index]
 
@@ -379,12 +389,13 @@ func virtualMachinesCreateCmd(
 				return err
 			}
 
-			// Create a fuzzy searcher for data centres.
+			// Create a fuzzy searcher for data centers.
 			dcRows := make([][]string, len(dcs))
 			for i, dc := range dcs {
 				dcRows[i] = []string{dc.Name, dc.Country.Name}
 			}
-			dcArr := console.FuzzyTableSelector("Which DC would you like to deploy the VM in?", []string{"Name", "Country"}, dcRows, cmd.InOrStdin())
+			dcArr := console.FuzzyTableSelector(
+				"Which DC would you like to deploy the VM in?", []string{"Name", "Country"}, dcRows, cmd.InOrStdin())
 			index = getArrayIndex(dcArr, dcRows)
 			dc := dcs[index]
 
@@ -394,15 +405,20 @@ func virtualMachinesCreateCmd(
 				return err
 			}
 			packageRows := make([][]string, len(packages))
-			for i, package_ := range packages {
-				packageRows[i] = []string{package_.Name, strconv.Itoa(package_.CPUCores), strconv.Itoa(package_.MemoryInGB)+"GB"}
+			for i, packageItem := range packages {
+				packageRows[i] = []string{
+					packageItem.Name, strconv.Itoa(packageItem.CPUCores),
+					strconv.Itoa(packageItem.MemoryInGB) + "GB",
+				}
 			}
-			packageArr := console.FuzzyTableSelector("Which VM package would you like?", []string{"Name", "CPU Cores", "RAM"}, packageRows, cmd.InOrStdin())
+			packageArr := console.FuzzyTableSelector(
+				"Which VM package would you like?", []string{"Name", "CPU Cores", "RAM"}, packageRows, cmd.InOrStdin())
 			index = getArrayIndex(packageArr, packageRows)
-			package_ := packages[index]
+			packageResult := packages[index]
 
 			// Ask about the distribution.
-			distributions, err := listAllDiskTemplates(cmd.Context(), core.OrganizationRef{ID: org.ID}, diskTemplatesClient)
+			distributions, err := listAllDiskTemplates(
+				cmd.Context(), core.OrganizationRef{ID: org.ID}, diskTemplatesClient)
 			if err != nil {
 				return err
 			}
@@ -410,7 +426,8 @@ func virtualMachinesCreateCmd(
 			for i, distribution := range distributions {
 				distributionStrs[i] = distribution.Name
 			}
-			distributionStr := console.FuzzySelector("Which distribution would you like?", distributionStrs, cmd.InOrStdin())
+			distributionStr := console.FuzzySelector(
+				"Which distribution would you like?", distributionStrs, cmd.InOrStdin())
 			index = getStringIndex(distributionStr, distributionStrs)
 			distribution := distributions[index]
 
@@ -432,9 +449,11 @@ func virtualMachinesCreateCmd(
 				for i, ip := range ips {
 					ipRows[i] = []string{ip.Address, ip.ReverseDNS}
 				}
-				selectedIpRows := console.FuzzyTableMultiSelector("Please select any IP addresses you wish to add.", []string{"Address", "Reverse DNS"}, ipRows, os.Stdin)
-				selectedIps = make([]*core.IPAddress, len(selectedIpRows))
-				for i, arr := range selectedIpRows {
+				selectedIPRows := console.FuzzyTableMultiSelector(
+					"Please select any IP addresses you wish to add.",
+					[]string{"Address", "Reverse DNS"}, ipRows, os.Stdin)
+				selectedIps = make([]*core.IPAddress, len(selectedIPRows))
+				for i, arr := range selectedIPRows {
 					selectedIps[i] = ips[getArrayIndex(arr, ipRows)]
 				}
 			}
@@ -450,7 +469,9 @@ func virtualMachinesCreateCmd(
 				for i, key := range keys {
 					keyRows[i] = []string{key.Name, key.Fingerprint}
 				}
-				selectedKeys := console.FuzzyTableMultiSelector("Which organisation SSH keys do you wish to add?", []string{"Name", "Fingerprint"}, keyRows, os.Stdin)
+				selectedKeys := console.FuzzyTableMultiSelector(
+					"Which organization SSH keys do you wish to add?", []string{"Name", "Fingerprint"},
+					keyRows, os.Stdin)
 				keyIds = make([]string, len(selectedKeys))
 				for i, arr := range selectedKeys {
 					keyIds[i] = keys[getArrayIndex(arr, keyRows)].ID
@@ -475,7 +496,7 @@ func virtualMachinesCreateCmd(
 				}
 			}
 
-            // Clear the terminal.
+			// Clear the terminal.
 			goterm.Clear()
 			goterm.Flush()
 
@@ -483,13 +504,16 @@ func virtualMachinesCreateCmd(
 			bufferedStdin := bufio.NewReader(cmd.InOrStdin())
 
 			// Ask for the name.
-			name := console.Question("What would you like the virtual machine to be called?", false, bufferedStdin, cmd.OutOrStdout())
+			name := console.Question(
+				"What would you like the virtual machine to be called?", false, bufferedStdin, cmd.OutOrStdout())
 
 			// Ask for the hostname.
-			hostname := console.Question("If you want a hostname, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
+			hostname := console.Question(
+				"If you want a hostname, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
 
 			// Ask for the description.
-			description := console.Question("If you want a description, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
+			description := console.Question(
+				"If you want a description, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
 
 			// Build the virtual machine spec.
 			ifaces := make([]*buildspec.NetworkInterface, len(selectedIps))
@@ -501,7 +525,7 @@ func virtualMachinesCreateCmd(
 					IPAddressAllocations: []*buildspec.IPAddressAllocation{
 						{
 							IPAddress: &buildspec.IPAddress{ID: ip.ID},
-							Type: buildspec.ExistingIPAddressAllocation,
+							Type:      buildspec.ExistingIPAddressAllocation,
 						},
 					},
 					Network: &buildspec.Network{ID: ip.Network.ID},
@@ -509,7 +533,7 @@ func virtualMachinesCreateCmd(
 			}
 			spec := &buildspec.VirtualMachineSpec{
 				DataCenter: &buildspec.DataCenter{ID: dc.ID},
-				Resources:  &buildspec.Resources{Package: &buildspec.Package{ID: package_.ID}},
+				Resources:  &buildspec.Resources{Package: &buildspec.Package{ID: packageResult.ID}},
 				DiskTemplate: &buildspec.DiskTemplate{ID: distribution.ID, Options: []*buildspec.DiskTemplateOption{
 					{
 						Key:   "install_agent",
