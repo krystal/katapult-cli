@@ -1,6 +1,14 @@
 # Data centre actions
 
 ## Listing
-Lists all of the current data centers. You can do this with `dcs list`:
+Lists all the current data centers. You can do this with `dcs list`:
 
-TODO: Image
+```
+$ katapult dcs list
++---------+-----------+----------------+
+|  NAME   | PERMALINK |  COUNTRY NAME  |
++---------+-----------+----------------+
+| Netwise | netwise   | United Kingdom |
++---------+-----------+----------------+
+```
+

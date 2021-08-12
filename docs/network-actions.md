@@ -3,4 +3,18 @@
 ## Listing
 Lists all of the current networks. You can do this with `nets list`. Takes either `--id` or `--subdomain` for the organization:
 
-TODO: Image
+```
+$ katapult networks list --subdomain debug-inc
+Networks:
++----------------+-----------------------+
+|      NAME      |          ID           |
++----------------+-----------------------+
+| Public Network | netw_oNrXAwnkuHddRT6l |
++----------------+-----------------------+
+Virtual Networks:
++------+----+
+| NAME | ID |
++------+----+
++------+----+
+```
+
