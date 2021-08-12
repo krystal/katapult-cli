@@ -114,13 +114,10 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 		x := make([]interface{}, len(keys))
 
 		// Get the value using reflect so we can access fields.
-		outerValue := reflect.Indirect(itemsReflect.Index(i))
+		value := reflect.Indirect(itemsReflect.Index(i))
 
 		// Go through each key which we want from the field.
 		for i, k := range keys {
-			// Get the locally scoped value.
-			value := outerValue
-
 			// Split by dots so we can get properties.
 			dotsplit := strings.Split(k, ".")
 
