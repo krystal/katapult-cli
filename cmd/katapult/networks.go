@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	_ "embed"
-    "fmt"
+	"fmt"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
