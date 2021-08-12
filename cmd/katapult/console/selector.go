@@ -31,7 +31,6 @@ type terminalInterface interface {
 	MakeRaw() (*term.State, error)
 }
 
-
 func intMin(x, y int) int {
 	if x > y {
 		return y
@@ -98,7 +97,8 @@ func getQueryMatches(query string, hasColumns bool, items interface{}) (interfac
 }
 
 // Formats the user prompt. Returns the rough line count.
-func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched interface{}, query, queryLower string, terminal terminalInterface) int {
+func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched interface{},
+	query, queryLower string, terminal terminalInterface) int {
 	var suggestionLen int
 	if length == 0 {
 		// There's no matches, we should just just print the users input.
@@ -176,9 +176,8 @@ func handleStandardInput(
 		terminal.SignalInterrupt()
 		if hasColumns {
 			return [][]string{}
-		} else {
-			return []string{}
 		}
+		return []string{}
 	case 13:
 		// Enter
 		if matchedLen != 0 {
@@ -298,7 +297,7 @@ func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}, 
 	}
 }
 
-type gotermTerminal struct {}
+type gotermTerminal struct{}
 
 func (gotermTerminal) Height() int {
 	return goterm.Height()

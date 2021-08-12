@@ -3,16 +3,17 @@ package console
 import (
 	"bytes"
 	"fmt"
+	"testing"
+
 	"github.com/krystal/katapult-cli/internal/golden"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/term"
-	"testing"
 )
 
 type mockTerminal struct {
-	 buf *bytes.Buffer
+	buf *bytes.Buffer
 
-	 exitSignaled bool
+	exitSignaled bool
 }
 
 func (m mockTerminal) Height() int {
@@ -60,15 +61,15 @@ func (s *stdinDripFeeder) Read(b []byte) (int, error) {
 }
 
 func TestSelector(t *testing.T) {
-	tests := [] struct{
+	tests := []struct {
 		name string
 
-		inputs   [][]byte
-		columns  []string
-		items    interface{}
-		multiple bool
+		inputs     [][]byte
+		columns    []string
+		items      interface{}
+		multiple   bool
 		shouldExit bool
-		result   interface{}
+		result     interface{}
 	}{
 		// Non-row selection
 
@@ -120,7 +121,8 @@ func TestSelector(t *testing.T) {
 		{
 			name: "search non-row selection menu",
 			inputs: [][]byte{
-				{'h'}, {'e'},
+				{'h'},
+				{'e'},
 				{3},
 			},
 			shouldExit: true,
@@ -148,7 +150,7 @@ func TestSelector(t *testing.T) {
 				{3},
 			},
 			shouldExit: true,
-			columns:   []string{"test"},
+			columns:    []string{"test"},
 			items: [][]string{
 				{"hello"}, {"world"},
 			},
@@ -160,7 +162,7 @@ func TestSelector(t *testing.T) {
 				{3},
 			},
 			shouldExit: true,
-			columns:   []string{"test"},
+			columns:    []string{"test"},
 			items: [][]string{
 				{"hello"}, {"world"},
 			},
@@ -173,7 +175,7 @@ func TestSelector(t *testing.T) {
 				{3},
 			},
 			shouldExit: true,
-			columns:   []string{"test"},
+			columns:    []string{"test"},
 			items: [][]string{
 				{"hello"}, {"world"},
 			},
@@ -186,7 +188,7 @@ func TestSelector(t *testing.T) {
 				{3},
 			},
 			shouldExit: true,
-			columns:   []string{"test"},
+			columns:    []string{"test"},
 			items: [][]string{
 				{"hello"}, {"world"},
 			},
@@ -194,11 +196,12 @@ func TestSelector(t *testing.T) {
 		{
 			name: "search row selection menu",
 			inputs: [][]byte{
-				{'h'}, {'e'},
+				{'h'},
+				{'e'},
 				{3},
 			},
 			shouldExit: true,
-			columns:   []string{"test"},
+			columns:    []string{"test"},
 			items: [][]string{
 				{"hello"}, {"world"},
 			},
@@ -209,7 +212,7 @@ func TestSelector(t *testing.T) {
 				{27, 91, 66},
 				{13},
 			},
-			columns:   []string{"test"},
+			columns: []string{"test"},
 			items: [][]string{
 				{"hello"}, {"world"},
 			},
@@ -235,7 +238,7 @@ func TestSelector(t *testing.T) {
 				{27, 91, 66},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
 			items: []string{
 				"hello", "world",
@@ -248,7 +251,7 @@ func TestSelector(t *testing.T) {
 				{27, 91, 66},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
 			items: []string{
 				"hello", "world",
@@ -261,7 +264,7 @@ func TestSelector(t *testing.T) {
 				{27, 91, 65},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
 			items: []string{
 				"hello", "world",
@@ -270,10 +273,11 @@ func TestSelector(t *testing.T) {
 		{
 			name: "search non-row multi selection menu",
 			inputs: [][]byte{
-				{'h'}, {'e'},
+				{'h'},
+				{'e'},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
 			items: []string{
 				"hello", "world",
@@ -304,7 +308,7 @@ func TestSelector(t *testing.T) {
 			},
 			multiple:   true,
 			shouldExit: true,
-			columns: []string{"test", "123"},
+			columns:    []string{"test", "123"},
 			items: [][]string{
 				{"hello", "a"}, {"world", "b"},
 			},
@@ -315,9 +319,9 @@ func TestSelector(t *testing.T) {
 				{27, 91, 66},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
-			columns: []string{"test", "123"},
+			columns:    []string{"test", "123"},
 			items: [][]string{
 				{"hello", "a"}, {"world", "b"},
 			},
@@ -329,9 +333,9 @@ func TestSelector(t *testing.T) {
 				{27, 91, 66},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
-			columns: []string{"test", "123"},
+			columns:    []string{"test", "123"},
 			items: [][]string{
 				{"hello", "a"}, {"world", "b"},
 			},
@@ -343,9 +347,9 @@ func TestSelector(t *testing.T) {
 				{27, 91, 65},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
-			columns: []string{"test", "123"},
+			columns:    []string{"test", "123"},
 			items: [][]string{
 				{"hello", "a"}, {"world", "b"},
 			},
@@ -353,12 +357,13 @@ func TestSelector(t *testing.T) {
 		{
 			name: "search row multi selection menu",
 			inputs: [][]byte{
-				{'h'}, {'e'},
+				{'h'},
+				{'e'},
 				{3},
 			},
-			multiple: true,
+			multiple:   true,
 			shouldExit: true,
-			columns: []string{"test", "123"},
+			columns:    []string{"test", "123"},
 			items: [][]string{
 				{"hello", "a"}, {"world", "b"},
 			},
@@ -373,7 +378,7 @@ func TestSelector(t *testing.T) {
 				{27},
 			},
 			multiple: true,
-			columns: []string{"test", "123"},
+			columns:  []string{"test", "123"},
 			items: [][]string{
 				{"hello", "a"}, {"world", "b"}, {"xd", "c"},
 			},

@@ -23,22 +23,22 @@ func (q *questionStdin) ReadString(delim byte) (string, error) {
 	if old == 0 {
 		return "\n", nil
 	}
-	return strconv.Itoa(old)+"\n", nil
+	return strconv.Itoa(old) + "\n", nil
 }
 
 func TestQuestion(t *testing.T) {
-	tests := []struct{
+	tests := []struct {
 		name string
 
-		blank bool
+		blank    bool
 		response string
-	} {
+	}{
 		{
 			name:  "handle blank input",
 			blank: true,
 		},
 		{
-			name:  "handle ignoring blank input",
+			name:     "handle ignoring blank input",
 			response: "1",
 		},
 	}
