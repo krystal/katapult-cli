@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"fmt"
+	_ "embed"
+    "fmt"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
@@ -16,12 +17,8 @@ type networksListClient interface {
 	) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error)
 }
 
-const listTemplate = `Networks:{{ range $net := .networks }}
- - {{ $net.Name }} [{{ $net.ID }}]{{ end }}
----
-Virtual Networks:{{ range $vnet := .virtual_networks }}
- - {{ $vnet.Name }} [{{ $vnet.ID }}]{{ end }}
-`
+//go:embed formatdata/networks/list.txt
+var networksListFormat string
 
 func networksCmd(client networksListClient) *cobra.Command {
 	cmd := &cobra.Command{
@@ -60,7 +57,7 @@ func networksCmd(client networksListClient) *cobra.Command {
 					"networks":         nets,
 					"virtual_networks": vnets,
 				},
-				tpl: listTemplate,
+				tpl: networksListFormat,
 			}, nil
 		}),
 	}
