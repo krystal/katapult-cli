@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"time"
+
+	_ "embed"
 
 	"github.com/spf13/cobra"
 )
@@ -17,9 +18,9 @@ var (
 const unknownPlaceholder = "undefined"
 
 type versionInfo struct {
-	Version   string
-	Commit    string
-	Date      string
+	Version   string `json:"version"`
+	Commit    string `json:"commit"`
+	Date      string `json:"date"`
 	populated bool
 }
 
@@ -53,21 +54,23 @@ func (v *versionInfo) Populate() {
 	v.populated = true
 }
 
+//go:embed formatdata/version.txt
+var versionFormat string
+
 func versionCommand() *cobra.Command {
 	prettyVersion := &versionInfo{}
 	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Print the version",
 		Long:  `Print the version number of katapult CLI tool.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
 			prettyVersion.Populate()
 
-			fmt.Printf("katapult %s (katapult-cli)\n", prettyVersion.Version)
-			fmt.Println("---")
-			fmt.Printf("Version: %s\n", prettyVersion.Version)
-			fmt.Printf("GitCommit: %s\n", prettyVersion.Commit)
-			fmt.Printf("BuildDate: %s\n", prettyVersion.Date)
-		},
+			return genericOutput{
+				item: prettyVersion,
+				tpl:  versionFormat,
+			}, nil
+		}),
 	}
 
 	return versionCmd

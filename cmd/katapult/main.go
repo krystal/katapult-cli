@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/url"
 	"os"
+
+	"github.com/krystal/go-katapult"
 
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
@@ -32,6 +35,9 @@ func run() error {
 	}
 
 	rootFlags := rootCmd.PersistentFlags()
+
+	rootFlags.StringVarP(&outputFlag, "output", "o", "", "output type (yaml, json, text)")
+	rootFlags.StringVarP(&templateFlag, "template", "t", "", "defines the output template for text")
 
 	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
@@ -87,6 +93,18 @@ func run() error {
 			core.NewTagsClient(cl),
 			core.NewVirtualMachineBuildsClient(cl)),
 	)
+
+	cobra.OnInitialize(func() {
+		// TODO: We probably want to fix the config to remove this without regressions!
+		cl.(*katapult.Client).APIKey = configAPIKey
+		if configURLFlag != "" {
+			u, err := url.Parse(configURLFlag)
+			if err != nil {
+				panic(err)
+			}
+			cl.(*katapult.Client).BaseURL = u
+		}
+	})
 
 	return rootCmd.Execute()
 }

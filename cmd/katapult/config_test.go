@@ -8,18 +8,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const mockConfigFormat = `---
-api_key: %s
-api_url: %s
-
-`
-
 func TestConfig(t *testing.T) {
 	tests := []struct {
 		name string
 
 		apiKey string
 		apiURL string
+		output string
 	}{
 		{
 			name:   "empty values",
@@ -41,6 +36,12 @@ func TestConfig(t *testing.T) {
 			apiKey: "",
 			apiURL: "test",
 		},
+		{
+			name:   "test JSON output",
+			apiKey: "test",
+			apiURL: "test",
+			output: "json",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(fmt.Sprintf("key: %s, url: %s", tt.apiKey, tt.apiURL), func(t *testing.T) {
@@ -49,16 +50,9 @@ func TestConfig(t *testing.T) {
 			conf.SetDefault("api_key", tt.apiKey)
 			conf.SetDefault("api_url", tt.apiURL)
 			cmd := configCommand(conf)
-			cmd.SetArgs([]string{})
-			expectedAPIKey := tt.apiKey
-			if expectedAPIKey == "" {
-				expectedAPIKey = "\"\""
-			}
-			expectedAPIURL := tt.apiURL
-			if expectedAPIURL == "" {
-				expectedAPIURL = "\"\""
-			}
-			assertCobraCommand(t, cmd, "", fmt.Sprintf(mockConfigFormat, expectedAPIKey, expectedAPIURL), "")
+			outputFlag = tt.output
+			assertCobraCommand(t, cmd, "", "")
+			outputFlag = ""
 		})
 	}
 }
