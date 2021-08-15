@@ -6,7 +6,7 @@ So you love Katapult, but you want to be able to use it from the command line? T
 
 Katapult CLI aims to allow you to do all the actions you can do from the UI but inside of your terminal. As of right now, the following options are supported:
 
-- [Organisation actions](organisation-listing.md)
+- [Organisation actions](organisation-actions.md)
 - [Network actions](network-actions.md)
 - [Data centre actions](data-centre-actions.md)
 - [Virtual machine actions](virtual-machine-actions.md)
