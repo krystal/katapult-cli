@@ -67,8 +67,8 @@ func versionCommand() *cobra.Command {
 			prettyVersion.Populate()
 
 			return &genericOutput{
-				item: prettyVersion,
-				tpl:  versionFormat,
+				item:                prettyVersion,
+				defaultTextTemplate: versionFormat,
 			}, nil
 		}),
 	}

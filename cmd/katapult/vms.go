@@ -101,8 +101,8 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 			}
 
 			return &genericOutput{
-				item: allVms,
-				tpl:  virtualMachineListFormat,
+				item:                allVms,
+				defaultTextTemplate: virtualMachineListFormat,
 			}, nil
 		}),
 	}
@@ -125,8 +125,8 @@ func virtualMachinesPoweroffCmd(client virtualMachinesClient) *cobra.Command {
 				return nil, vmNotFoundHandlingError(err)
 			}
 			return &genericOutput{
-				item: task,
-				tpl:  "Virtual machine successfully powered down.\n",
+				item:                task,
+				defaultTextTemplate: "Virtual machine successfully powered down.\n",
 			}, nil
 		}),
 	}
@@ -150,8 +150,8 @@ func virtualMachinesStartCmd(client virtualMachinesClient) *cobra.Command {
 				return nil, vmNotFoundHandlingError(err)
 			}
 			return &genericOutput{
-				item: task,
-				tpl:  "Virtual machine successfully started.\n",
+				item:                task,
+				defaultTextTemplate: "Virtual machine successfully started.\n",
 			}, nil
 		}),
 	}
@@ -175,8 +175,8 @@ func virtualMachinesStopCmd(client virtualMachinesClient) *cobra.Command {
 				return nil, vmNotFoundHandlingError(err)
 			}
 			return &genericOutput{
-				item: task,
-				tpl:  "Virtual machine successfully stopped.\n",
+				item:                task,
+				defaultTextTemplate: "Virtual machine successfully stopped.\n",
 			}, nil
 		}),
 	}
@@ -200,8 +200,8 @@ func virtualMachinesResetCmd(client virtualMachinesClient) *cobra.Command {
 				return nil, vmNotFoundHandlingError(err)
 			}
 			return &genericOutput{
-				item: task,
-				tpl:  "Virtual machine successfully reset.\n",
+				item:                task,
+				defaultTextTemplate: "Virtual machine successfully reset.\n",
 			}, nil
 		}),
 	}

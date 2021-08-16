@@ -17,8 +17,8 @@ func configCommand(conf *config.Config) *cobra.Command {
 		Long:  "Print parsed configuration in YAML/JSON format.",
 		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			return &genericOutput{
-				item: conf.AllSettings(),
-				tpl:  configFormat,
+				item:                conf.AllSettings(),
+				defaultTextTemplate: configFormat,
 			}, nil
 		}),
 	}

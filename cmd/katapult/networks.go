@@ -57,7 +57,7 @@ func networksCmd(client networksListClient) *cobra.Command {
 					"networks":         nets,
 					"virtual_networks": vnets,
 				},
-				tpl: networksListFormat,
+				defaultTextTemplate: networksListFormat,
 			}, nil
 		}),
 	}

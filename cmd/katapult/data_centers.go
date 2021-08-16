@@ -36,8 +36,8 @@ func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 			}
 
 			return &genericOutput{
-				item: dcs,
-				tpl:  dataCentersFormat,
+				item:                dcs,
+				defaultTextTemplate: dataCentersFormat,
 			}, nil
 		}),
 	}
@@ -58,7 +58,7 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 				return nil, err
 			}
 
-			return &genericOutput{item: dc, tpl: getDataCenterFormat}, nil
+			return &genericOutput{item: dc, defaultTextTemplate: getDataCenterFormat}, nil
 		}),
 	}
 }

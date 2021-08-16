@@ -130,8 +130,8 @@ func Test_genericOutput_Text(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			g := genericOutput{
-				item: tt.item,
-				tpl:  tt.defaultTemplate,
+				item:                tt.item,
+				defaultTextTemplate: tt.defaultTemplate,
 			}
 			buf := &bytes.Buffer{}
 			err := g.Text(buf, tt.templateArg)
@@ -197,8 +197,8 @@ func Test_outputWrapper(t *testing.T) {
 					return nil, errors.New(tt.throws)
 				}
 				return &genericOutput{
-					item: tt.item,
-					tpl:  tt.defaultTemplate,
+					item:                tt.item,
+					defaultTextTemplate: tt.defaultTemplate,
 				}, nil
 			})
 

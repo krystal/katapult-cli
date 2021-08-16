@@ -136,8 +136,8 @@ func renderTemplate(w io.Writer, tpl string, data interface{}) error {
 
 // Used to implement Output for a variety of use cases.
 type genericOutput struct {
-	item interface{}
-	tpl  string
+	item                interface{}
+	defaultTextTemplate string
 }
 
 // JSON is used to return a string of the JSON output.
@@ -164,7 +164,7 @@ func (g *genericOutput) YAML(w io.Writer) error {
 func (g *genericOutput) Text(w io.Writer, template string) error {
 	if template == "" {
 		// Return the default template.
-		template = g.tpl
+		template = g.defaultTextTemplate
 	}
 
 	// If not, render the template.
