@@ -2,8 +2,6 @@ package main
 
 import (
 	"bytes"
-	"embed"
-	"path"
 	"testing"
 
 	"github.com/krystal/katapult-cli/internal/golden"
@@ -34,15 +32,5 @@ func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, stderrResul
 	assert.Equal(t, stderrResult, stderr.String())
 }
 
-//go:embed testdata
-var testdata embed.FS
-
-func getForMapTpl(t *testing.T) string {
-	t.Helper()
-	fp := path.Join("testdata", "for_map_tpl.txt")
-	b, err := testdata.ReadFile(fp)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return string(b)
-}
+const forMapTpl = `{{ range $key, $value := . }}{{ $key }}{{ $value }}{{ end }}
+`

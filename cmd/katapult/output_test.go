@@ -119,12 +119,12 @@ func Test_genericOutput_Text(t *testing.T) {
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
-			defaultTemplate: getForMapTpl(t),
+			defaultTemplate: forMapTpl,
 		},
 		{
 			name:        "template override",
 			item:        map[string]int{"a": 1, "b": 2},
-			templateArg: getForMapTpl(t),
+			templateArg: forMapTpl,
 		},
 	}
 	for _, tt := range tests {
@@ -159,12 +159,12 @@ func Test_outputWrapper(t *testing.T) {
 		{
 			name:            "default template",
 			item:            map[string]int{"a": 1, "b": 2},
-			defaultTemplate: getForMapTpl(t),
+			defaultTemplate: forMapTpl,
 		},
 		{
 			name:         "template override",
 			item:         map[string]int{"a": 1, "b": 2},
-			templateFlag: getForMapTpl(t),
+			templateFlag: forMapTpl,
 		},
 		{
 			name:       "json flag",
