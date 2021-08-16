@@ -122,7 +122,7 @@ func Test_renderOption(t *testing.T) {
 				if tt.throws != "" {
 					return nil, errors.New(tt.throws)
 				}
-				return genericOutput{
+				return &genericOutput{
 					item: tt.item,
 					tpl:  tt.defaultTemplate,
 				}, nil

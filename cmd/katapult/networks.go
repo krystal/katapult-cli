@@ -52,7 +52,7 @@ func networksCmd(client networksListClient) *cobra.Command {
 			if vnets == nil {
 				vnets = []*core.VirtualNetwork{}
 			}
-			return genericOutput{
+			return &genericOutput{
 				item: map[string]interface{}{
 					"networks":         nets,
 					"virtual_networks": vnets,

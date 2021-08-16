@@ -66,7 +66,7 @@ func versionCommand() *cobra.Command {
 		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			prettyVersion.Populate()
 
-			return genericOutput{
+			return &genericOutput{
 				item: prettyVersion,
 				tpl:  versionFormat,
 			}, nil

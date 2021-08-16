@@ -38,7 +38,7 @@ func organizationsCmd(client organizationsClient) *cobra.Command {
 				return nil, err
 			}
 
-			return genericOutput{
+			return &genericOutput{
 				item: orgs,
 				tpl:  organizationsListFormat,
 			}, nil

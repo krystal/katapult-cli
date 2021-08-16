@@ -100,7 +100,7 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 				allVms = append(allVms, vms...)
 			}
 
-			return genericOutput{
+			return &genericOutput{
 				item: allVms,
 				tpl:  virtualMachineListFormat,
 			}, nil
@@ -124,7 +124,7 @@ func virtualMachinesPoweroffCmd(client virtualMachinesClient) *cobra.Command {
 			if err != nil {
 				return nil, vmNotFoundHandlingError(err)
 			}
-			return genericOutput{
+			return &genericOutput{
 				item: task,
 				tpl:  "Virtual machine successfully powered down.\n",
 			}, nil
@@ -149,7 +149,7 @@ func virtualMachinesStartCmd(client virtualMachinesClient) *cobra.Command {
 			if err != nil {
 				return nil, vmNotFoundHandlingError(err)
 			}
-			return genericOutput{
+			return &genericOutput{
 				item: task,
 				tpl:  "Virtual machine successfully started.\n",
 			}, nil
@@ -174,7 +174,7 @@ func virtualMachinesStopCmd(client virtualMachinesClient) *cobra.Command {
 			if err != nil {
 				return nil, vmNotFoundHandlingError(err)
 			}
-			return genericOutput{
+			return &genericOutput{
 				item: task,
 				tpl:  "Virtual machine successfully stopped.\n",
 			}, nil
@@ -199,7 +199,7 @@ func virtualMachinesResetCmd(client virtualMachinesClient) *cobra.Command {
 			if err != nil {
 				return nil, vmNotFoundHandlingError(err)
 			}
-			return genericOutput{
+			return &genericOutput{
 				item: task,
 				tpl:  "Virtual machine successfully reset.\n",
 			}, nil
