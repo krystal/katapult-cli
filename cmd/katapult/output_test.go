@@ -11,24 +11,94 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGenericOutput_JSON(t *testing.T) {
-	g := genericOutput{item: "hello world!"}
-	buf := &bytes.Buffer{}
-	err := g.JSON(buf)
-	assert.NoError(t, err)
-	assert.Equal(t, []byte(`"hello world!"`), buf.Bytes())
+func Test_genericOutput_JSON(t *testing.T) {
+	tests := []struct {
+		name string
+
+		item interface{}
+	}{
+		{
+			name: "string",
+			item: "hello world!",
+		},
+		{
+			name: "number",
+			item: 21,
+		},
+		{
+			name: "boolean",
+			item: true,
+		},
+		{
+			name: "null",
+			item: nil,
+		},
+		{
+			name: "array",
+			item: []string{"hello", "world"},
+		},
+		{
+			name: "object",
+			item: map[string]string{"hello": "world"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &genericOutput{item: tt.item}
+			buf := &bytes.Buffer{}
+			assert.NoError(t, g.JSON(buf))
+			if golden.Update() {
+				golden.Set(t, buf.Bytes())
+				return
+			}
+			assert.Equal(t, golden.Get(t), buf.Bytes())
+		})
+	}
 }
 
-func TestGenericOutput_YAML(t *testing.T) {
-	g := genericOutput{item: []string{"hello", "world"}}
-	buf := &bytes.Buffer{}
-	err := g.YAML(buf)
-	assert.NoError(t, err)
-	if golden.Update() {
-		golden.Set(t, buf.Bytes())
-		return
+func Test_genericOutput_YAML(t *testing.T) {
+	tests := []struct {
+		name string
+
+		item interface{}
+	}{
+		{
+			name: "string",
+			item: "hello world!",
+		},
+		{
+			name: "number",
+			item: 21,
+		},
+		{
+			name: "boolean",
+			item: true,
+		},
+		{
+			name: "null",
+			item: nil,
+		},
+		{
+			name: "array",
+			item: []string{"hello", "world"},
+		},
+		{
+			name: "object",
+			item: map[string]string{"hello": "world"},
+		},
 	}
-	assert.Equal(t, golden.Get(t), buf.Bytes())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := &genericOutput{item: tt.item}
+			buf := &bytes.Buffer{}
+			assert.NoError(t, g.YAML(buf))
+			if golden.Update() {
+				golden.Set(t, buf.Bytes())
+				return
+			}
+			assert.Equal(t, golden.Get(t), buf.Bytes())
+		})
+	}
 }
 
 func Test_renderTemplate(t *testing.T) {
@@ -38,7 +108,7 @@ func Test_renderTemplate(t *testing.T) {
 	assert.Equal(t, "Hello World!", buf.String())
 }
 
-func TestGenericOutput_Text(t *testing.T) {
+func Test_genericOutput_Text(t *testing.T) {
 	tests := []struct {
 		name string
 
@@ -75,7 +145,7 @@ func TestGenericOutput_Text(t *testing.T) {
 	}
 }
 
-func Test_renderOption(t *testing.T) {
+func Test_outputWrapper(t *testing.T) {
 	tests := []struct {
 		name string
 
