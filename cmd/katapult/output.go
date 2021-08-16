@@ -178,7 +178,7 @@ type outputFunc func(cmd *cobra.Command, args []string) (Output, error)
 // Used to render a console output of a type. Passes through errors.
 func outputWrapper(f outputFunc) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
-		// Get the objects we require from the cache.
+		// Get stdout.
 		out := cmd.OutOrStdout()
 
 		// Call the function.
@@ -194,13 +194,15 @@ func outputWrapper(f outputFunc) func(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				return err
 			}
-			return json.NewEncoder(out).Encode(b)
+			_, err = out.Write(b)
+			return err
 		case "yml", "yaml":
-			b, err := output.YAML()
+			s, err := output.YAML()
 			if err != nil {
 				return err
 			}
-			return yaml.NewEncoder(out).Encode(b)
+			_, err = out.Write([]byte(s))
+			return err
 		default:
 			s, err := output.Text(templateFlag)
 			if err != nil {

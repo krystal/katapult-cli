@@ -1,1 +1,9 @@
-{"id":"dc_9UVoPiUQoI1cqtRd","name":"hello","permalink":"POG1","country":{"id":"POG","name":"Pogland"}}
+{
+  "id": "dc_9UVoPiUQoI1cqtRd",
+  "name": "hello",
+  "permalink": "POG1",
+  "country": {
+    "id": "POG",
+    "name": "Pogland"
+  }
+}

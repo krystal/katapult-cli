@@ -1,1 +1,47 @@
-{"networks":[{"id":"pognet","name":"Pognet 1","permalink":"pog-1","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}},{"id":"pognet2","name":"Pognet 2","permalink":"pog-2","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}}],"virtual_networks":[{"id":"pognet-virtual-1","name":"Pognet Virtual Network 1","data_center":{"id":"POG1","name":"Pogland 1","permalink":"pog1","country":{"id":"pog","name":"Pogland"}}}]}
+{
+  "networks": [
+    {
+      "id": "pognet",
+      "name": "Pognet 1",
+      "permalink": "pog-1",
+      "data_center": {
+        "id": "POG1",
+        "name": "Pogland 1",
+        "permalink": "pog1",
+        "country": {
+          "id": "pog",
+          "name": "Pogland"
+        }
+      }
+    },
+    {
+      "id": "pognet2",
+      "name": "Pognet 2",
+      "permalink": "pog-2",
+      "data_center": {
+        "id": "POG1",
+        "name": "Pogland 1",
+        "permalink": "pog1",
+        "country": {
+          "id": "pog",
+          "name": "Pogland"
+        }
+      }
+    }
+  ],
+  "virtual_networks": [
+    {
+      "id": "pognet-virtual-1",
+      "name": "Pognet Virtual Network 1",
+      "data_center": {
+        "id": "POG1",
+        "name": "Pogland 1",
+        "permalink": "pog1",
+        "country": {
+          "id": "pog",
+          "name": "Pogland"
+        }
+      }
+    }
+  ]
+}

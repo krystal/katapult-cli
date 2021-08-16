@@ -1,1 +1,4 @@
-{"api_key":"test","api_url":"test"}
+{
+  "api_key": "test",
+  "api_url": "test"
+}
