@@ -144,7 +144,7 @@ type genericOutput struct {
 }
 
 // JSON is used to return a string of the JSON output.
-func (g genericOutput) JSON() (json.RawMessage, error) {
+func (g *genericOutput) JSON() (json.RawMessage, error) {
 	b, err := json.MarshalIndent(g.item, "", "  ")
 	if err != nil {
 		return nil, err
@@ -153,7 +153,7 @@ func (g genericOutput) JSON() (json.RawMessage, error) {
 }
 
 // YAML is used to return a string of the YAML output.
-func (g genericOutput) YAML() (string, error) {
+func (g *genericOutput) YAML() (string, error) {
 	b, err := yaml.Marshal(g.item)
 	if err != nil {
 		return "", err
@@ -162,7 +162,7 @@ func (g genericOutput) YAML() (string, error) {
 }
 
 // Text is used to render a template. If string is blank, uses the default.
-func (g genericOutput) Text(template string) (string, error) {
+func (g *genericOutput) Text(template string) (string, error) {
 	if template == "" {
 		// Return the default template.
 		template = g.tpl
