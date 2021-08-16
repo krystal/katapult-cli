@@ -20,19 +20,19 @@ func TestGenericOutput_JSON(t *testing.T) {
 
 func TestGenericOutput_YAML(t *testing.T) {
 	g := genericOutput{item: []string{"hello", "world"}}
-	s, err := g.YAML()
+	b, err := g.YAML()
 	assert.NoError(t, err)
 	if golden.Update() {
-		golden.Set(t, []byte(s))
+		golden.Set(t, b)
 		return
 	}
-	assert.Equal(t, string(golden.Get(t)), s)
+	assert.Equal(t, golden.Get(t), b)
 }
 
 func Test_renderTemplate(t *testing.T) {
-	s, err := renderTemplate("{{.}}", "Hello World!")
+	b, err := renderTemplate("{{.}}", "Hello World!")
 	assert.NoError(t, err)
-	assert.Equal(t, "Hello World!", s)
+	assert.Equal(t, "Hello World!", string(b))
 }
 
 func TestGenericOutput_Text(t *testing.T) {
@@ -60,13 +60,13 @@ func TestGenericOutput_Text(t *testing.T) {
 				item: tt.item,
 				tpl:  tt.defaultTemplate,
 			}
-			text, err := g.Text(tt.templateArg)
+			b, err := g.Text(tt.templateArg)
 			assert.NoError(t, err)
 			if golden.Update() {
-				golden.Set(t, []byte(text))
+				golden.Set(t, b)
 				return
 			}
-			assert.Equal(t, text, string(golden.Get(t)))
+			assert.Equal(t, b, golden.Get(t))
 		})
 	}
 }

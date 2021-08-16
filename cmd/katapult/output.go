@@ -19,13 +19,13 @@ var outputFlag, templateFlag string
 // Output is used to define the interface of outputs.
 type Output interface {
 	// JSON is used to return a string of the JSON output.
-	JSON() (json.RawMessage, error)
+	JSON() ([]byte, error)
 
 	// YAML is used to return a string of the YAML output.
-	YAML() (string, error)
+	YAML() ([]byte, error)
 
 	// Text is used to render a template. If string is blank, uses the default.
-	Text(template string) (string, error)
+	Text(template string) ([]byte, error)
 }
 
 // Used to render a table.
@@ -119,7 +119,7 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 }
 
 // Used to render the template.
-func renderTemplate(tpl string, data interface{}) (string, error) {
+func renderTemplate(tpl string, data interface{}) ([]byte, error) {
 	parsed, err := template.New("tpl").Funcs(template.FuncMap{
 		"Table":        table,
 		"KVMap":        kvMap,
@@ -128,13 +128,13 @@ func renderTemplate(tpl string, data interface{}) (string, error) {
 		"MultipleRows": multipleRows,
 	}).Parse(tpl)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	buf := &bytes.Buffer{}
 	if err = parsed.Execute(buf, data); err != nil {
-		return "", err
+		return nil, err
 	}
-	return buf.String(), nil
+	return buf.Bytes(), nil
 }
 
 // Used to implement Output for a variety of use cases.
@@ -144,7 +144,7 @@ type genericOutput struct {
 }
 
 // JSON is used to return a string of the JSON output.
-func (g *genericOutput) JSON() (json.RawMessage, error) {
+func (g *genericOutput) JSON() ([]byte, error) {
 	b, err := json.MarshalIndent(g.item, "", "  ")
 	if err != nil {
 		return nil, err
@@ -153,16 +153,16 @@ func (g *genericOutput) JSON() (json.RawMessage, error) {
 }
 
 // YAML is used to return a string of the YAML output.
-func (g *genericOutput) YAML() (string, error) {
+func (g *genericOutput) YAML() ([]byte, error) {
 	b, err := yaml.Marshal(g.item)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(b), nil
+	return b, nil
 }
 
 // Text is used to render a template. If string is blank, uses the default.
-func (g *genericOutput) Text(template string) (string, error) {
+func (g *genericOutput) Text(template string) ([]byte, error) {
 	if template == "" {
 		// Return the default template.
 		template = g.tpl
@@ -188,28 +188,19 @@ func outputWrapper(f outputFunc) func(cmd *cobra.Command, args []string) error {
 		}
 
 		// Handle calling the correct render function.
+		var b []byte
 		switch strings.ToLower(outputFlag) {
 		case "json":
-			b, err := output.JSON()
-			if err != nil {
-				return err
-			}
-			_, err = out.Write(b)
-			return err
+			b, err = output.JSON()
 		case "yml", "yaml":
-			s, err := output.YAML()
-			if err != nil {
-				return err
-			}
-			_, err = out.Write([]byte(s))
-			return err
+			b, err = output.YAML()
 		default:
-			s, err := output.Text(templateFlag)
-			if err != nil {
-				return err
-			}
-			_, err = out.Write([]byte(s))
+			b, err = output.Text(templateFlag)
+		}
+		if err != nil {
 			return err
 		}
+		_, err = out.Write(b)
+		return err
 	}
 }
