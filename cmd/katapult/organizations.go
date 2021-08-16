@@ -16,8 +16,7 @@ type organizationsClient interface {
 	) ([]*core.Organization, *katapult.Response, error)
 }
 
-//go:embed formatdata/orgs/list.txt
-var organizationsListFormat string
+const organizationsListFormat = `{{ Table (StringSlice "Name" "Subdomain") (MultipleRows . "Name" "SubDomain") }}`
 
 func organizationsCmd(client organizationsClient) *cobra.Command {
 	cmd := &cobra.Command{

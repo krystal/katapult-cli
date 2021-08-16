@@ -1,1 +1,0 @@
-{{ Table (StringSlice "Name" "Subdomain") (MultipleRows . "Name" "SubDomain") }}

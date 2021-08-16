@@ -7,8 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-//go:embed formatdata/config.txt
-var configFormat string
+const configFormat = `{{ Table (StringSlice "Key" "Value") (KVMap .) }}`
 
 func configCommand(conf *config.Config) *cobra.Command {
 	return &cobra.Command{

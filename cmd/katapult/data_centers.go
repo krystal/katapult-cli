@@ -17,11 +17,11 @@ type dataCentersClient interface {
 	Get(ctx context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error)
 }
 
-//go:embed formatdata/dcs/list.txt
-var dataCentersFormat string
+//nolint:lll
+const dataCentersFormat = `{{ Table (StringSlice "Name" "Permalink" "Country Name") (MultipleRows . "Name" "Permalink" "Country.Name") }}`
 
-//go:embed formatdata/dcs/get.txt
-var getDataCenterFormat string
+//nolint:lll
+const getDataCenterFormat = `{{ Table (StringSlice "Name" "Permalink" "Country Name") (SingleRow .Name .Permalink .Country.Name) }}`
 
 func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 	return &cobra.Command{

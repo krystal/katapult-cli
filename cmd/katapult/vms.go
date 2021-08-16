@@ -65,8 +65,7 @@ func vmNotFoundHandlingError(err error) error {
 	return err
 }
 
-//go:embed formatdata/vm/list.txt
-var virtualMachineListFormat string
+const virtualMachineListFormat = `{{ Table (StringSlice "Name" "FQDN") (MultipleRows . "Name" "FQDN") }}`
 
 func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 	list := &cobra.Command{

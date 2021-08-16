@@ -1,1 +1,0 @@
-{{ Table (StringSlice "Name" "Permalink" "Country") (SingleRow .Name .Permalink .Country.Name) }}

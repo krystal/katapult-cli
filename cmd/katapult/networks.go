@@ -17,8 +17,10 @@ type networksListClient interface {
 	) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error)
 }
 
-//go:embed formatdata/networks/list.txt
-var networksListFormat string
+const networksListFormat = `Networks:
+{{ Table (StringSlice "Name" "ID") (MultipleRows .networks "Name" "ID") }}Virtual Networks:
+{{ Table (StringSlice "Name" "ID") (MultipleRows .virtual_networks "Name" "ID") }}
+`
 
 func networksCmd(client networksListClient) *cobra.Command {
 	cmd := &cobra.Command{

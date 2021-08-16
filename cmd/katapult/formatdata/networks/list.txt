@@ -1,3 +1,0 @@
-Networks:
-{{ Table (StringSlice "Name" "ID") (MultipleRows .networks "Name" "ID") }}Virtual Networks:
-{{ Table (StringSlice "Name" "ID") (MultipleRows .virtual_networks "Name" "ID") }}

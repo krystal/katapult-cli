@@ -1,5 +1,0 @@
-katapult {{ .Version }} (katapult-cli)
----
-Version: {{ .Version }}
-Git Commit: {{ .Commit }}
-Build Date: {{ .Date }}

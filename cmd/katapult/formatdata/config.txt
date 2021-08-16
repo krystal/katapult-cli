@@ -1,1 +1,0 @@
-{{ Table (StringSlice "Key" "Value") (KVMap .) }}
