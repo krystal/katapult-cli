@@ -30,15 +30,15 @@ func run() error {
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
-		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
 			if help {
 				err = cmd.Usage()
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					return err
 				}
 				os.Exit(0)
 			}
+			return nil
 		},
 	}
 
