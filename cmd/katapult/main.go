@@ -22,6 +22,7 @@ func run() error {
 		return err
 	}
 
+	var help bool
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
@@ -29,9 +30,21 @@ func run() error {
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
+		PersistentPreRun: func(cmd *cobra.Command, _ []string) {
+			if help {
+				err = cmd.Usage()
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				os.Exit(0)
+			}
+		},
 	}
 
 	rootFlags := rootCmd.PersistentFlags()
+
+	rootFlags.BoolVarP(&help, "help", "h", false, "Display the help for the command/root.")
 
 	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
