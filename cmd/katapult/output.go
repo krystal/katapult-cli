@@ -145,7 +145,7 @@ type genericOutput struct {
 
 // JSON is used to return a string of the JSON output.
 func (g genericOutput) JSON() (json.RawMessage, error) {
-	b, err := json.Marshal(g.item)
+	b, err := json.MarshalIndent(g.item, "", "  ")
 	if err != nil {
 		return nil, err
 	}
