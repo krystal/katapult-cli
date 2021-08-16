@@ -33,7 +33,22 @@ type Output interface {
 func table(columns []string, rows [][]interface{}) string {
 	buf := &bytes.Buffer{}
 	t := tablewriter.NewWriter(buf)
+
+	// This is based off the usage for tablewriter
+	// source: https://github.com/olekukonko/tablewriter#example-10---set-nowhitespace-and-tablepadding-option
+	t.SetAutoWrapText(false)
+	t.SetAutoFormatHeaders(true)
+	t.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	t.SetAlignment(tablewriter.ALIGN_LEFT)
+	t.SetCenterSeparator("")
+	t.SetColumnSeparator("")
+	t.SetRowSeparator("")
+	t.SetHeaderLine(false)
+	t.SetBorder(false)
+	t.SetTablePadding("\t")
+	t.SetNoWhiteSpace(true)
 	t.SetHeader(columns)
+
 	strrows := make([][]string, len(rows))
 	for i, row := range rows {
 		strrow := make([]string, len(row))
@@ -167,7 +182,7 @@ func (g *genericOutput) Text(w io.Writer, template string) error {
 		template = g.defaultTextTemplate
 	}
 
-	// If not, render the template.
+	// Render the template.
 	return renderTemplate(w, template, g.item)
 }
 

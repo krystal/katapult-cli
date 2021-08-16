@@ -1,6 +1,3 @@
-+---------+-------+
-|   KEY   | VALUE |
-+---------+-------+
-| api_key | test  |
-| api_url |       |
-+---------+-------+
+KEY    	VALUE 
+api_key	test 	
+api_url	     	

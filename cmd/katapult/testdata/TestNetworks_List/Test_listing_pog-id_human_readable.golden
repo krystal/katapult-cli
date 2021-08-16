@@ -1,14 +1,8 @@
 Networks:
-+----------+---------+
-|   NAME   |   ID    |
-+----------+---------+
-| Pognet 1 | pognet  |
-| Pognet 2 | pognet2 |
-+----------+---------+
+NAME    	ID      
+Pognet 1	pognet 	
+Pognet 2	pognet2	
 Virtual Networks:
-+--------------------------+------------------+
-|           NAME           |        ID        |
-+--------------------------+------------------+
-| Pognet Virtual Network 1 | pognet-virtual-1 |
-+--------------------------+------------------+
+NAME                    	ID               
+Pognet Virtual Network 1	pognet-virtual-1	
 

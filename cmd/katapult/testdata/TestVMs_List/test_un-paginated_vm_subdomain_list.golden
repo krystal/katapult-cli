@@ -1,5 +1,2 @@
-+---------+----------------------------------+
-|  NAME   |               FQDN               |
-+---------+----------------------------------+
-| My Blog | my-blog.acme-labs.katapult.cloud |
-+---------+----------------------------------+
+NAME   	FQDN                             
+My Blog	my-blog.acme-labs.katapult.cloud	
