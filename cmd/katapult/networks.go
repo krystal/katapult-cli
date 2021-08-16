@@ -33,7 +33,7 @@ func networksCmd(client networksListClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "Get list of networks available to a Organization",
 		Long:    "Get list of networks available to a Organization.",
-		RunE: renderOption(func(cmd *cobra.Command, _ []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, _ []string) (Output, error) {
 			id := cmd.Flag("id").Value.String()
 			ref := core.OrganizationRef{ID: id}
 			if id == "" {

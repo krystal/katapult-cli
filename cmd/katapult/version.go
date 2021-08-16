@@ -63,7 +63,7 @@ func versionCommand() *cobra.Command {
 		Use:   "version",
 		Short: "Print the version",
 		Long:  `Print the version number of katapult CLI tool.`,
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			prettyVersion.Populate()
 
 			return genericOutput{

@@ -29,7 +29,7 @@ func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "List data centers",
 		Long:    "List data centers.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			dcs, _, err := client.List(cmd.Context())
 			if err != nil {
 				return nil, err
@@ -49,7 +49,7 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Short: "Get details for a data center",
 		Long:  "Get details for a data center.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			dc, _, err := client.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
 			if err != nil {
 				if errors.Is(err, katapult.ErrNotFound) {

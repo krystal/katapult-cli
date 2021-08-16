@@ -175,8 +175,8 @@ func (g genericOutput) Text(template string) (string, error) {
 // Defines a function that returns a output.
 type outputFunc func(cmd *cobra.Command, args []string) (Output, error)
 
-// Used to render a console output of a single option. Passes through errors.
-func renderOption(f outputFunc) func(cmd *cobra.Command, args []string) error {
+// Used to render a console output of a type. Passes through errors.
+func outputWrapper(f outputFunc) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		// Get the objects we require from the cache.
 		out := cmd.OutOrStdout()

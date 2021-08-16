@@ -118,7 +118,7 @@ func Test_renderOption(t *testing.T) {
 			mockCmd.SetOut(buf)
 
 			// Defines the function wrapper. A tiny basic function is specified to return the test output.
-			wrapper := renderOption(func(*cobra.Command, []string) (Output, error) {
+			wrapper := outputWrapper(func(*cobra.Command, []string) (Output, error) {
 				if tt.throws != "" {
 					return nil, errors.New(tt.throws)
 				}

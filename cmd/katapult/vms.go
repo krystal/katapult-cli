@@ -76,7 +76,7 @@ func virtualMachinesListCmd(client virtualMachinesClient) *cobra.Command {
 		Short:   "Get a list of virtual machines from an organization",
 		Long: "Get a list of virtual machines from an organization. By default, " +
 			"the argument is used as the sub-domain and is used if the ID is not specified.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref := core.OrganizationRef{ID: cmd.Flags().Lookup("org-id").Value.String()}
 			if ref.ID == "" {
 				if len(args) == 0 || args[0] == "" {
@@ -115,7 +115,7 @@ func virtualMachinesPoweroffCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "poweroff",
 		Short: "Used to power off a virtual machine.",
 		Long:  "Used to power off a virtual machine.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
 				return nil, err
@@ -140,7 +140,7 @@ func virtualMachinesStartCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "start",
 		Short: "Used to start a virtual machine.",
 		Long:  "Used to start a virtual machine.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
 				return nil, err
@@ -165,7 +165,7 @@ func virtualMachinesStopCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "stop",
 		Short: "Used to stop a virtual machine.",
 		Long:  "Used to stop a virtual machine.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
 				return nil, err
@@ -190,7 +190,7 @@ func virtualMachinesResetCmd(client virtualMachinesClient) *cobra.Command {
 		Use:   "reset",
 		Short: "Used to reset a virtual machine.",
 		Long:  "Used to reset a virtual machine.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			ref, err := getVMRef(cmd)
 			if err != nil {
 				return nil, err

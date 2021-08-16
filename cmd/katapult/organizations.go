@@ -32,7 +32,7 @@ func organizationsCmd(client organizationsClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "Get list of organizations",
 		Long:    "Get list of organizations.",
-		RunE: renderOption(func(cmd *cobra.Command, args []string) (Output, error) {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			orgs, _, err := client.List(cmd.Context())
 			if err != nil {
 				return nil, err
