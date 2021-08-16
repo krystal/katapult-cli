@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"reflect"
 	"sort"
 	"strings"
@@ -19,13 +20,13 @@ var outputFlag, templateFlag string
 // Output is used to define the interface of outputs.
 type Output interface {
 	// JSON is used to return a string of the JSON output.
-	JSON() ([]byte, error)
+	JSON(w io.Writer) error
 
 	// YAML is used to return a string of the YAML output.
-	YAML() ([]byte, error)
+	YAML(w io.Writer) error
 
 	// Text is used to render a template. If string is blank, uses the default.
-	Text(template string) ([]byte, error)
+	Text(w io.Writer, template string) error
 }
 
 // Used to render a table.
@@ -119,7 +120,7 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 }
 
 // Used to render the template.
-func renderTemplate(tpl string, data interface{}) ([]byte, error) {
+func renderTemplate(w io.Writer, tpl string, data interface{}) error {
 	parsed, err := template.New("tpl").Funcs(template.FuncMap{
 		"Table":        table,
 		"KVMap":        kvMap,
@@ -128,13 +129,9 @@ func renderTemplate(tpl string, data interface{}) ([]byte, error) {
 		"MultipleRows": multipleRows,
 	}).Parse(tpl)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	buf := &bytes.Buffer{}
-	if err = parsed.Execute(buf, data); err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
+	return parsed.Execute(w, data)
 }
 
 // Used to implement Output for a variety of use cases.
@@ -144,32 +141,34 @@ type genericOutput struct {
 }
 
 // JSON is used to return a string of the JSON output.
-func (g *genericOutput) JSON() ([]byte, error) {
+func (g *genericOutput) JSON(w io.Writer) error {
 	b, err := json.MarshalIndent(g.item, "", "  ")
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return b, nil
+	_, err = w.Write(b)
+	return err
 }
 
 // YAML is used to return a string of the YAML output.
-func (g *genericOutput) YAML() ([]byte, error) {
+func (g *genericOutput) YAML(w io.Writer) error {
 	b, err := yaml.Marshal(g.item)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return b, nil
+	_, err = w.Write(b)
+	return err
 }
 
 // Text is used to render a template. If string is blank, uses the default.
-func (g *genericOutput) Text(template string) ([]byte, error) {
+func (g *genericOutput) Text(w io.Writer, template string) error {
 	if template == "" {
 		// Return the default template.
 		template = g.tpl
 	}
 
 	// If not, render the template.
-	return renderTemplate(template, g.item)
+	return renderTemplate(w, template, g.item)
 }
 
 // Defines a function that returns a output.
@@ -188,19 +187,13 @@ func outputWrapper(f outputFunc) func(cmd *cobra.Command, args []string) error {
 		}
 
 		// Handle calling the correct render function.
-		var b []byte
 		switch strings.ToLower(outputFlag) {
 		case "json":
-			b, err = output.JSON()
+			return output.JSON(out)
 		case "yml", "yaml":
-			b, err = output.YAML()
+			return output.YAML(out)
 		default:
-			b, err = output.Text(templateFlag)
+			return output.Text(out, templateFlag)
 		}
-		if err != nil {
-			return err
-		}
-		_, err = out.Write(b)
-		return err
 	}
 }
