@@ -208,8 +208,8 @@ func outputWrapper(f outputFunc) func(cmd *cobra.Command, args []string) error {
 			if err != nil {
 				return err
 			}
-			_, _ = out.Write([]byte(s))
-			return nil
+			_, err = out.Write([]byte(s))
+			return err
 		}
 	}
 }
