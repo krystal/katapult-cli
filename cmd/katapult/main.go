@@ -2,11 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
-	"net/url"
 	"os"
-
-	"github.com/krystal/go-katapult"
 
 	"github.com/krystal/go-katapult/core"
 	"github.com/krystal/katapult-cli/config"
@@ -32,6 +28,7 @@ func run() error {
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
+		SilenceUsage: true,
 	}
 
 	rootFlags := rootCmd.PersistentFlags()
@@ -85,25 +82,13 @@ func run() error {
 		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
 	)
 
-	cobra.OnInitialize(func() {
-		// TODO: We probably want to fix the config to remove this without regressions!
-		cl.(*katapult.Client).APIKey = configAPIKey
-		if configURLFlag != "" {
-			u, err := url.Parse(configURLFlag)
-			if err != nil {
-				panic(err)
-			}
-			cl.(*katapult.Client).BaseURL = u
-		}
-	})
-
 	return rootCmd.Execute()
 }
 
 func main() {
 	err := run()
 	if err != nil {
-		log.Printf("A fatal error occurred: %s", err)
+		// Ensure we exit with status code 1. The actual printing is done by Cobra.
 		os.Exit(1)
 	}
 }
