@@ -28,30 +28,6 @@ type Output interface {
 	Text(template string) (string, error)
 }
 
-// Used to implement Output for a variety of use cases.
-type genericOutput struct {
-	item interface{}
-	tpl  string
-}
-
-// JSON is used to return a string of the JSON output.
-func (g genericOutput) JSON() (json.RawMessage, error) {
-	b, err := json.Marshal(g.item)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
-// YAML is used to return a string of the YAML output.
-func (g genericOutput) YAML() (string, error) {
-	b, err := yaml.Marshal(g.item)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
 // Used to render a table.
 func table(columns []string, rows [][]interface{}) string {
 	buf := &bytes.Buffer{}
@@ -159,6 +135,30 @@ func renderTemplate(tpl string, data interface{}) (string, error) {
 		return "", err
 	}
 	return buf.String(), nil
+}
+
+// Used to implement Output for a variety of use cases.
+type genericOutput struct {
+	item interface{}
+	tpl  string
+}
+
+// JSON is used to return a string of the JSON output.
+func (g genericOutput) JSON() (json.RawMessage, error) {
+	b, err := json.Marshal(g.item)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
+}
+
+// YAML is used to return a string of the YAML output.
+func (g genericOutput) YAML() (string, error) {
+	b, err := yaml.Marshal(g.item)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }
 
 // Text is used to render a template. If string is blank, uses the default.
