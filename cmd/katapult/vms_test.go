@@ -205,7 +205,6 @@ func TestVMs_List(t *testing.T) {
 		subdomains map[string]vmPages
 
 		args    []string
-		want    string
 		stderr  string
 		wantErr string
 	}{
@@ -231,7 +230,6 @@ func TestVMs_List(t *testing.T) {
 				},
 			},
 			args: []string{"list", "--org-id=1"},
-			want: " - My Blog (my-blog.acme-labs.katapult.cloud) [vm_rrmEoG6CKUX0IKgX]: test\n",
 		},
 		{
 			name: "test un-paginated vm subdomain list",
@@ -250,7 +248,6 @@ func TestVMs_List(t *testing.T) {
 				},
 			},
 			args: []string{"list", "1"},
-			want: " - My Blog (my-blog.acme-labs.katapult.cloud) [vm_rrmEoG6CKUX0IKgX]: test\n",
 		},
 		{
 			name: "test paginated vm list",
@@ -287,10 +284,6 @@ func TestVMs_List(t *testing.T) {
 				},
 			},
 			args: []string{"list", "1"},
-			want: ` - test (test.example.com) [0]: test
- - test1 (test1.example.com) [1]: test1
- - test2 (test2.example.com) [2]: test2
-`,
 		},
 		{
 			name:    "test not found",
@@ -306,13 +299,12 @@ func TestVMs_List(t *testing.T) {
 				nil, nil, nil, nil, nil,
 				nil, nil, nil)
 			cmd.SetArgs(tt.args)
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 		})
 	}
 }
 
 func TestVMs_Poweroff(t *testing.T) {
-	successMessage := "Virtual machine successfully powered down.\n"
 	tests := []struct {
 		name string
 
@@ -320,7 +312,6 @@ func TestVMs_Poweroff(t *testing.T) {
 		fqdnNotFound string
 
 		args        []string
-		want        string
 		poweredDown *struct {
 			key  string
 			fqdn bool
@@ -337,7 +328,6 @@ func TestVMs_Poweroff(t *testing.T) {
 		{
 			name: "test normal power down by ID",
 			args: []string{"poweroff", "--id=1"},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["i1"]
 				if !ok {
@@ -352,7 +342,6 @@ func TestVMs_Poweroff(t *testing.T) {
 		{
 			name: "test normal power down by fqdn",
 			args: []string{"poweroff", "--fqdn=1"},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["s1"]
 				if !ok {
@@ -403,7 +392,7 @@ func TestVMs_Poweroff(t *testing.T) {
 			}
 			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
 				assert.Equal(t, "", tt.validate(client))
 			}
@@ -412,7 +401,6 @@ func TestVMs_Poweroff(t *testing.T) {
 }
 
 func TestVMs_Stop(t *testing.T) {
-	successMessage := "Virtual machine successfully stopped.\n"
 	tests := []struct {
 		name string
 
@@ -420,7 +408,6 @@ func TestVMs_Stop(t *testing.T) {
 		fqdnNotFound string
 
 		args        []string
-		want        string
 		poweredDown *struct {
 			key  string
 			fqdn bool
@@ -437,7 +424,6 @@ func TestVMs_Stop(t *testing.T) {
 		{
 			name: "test normal stop by ID",
 			args: []string{"stop", "--id=1"},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["i1"]
 				if !ok {
@@ -452,7 +438,6 @@ func TestVMs_Stop(t *testing.T) {
 		{
 			name: "test normal stop by fqdn",
 			args: []string{"stop", "--fqdn=1"},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["s1"]
 				if !ok {
@@ -503,7 +488,7 @@ func TestVMs_Stop(t *testing.T) {
 			}
 			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
 				assert.Equal(t, "", tt.validate(client))
 			}
@@ -512,7 +497,6 @@ func TestVMs_Stop(t *testing.T) {
 }
 
 func TestVMs_Start(t *testing.T) {
-	successMessage := "Virtual machine successfully started.\n"
 	tests := []struct {
 		name string
 
@@ -520,7 +504,6 @@ func TestVMs_Start(t *testing.T) {
 		fqdnNotFound string
 
 		args        []string
-		want        string
 		poweredDown *struct {
 			key  string
 			fqdn bool
@@ -541,7 +524,6 @@ func TestVMs_Start(t *testing.T) {
 				key  string
 				fqdn bool
 			}{key: "1", fqdn: false},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["i1"]
 				if !ok {
@@ -560,7 +542,6 @@ func TestVMs_Start(t *testing.T) {
 				key  string
 				fqdn bool
 			}{key: "1", fqdn: true},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["s1"]
 				if !ok {
@@ -603,7 +584,7 @@ func TestVMs_Start(t *testing.T) {
 			}
 			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
 				assert.Equal(t, "", tt.validate(client))
 			}
@@ -612,7 +593,6 @@ func TestVMs_Start(t *testing.T) {
 }
 
 func TestVMs_Reset(t *testing.T) {
-	successMessage := "Virtual machine successfully reset.\n"
 	tests := []struct {
 		name string
 
@@ -620,7 +600,6 @@ func TestVMs_Reset(t *testing.T) {
 		fqdnNotFound string
 
 		args        []string
-		want        string
 		poweredDown *struct {
 			key  string
 			fqdn bool
@@ -637,7 +616,6 @@ func TestVMs_Reset(t *testing.T) {
 		{
 			name: "test normal reset by ID",
 			args: []string{"reset", "--id=1"},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["i1"]
 				if !ok {
@@ -652,7 +630,6 @@ func TestVMs_Reset(t *testing.T) {
 		{
 			name: "test normal reset by FQDN",
 			args: []string{"reset", "--fqdn=1"},
-			want: successMessage,
 			validate: func(client *vmsClient) string {
 				state, ok := client.powerStates["s1"]
 				if !ok {
@@ -703,7 +680,7 @@ func TestVMs_Reset(t *testing.T) {
 			}
 			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
 				assert.Equal(t, "", tt.validate(client))
 			}

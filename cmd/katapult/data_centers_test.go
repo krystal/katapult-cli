@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/krystal/go-katapult/core"
+	"github.com/krystal/katapult-cli/internal/golden"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,22 +14,29 @@ func TestDataCenters_List(t *testing.T) {
 	tests := []struct {
 		name string
 
+		output  string
 		dcs     []*core.DataCenter
-		want    string
 		stderr  string
 		throws  string
 		wantErr string
 	}{
 		{
-			name: "data center list",
+			name: "data center human readable list",
 			dcs:  fixtureDataCenters,
-			want: ` - hello (POG1) [dc_9UVoPiUQoI1cqtRd] / Pogland
- - hello (GB1) [dc_9UVoPiUQoI1cqtR0] / United Kingdom
-`,
 		},
 		{
-			name: "empty data centers",
+			name:   "data center json list",
+			output: "json",
+			dcs:    fixtureDataCenters,
+		},
+		{
+			name: "empty data centers human readable",
 			dcs:  []*core.DataCenter{},
+		},
+		{
+			name:   "empty data centers json",
+			output: "json",
+			dcs:    []*core.DataCenter{},
 		},
 		{
 			name:    "data center error",
@@ -44,7 +52,9 @@ func TestDataCenters_List(t *testing.T) {
 			cmd.SetOut(stdout)
 			cmd.SetErr(stderr)
 			cmd.SetArgs([]string{"list"})
+			outputFlag = tt.output
 			err := cmd.Execute()
+			outputFlag = ""
 
 			if tt.wantErr != "" {
 				require.EqualError(t, err, tt.wantErr)
@@ -52,7 +62,10 @@ func TestDataCenters_List(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tt.want, stdout.String())
+			if golden.Update() {
+				golden.Set(t, stdout.Bytes())
+			}
+			assert.Equal(t, string(golden.Get(t)), stdout.String())
 			assert.Equal(t, tt.stderr, stderr.String())
 		})
 	}
@@ -63,20 +76,28 @@ func TestDataCenters_Get(t *testing.T) {
 		name string
 
 		args    []string
+		output  string
 		dc      string
-		want    string
 		stderr  string
 		wantErr string
 	}{
 		{
-			name: "display POG1",
+			name: "display POG1 human readable",
 			args: []string{"get", "POG1"},
-			want: "hello (POG1) [dc_9UVoPiUQoI1cqtRd] / Pogland\n",
 		},
 		{
-			name: "display GB1",
+			name:   "display POG1 json",
+			args:   []string{"get", "POG1"},
+			output: "json",
+		},
+		{
+			name:   "display GB1 json",
+			args:   []string{"get", "GB1"},
+			output: "json",
+		},
+		{
+			name: "display GB1 human readable",
 			args: []string{"get", "GB1"},
-			want: "hello (GB1) [dc_9UVoPiUQoI1cqtR0] / United Kingdom\n",
 		},
 		{
 			name:    "display invalid DC",
@@ -90,7 +111,9 @@ func TestDataCenters_Get(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			cmd.SetArgs(tt.args)
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			outputFlag = tt.output
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
+			outputFlag = ""
 		})
 	}
 }
