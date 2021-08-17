@@ -36,10 +36,16 @@ func TestConfig(t *testing.T) {
 			apiURL: "test",
 		},
 		{
-			name:   "test JSON output",
-			apiKey: "test",
-			apiURL: "test",
+			name:   "json output",
+			apiKey: "testKey",
+			apiURL: "testURL",
 			output: "json",
+		},
+		{
+			name:   "yaml output",
+			apiKey: "testKey",
+			apiURL: "testURL",
+			output: "yaml",
 		},
 	}
 	for _, tt := range tests {
