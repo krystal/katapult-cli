@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 
-	_ "embed"
-
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"

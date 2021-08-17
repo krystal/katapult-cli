@@ -1,8 +1,6 @@
 package main
 
 import (
-	_ "embed"
-
 	"github.com/krystal/katapult-cli/config"
 	"github.com/spf13/cobra"
 )
