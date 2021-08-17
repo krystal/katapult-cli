@@ -19,10 +19,10 @@ var outputFlag, templateFlag string
 
 // Output is used to define the interface of outputs.
 type Output interface {
-	// JSON is used to return a string of the JSON output.
+	// JSON is used to write out the JSON output.
 	JSON(w io.Writer) error
 
-	// YAML is used to return a string of the YAML output.
+	// YAML is used to write out the YAML output.
 	YAML(w io.Writer) error
 
 	// Text is used to render a template. If string is blank, uses the default.
@@ -155,7 +155,7 @@ type genericOutput struct {
 	defaultTextTemplate string
 }
 
-// JSON is used to return a string of the JSON output.
+// JSON is used to write out the JSON output.
 func (g *genericOutput) JSON(w io.Writer) error {
 	b, err := json.MarshalIndent(g.item, "", "  ")
 	if err != nil {
@@ -165,7 +165,7 @@ func (g *genericOutput) JSON(w io.Writer) error {
 	return err
 }
 
-// YAML is used to return a string of the YAML output.
+// YAML is used to write out the YAML output.
 func (g *genericOutput) YAML(w io.Writer) error {
 	b, err := yaml.Marshal(g.item)
 	if err != nil {
