@@ -11,6 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func Test_genericOutput(t *testing.T) {
+	assert.Implements(t, (*Output)(nil), &genericOutput{})
+}
+
 func Test_genericOutput_JSON(t *testing.T) {
 	tests := []struct {
 		name string
