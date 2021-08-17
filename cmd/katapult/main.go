@@ -46,6 +46,9 @@ func run() error {
 
 	rootFlags.BoolVarP(&help, "help", "h", false, "Display the help for the command/root.")
 
+	rootFlags.StringVarP(&outputFlag, "output", "o", "", "output type (yaml, json, text)")
+	rootFlags.StringVar(&templateFlag, "format", "", "defines the output template for text")
+
 	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
 

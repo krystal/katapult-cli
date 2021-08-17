@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"testing"
 
+	"github.com/krystal/katapult-cli/internal/golden"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, want, stderrResult string) {
+func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, stderrResult string) {
 	t.Helper()
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -23,6 +24,9 @@ func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, want, stder
 	}
 	require.NoError(t, err)
 
-	assert.Equal(t, want, stdout.String())
+	if golden.Update() {
+		golden.Set(t, stdout.Bytes())
+	}
+	assert.Equal(t, string(golden.Get(t)), stdout.String())
 	assert.Equal(t, stderrResult, stderr.String())
 }
