@@ -98,12 +98,12 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 	itemsReflect := reflect.ValueOf(items)
 
 	// Create a slice of all of the rows.
-	a := make([][]interface{}, itemsReflect.Len())
+	rows := make([][]interface{}, itemsReflect.Len())
 
 	// Go through each length items.
 	for i := 0; i < itemsReflect.Len(); i++ {
 		// Create the row.
-		x := make([]interface{}, len(keys))
+		row := make([]interface{}, len(keys))
 
 		// Get the value using reflect so we can access fields.
 		outerValue := reflect.Indirect(itemsReflect.Index(i))
@@ -123,15 +123,15 @@ func multipleRows(items interface{}, keys ...string) [][]interface{} {
 			}
 
 			// Get the item from the struct.
-			x[i] = value.FieldByName(dotsplit[len(dotsplit)-1]).Interface()
+			row[i] = value.FieldByName(dotsplit[len(dotsplit)-1]).Interface()
 		}
 
 		// Add to the array.
-		a[i] = x
+		rows[i] = row
 	}
 
 	// Return the rows array.
-	return a
+	return rows
 }
 
 // Used to render the template.
