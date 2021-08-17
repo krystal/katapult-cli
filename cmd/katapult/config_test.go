@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/krystal/katapult-cli/config"
@@ -44,7 +43,7 @@ func TestConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("key: %s, url: %s", tt.apiKey, tt.apiURL), func(t *testing.T) {
+		t.Run(tt.name, func(t *testing.T) {
 			conf, err := config.New()
 			assert.NoError(t, err)
 			conf.SetDefault("api_key", tt.apiKey)
