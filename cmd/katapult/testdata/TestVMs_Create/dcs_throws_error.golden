@@ -1,0 +1,25 @@
+[2J[32mWhich organization would you like to deploy the VM in? (Press ENTER to make your selection): [0m[34m[0m[34mtest / testing[0m
+[36mName                                                                                              Subdomain                                                                                         [0m
+[33mtest                                                                                              testing                                                                                           [0m
+
+
+
+
+
+
+-- STDOUT --
+
+Usage:
+  vm create [flags]
+
+Flags:
+  -h, --help   help for create
+
+
+
+-- BUILD SPEC --
+
+{
+  "OrgResult": {},
+  "SpecResult": null
+}

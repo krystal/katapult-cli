@@ -1,38 +1,10 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"testing"
 
-	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 )
-
-var fixtureOrganizations = []*core.Organization{
-	{
-		ID:        "loge",
-		Name:      "Loge Enthusiasts",
-		SubDomain: "loge",
-	},
-	{
-		ID:        "testing",
-		Name:      "testing, testing, 123",
-		SubDomain: "test",
-	},
-}
-
-type mockOrganizationsListClient struct {
-	orgs   []*core.Organization
-	throws string
-}
-
-func (m mockOrganizationsListClient) List(context.Context) ([]*core.Organization, *katapult.Response, error) {
-	if m.throws != "" {
-		return nil, nil, errors.New(m.throws)
-	}
-	return m.orgs, nil, nil
-}
 
 func TestOrganizations_List(t *testing.T) {
 	tests := []struct {

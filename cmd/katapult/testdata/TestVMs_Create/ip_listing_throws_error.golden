@@ -1,0 +1,52 @@
+[2J[32mWhich organization would you like to deploy the VM in? (Press ENTER to make your selection): [0m[34m[0m[34mtest / testing[0m
+[36mName                                                                                              Subdomain                                                                                         [0m
+[33mtest                                                                                              testing                                                                                           [0m
+
+
+
+
+
+
+[2J[32mWhich DC would you like to deploy the VM in? (Press ENTER to make your selection): [0m[34m[0m[34m / [0m
+[36mName                                                                                              Country                                                                                           [0m
+[33m                                                                                                                                                                                                    [0m
+
+
+
+
+
+
+[2J[32mWhich VM package would you like? (Press ENTER to make your selection): [0m[34m[0m[34m / 0 / 0GB[0m
+[36mName                                                            CPU Cores                                                       RAM                                                             [0m
+[33m                                                                0                                                               0GB                                                             [0m
+
+
+
+
+
+
+[2J[32mWhich distribution would you like? (Press ENTER to make your selection): [0m[34m[0m[34m[0m
+[33m[0m
+
+
+
+
+
+
+
+-- STDOUT --
+
+Usage:
+  vm create [flags]
+
+Flags:
+  -h, --help   help for create
+
+
+
+-- BUILD SPEC --
+
+{
+  "OrgResult": {},
+  "SpecResult": null
+}

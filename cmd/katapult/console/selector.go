@@ -7,6 +7,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/krystal/katapult-cli/internal/keystrokes"
+
 	"github.com/buger/goterm"
 	"golang.org/x/term"
 )
@@ -19,8 +21,8 @@ const (
 	clarificationStringMultiple = " (Press ENTER to select items and ESC when you are done with your selections): "
 )
 
-// Defines a interface for a compatible terminal. Used for unit testing.
-type terminalInterface interface {
+// TerminalInterface defines a interface for a compatible terminal. Used for unit testing.
+type TerminalInterface interface {
 	Height() int
 	Width() int
 	Print(items ...interface{}) (int, error)
@@ -98,7 +100,7 @@ func getQueryMatches(query string, hasColumns bool, items interface{}) (interfac
 
 // Formats the user prompt. Returns the rough line count.
 func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched interface{},
-	query, queryLower string, terminal terminalInterface) int {
+	query, queryLower string, terminal TerminalInterface) int {
 	var suggestionLen int
 	if length == 0 {
 		// There's no matches, we should just just print the users input.
@@ -122,7 +124,7 @@ func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched inter
 }
 
 // Handles column rendering.
-func renderColumns(row []string, offset, highlight, width int, terminal terminalInterface) {
+func renderColumns(row []string, offset, highlight, width int, terminal TerminalInterface) {
 	// Get the remaining width by subtracting the offset from the console width.
 	remainingWidth := width
 	if offset > 0 {
@@ -168,7 +170,7 @@ func renderColumns(row []string, offset, highlight, width int, terminal terminal
 func handleStandardInput(
 	buf []byte, matchedLen int, multiple, hasColumns bool,
 	highlightIndex *int, selectedItems *list.List, matched interface{}, query *string,
-	terminal terminalInterface,
+	terminal TerminalInterface,
 ) interface{} {
 	switch buf[0] {
 	case 3:
@@ -250,7 +252,7 @@ func handleStandardInput(
 // Handle the inputs.
 func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *int,
 	hasColumns bool, selectedItems *list.List, query *string,
-	matched interface{}, terminal terminalInterface) interface{} {
+	matched interface{}, terminal TerminalInterface) interface{} {
 	if n == 1 {
 		// Standard input.
 		return handleStandardInput(buf, matchedLen, multiple, hasColumns, highlightIndex,
@@ -259,14 +261,14 @@ func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *i
 
 	// AT&T style key input.
 	switch string(buf) {
-	case string([]byte{27, 91, 65}):
+	case string(keystrokes.UpArrow):
 		// Arrow up
 		*highlightIndex--
 		if *highlightIndex == -1 {
 			// Don't let people try and access index -1.
 			*highlightIndex = 0
 		}
-	case string([]byte{27, 91, 66}):
+	case string(keystrokes.DownArrow):
 		// Arrow down
 		*highlightIndex++
 	default:
@@ -276,7 +278,7 @@ func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *i
 }
 
 // Renders a row item.
-func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}, terminal terminalInterface) {
+func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}, terminal TerminalInterface) {
 	if hasColumn {
 		// Handle column rendering.
 		highlightValue := 0
@@ -332,11 +334,8 @@ func (gotermTerminal) MakeRaw() (*term.State, error) {
 }
 
 // items is either []string or [][]string (if columns isn't nil).
-//nolint:funlen
-func selectorComponent(
-	question string, columns []string, items interface{},
-	stdin io.Reader, multiple bool, terminal terminalInterface,
-) interface{} {
+//nolint:funlen,lll
+func selectorComponent(question string, columns []string, items interface{}, stdin io.Reader, multiple bool, terminal TerminalInterface) interface{} {
 	// Pre-initialize things we need below.
 	query := ""
 	buf := make([]byte, 3)
@@ -457,22 +456,36 @@ func selectorComponent(
 	}
 }
 
-// FuzzySelector is used to create a selector.
-func FuzzySelector(question string, items []string, stdin io.Reader) string {
-	return selectorComponent(question, nil, items, stdin, false, gotermTerminal{}).([]string)[0]
+// FuzzySelector is used to create a selector. If terminal is nil, we will default to goterm.
+func FuzzySelector(question string, items []string, stdin io.Reader, terminal TerminalInterface) string {
+	if terminal == nil {
+		terminal = gotermTerminal{}
+	}
+	return selectorComponent(question, nil, items, stdin, false, terminal).([]string)[0]
 }
 
 // FuzzyMultiSelector is used to create a selector with multiple items.
-func FuzzyMultiSelector(question string, items []string, stdin io.Reader) []string {
-	return selectorComponent(question, nil, items, stdin, true, gotermTerminal{}).([]string)
+func FuzzyMultiSelector(question string, items []string, stdin io.Reader, terminal TerminalInterface) []string {
+	if terminal == nil {
+		terminal = gotermTerminal{}
+	}
+	return selectorComponent(question, nil, items, stdin, true, terminal).([]string)
 }
 
 // FuzzyTableSelector is used to create a selector with a table.
-func FuzzyTableSelector(question string, columns []string, items [][]string, stdin io.Reader) []string {
-	return selectorComponent(question, columns, items, stdin, false, gotermTerminal{}).([][]string)[0]
+func FuzzyTableSelector(question string, columns []string, items [][]string,
+	stdin io.Reader, terminal TerminalInterface) []string {
+	if terminal == nil {
+		terminal = gotermTerminal{}
+	}
+	return selectorComponent(question, columns, items, stdin, false, terminal).([][]string)[0]
 }
 
 // FuzzyTableMultiSelector is used to create a selector with a table and multiple items.
-func FuzzyTableMultiSelector(question string, columns []string, items [][]string, stdin io.Reader) [][]string {
-	return selectorComponent(question, columns, items, stdin, true, gotermTerminal{}).([][]string)
+func FuzzyTableMultiSelector(question string, columns []string, items [][]string,
+	stdin io.Reader, terminal TerminalInterface) [][]string {
+	if terminal == nil {
+		terminal = gotermTerminal{}
+	}
+	return selectorComponent(question, columns, items, stdin, true, terminal).([][]string)
 }

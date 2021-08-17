@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/buger/goterm"
@@ -358,6 +357,7 @@ func virtualMachinesCreateCmd(
 	sshKeysClient sshKeysListClient,
 	tagsClient tagsClient,
 	vmBuilderClient virtualMachinesBuilderClient,
+	terminal console.TerminalInterface,
 ) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -379,7 +379,7 @@ func virtualMachinesCreateCmd(
 			}
 			orgArr := console.FuzzyTableSelector(
 				"Which organization would you like to deploy the VM in?",
-				[]string{"Name", "Subdomain"}, orgRows, cmd.InOrStdin())
+				[]string{"Name", "Subdomain"}, orgRows, cmd.InOrStdin(), terminal)
 			index := getArrayIndex(orgArr, orgRows)
 			org := orgs[index]
 
@@ -395,7 +395,8 @@ func virtualMachinesCreateCmd(
 				dcRows[i] = []string{dc.Name, dc.Country.Name}
 			}
 			dcArr := console.FuzzyTableSelector(
-				"Which DC would you like to deploy the VM in?", []string{"Name", "Country"}, dcRows, cmd.InOrStdin())
+				"Which DC would you like to deploy the VM in?", []string{"Name", "Country"}, dcRows,
+				cmd.InOrStdin(), terminal)
 			index = getArrayIndex(dcArr, dcRows)
 			dc := dcs[index]
 
@@ -412,7 +413,8 @@ func virtualMachinesCreateCmd(
 				}
 			}
 			packageArr := console.FuzzyTableSelector(
-				"Which VM package would you like?", []string{"Name", "CPU Cores", "RAM"}, packageRows, cmd.InOrStdin())
+				"Which VM package would you like?", []string{"Name", "CPU Cores", "RAM"}, packageRows,
+				cmd.InOrStdin(), terminal)
 			index = getArrayIndex(packageArr, packageRows)
 			packageResult := packages[index]
 
@@ -427,7 +429,8 @@ func virtualMachinesCreateCmd(
 				distributionStrs[i] = distribution.Name
 			}
 			distributionStr := console.FuzzySelector(
-				"Which distribution would you like?", distributionStrs, cmd.InOrStdin())
+				"Which distribution would you like?", distributionStrs,
+				cmd.InOrStdin(), terminal)
 			index = getStringIndex(distributionStr, distributionStrs)
 			distribution := distributions[index]
 
@@ -451,7 +454,7 @@ func virtualMachinesCreateCmd(
 				}
 				selectedIPRows := console.FuzzyTableMultiSelector(
 					"Please select any IP addresses you wish to add.",
-					[]string{"Address", "Reverse DNS"}, ipRows, os.Stdin)
+					[]string{"Address", "Reverse DNS"}, ipRows, cmd.InOrStdin(), terminal)
 				selectedIps = make([]*core.IPAddress, len(selectedIPRows))
 				for i, arr := range selectedIPRows {
 					selectedIps[i] = ips[getArrayIndex(arr, ipRows)]
@@ -471,7 +474,7 @@ func virtualMachinesCreateCmd(
 				}
 				selectedKeys := console.FuzzyTableMultiSelector(
 					"Which organization SSH keys do you wish to add?", []string{"Name", "Fingerprint"},
-					keyRows, os.Stdin)
+					keyRows, cmd.InOrStdin(), terminal)
 				keyIds = make([]string, len(selectedKeys))
 				for i, arr := range selectedKeys {
 					keyIds[i] = keys[getArrayIndex(arr, keyRows)].ID
@@ -489,7 +492,8 @@ func virtualMachinesCreateCmd(
 			}
 			tagIds := []string{}
 			if len(tags) != 0 {
-				selectedTags := console.FuzzyMultiSelector("Do you wish to add any tags?", tagStrs, cmd.InOrStdin())
+				selectedTags := console.FuzzyMultiSelector(
+					"Do you wish to add any tags?", tagStrs, cmd.InOrStdin(), terminal)
 				tagIds = make([]string, len(selectedTags))
 				for i, tagName := range selectedTags {
 					tagIds[i] = tags[getStringIndex(tagName, selectedTags)].ID
@@ -570,7 +574,8 @@ func virtualMachinesCmd(vmClient virtualMachinesClient,
 	ipAddressesClient virtualMachineIPAddressesClient,
 	sshKeysClient sshKeysListClient,
 	tagsClient tagsClient,
-	vmBuilderClient virtualMachinesBuilderClient) *cobra.Command {
+	vmBuilderClient virtualMachinesBuilderClient,
+	terminal console.TerminalInterface) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "vm",
 		Aliases: []string{"vms", "virtual-machines", "virtual_machines"},
@@ -586,7 +591,7 @@ func virtualMachinesCmd(vmClient virtualMachinesClient,
 		virtualMachinesResetCmd(vmClient),
 		virtualMachinesCreateCmd(orgsClient, dcsClient, vmPackagesClient,
 			diskTemplatesClient, ipAddressesClient, sshKeysClient,
-			tagsClient, vmBuilderClient))
+			tagsClient, vmBuilderClient, terminal))
 
 	return cmd
 }

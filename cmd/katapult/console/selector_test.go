@@ -1,64 +1,12 @@
 package console
 
 import (
-	"bytes"
-	"fmt"
 	"testing"
 
 	"github.com/krystal/katapult-cli/internal/golden"
+	"github.com/krystal/katapult-cli/internal/keystrokes"
 	"github.com/stretchr/testify/assert"
-	"golang.org/x/term"
 )
-
-type mockTerminal struct {
-	buf *bytes.Buffer
-
-	exitSignaled bool
-}
-
-func (m mockTerminal) Height() int {
-	return 10
-}
-
-func (m mockTerminal) Width() int {
-	return 200
-}
-
-func (m mockTerminal) Print(items ...interface{}) (int, error) {
-	return fmt.Fprint(m.buf, items...)
-}
-
-func (m mockTerminal) Println(items ...interface{}) (int, error) {
-	return fmt.Fprintln(m.buf, items...)
-}
-
-func (m mockTerminal) Clear() {
-	_, _ = fmt.Fprint(m.buf, "\033[2J")
-}
-
-func (m mockTerminal) Flush() {
-	// This is platform dependant. Ignore this.
-}
-
-func (m *mockTerminal) SignalInterrupt() {
-	m.exitSignaled = true
-}
-
-func (m mockTerminal) MakeRaw() (*term.State, error) {
-	return nil, nil
-}
-
-type stdinDripFeeder struct {
-	inputs [][]byte
-	index  int
-}
-
-func (s *stdinDripFeeder) Read(b []byte) (int, error) {
-	copy(b, s.inputs[s.index])
-	l := len(s.inputs[s.index])
-	s.index++
-	return l, nil
-}
 
 func TestSelector(t *testing.T) {
 	tests := []struct {
@@ -76,7 +24,7 @@ func TestSelector(t *testing.T) {
 		{
 			name: "display non-row selection menu",
 			inputs: [][]byte{
-				{3},
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			items: []string{
@@ -86,8 +34,8 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll down on non-row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			items: []string{
@@ -97,9 +45,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "wrap around on non-row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			items: []string{
@@ -109,9 +57,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll up on non-row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 65},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.UpArrow,
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			items: []string{
@@ -123,7 +71,7 @@ func TestSelector(t *testing.T) {
 			inputs: [][]byte{
 				{'h'},
 				{'e'},
-				{3},
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			items: []string{
@@ -133,8 +81,8 @@ func TestSelector(t *testing.T) {
 		{
 			name: "make selection on non-row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{13},
+				keystrokes.DownArrow,
+				keystrokes.Enter,
 			},
 			items: []string{
 				"hello", "world",
@@ -147,7 +95,7 @@ func TestSelector(t *testing.T) {
 		{
 			name: "display row selection menu",
 			inputs: [][]byte{
-				{3},
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			columns:    []string{"test"},
@@ -158,8 +106,8 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll down on row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			columns:    []string{"test"},
@@ -170,9 +118,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "wrap around on row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			columns:    []string{"test"},
@@ -183,9 +131,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll up on row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 65},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.UpArrow,
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			columns:    []string{"test"},
@@ -198,7 +146,7 @@ func TestSelector(t *testing.T) {
 			inputs: [][]byte{
 				{'h'},
 				{'e'},
-				{3},
+				keystrokes.CTRLC,
 			},
 			shouldExit: true,
 			columns:    []string{"test"},
@@ -209,8 +157,8 @@ func TestSelector(t *testing.T) {
 		{
 			name: "make selection on row selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{13},
+				keystrokes.DownArrow,
+				keystrokes.Enter,
 			},
 			columns: []string{"test"},
 			items: [][]string{
@@ -224,7 +172,7 @@ func TestSelector(t *testing.T) {
 		{
 			name: "display non-row multi selection menu",
 			inputs: [][]byte{
-				{3},
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -235,8 +183,8 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll down on non-row multi selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -247,9 +195,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "wrap around on non-row multi selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -260,9 +208,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll up on non-row multi selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 65},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.UpArrow,
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -275,7 +223,7 @@ func TestSelector(t *testing.T) {
 			inputs: [][]byte{
 				{'h'},
 				{'e'},
-				{3},
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -286,11 +234,11 @@ func TestSelector(t *testing.T) {
 		{
 			name: "make selection on non-row multi selection menu",
 			inputs: [][]byte{
-				{13},
-				{27, 91, 66},
-				{13},
-				{27, 91, 66},
-				{27},
+				keystrokes.Enter,
+				keystrokes.DownArrow,
+				keystrokes.Enter,
+				keystrokes.DownArrow,
+				keystrokes.Escape,
 			},
 			multiple: true,
 			items: []string{
@@ -304,7 +252,7 @@ func TestSelector(t *testing.T) {
 		{
 			name: "display row multi selection menu",
 			inputs: [][]byte{
-				{3},
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -316,8 +264,8 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll down on row multi selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -329,9 +277,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "wrap around on row multi selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 66},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.DownArrow,
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -343,9 +291,9 @@ func TestSelector(t *testing.T) {
 		{
 			name: "scroll up on row multi selection menu",
 			inputs: [][]byte{
-				{27, 91, 66},
-				{27, 91, 65},
-				{3},
+				keystrokes.DownArrow,
+				keystrokes.UpArrow,
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -359,7 +307,7 @@ func TestSelector(t *testing.T) {
 			inputs: [][]byte{
 				{'h'},
 				{'e'},
-				{3},
+				keystrokes.CTRLC,
 			},
 			multiple:   true,
 			shouldExit: true,
@@ -371,11 +319,11 @@ func TestSelector(t *testing.T) {
 		{
 			name: "make selection on row multi selection menu",
 			inputs: [][]byte{
-				{13},
-				{27, 91, 66},
-				{13},
-				{27, 91, 66},
-				{27},
+				keystrokes.Enter,
+				keystrokes.DownArrow,
+				keystrokes.Enter,
+				keystrokes.DownArrow,
+				keystrokes.Escape,
 			},
 			multiple: true,
 			columns:  []string{"test", "123"},
@@ -387,20 +335,19 @@ func TestSelector(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdin := &stdinDripFeeder{inputs: tt.inputs}
-			stdout := &mockTerminal{buf: &bytes.Buffer{}}
+			stdin := &StdinDripFeeder{Inputs: tt.inputs}
+			stdout := &MockTerminal{}
 			res := selectorComponent("test", tt.columns, tt.items, stdin, tt.multiple, stdout)
 			if tt.shouldExit {
-				assert.Equal(t, tt.shouldExit, stdout.exitSignaled)
+				assert.Equal(t, tt.shouldExit, stdout.ExitSignaled)
 			} else {
 				assert.Equal(t, tt.result, res)
 			}
-			buf := stdout.buf
 			if golden.Update() {
-				golden.Set(t, buf.Bytes())
+				golden.Set(t, stdout.Buffer.Bytes())
 				return
 			}
-			assert.Equal(t, string(golden.Get(t)), buf.String())
+			assert.Equal(t, string(golden.Get(t)), stdout.Buffer.String())
 		})
 	}
 }

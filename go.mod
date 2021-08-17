@@ -3,6 +3,7 @@ module github.com/krystal/katapult-cli
 go 1.16
 
 require (
+	github.com/augurysys/timestamp v0.0.0-20190827071116-44c56d926547 // indirect
 	github.com/buger/goterm v1.0.1
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/krystal/go-katapult v0.1.6-0.20210803112233-232e29436452
