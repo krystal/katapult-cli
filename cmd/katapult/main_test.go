@@ -26,7 +26,6 @@ func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, stderrResul
 
 	if golden.Update() {
 		golden.Set(t, stdout.Bytes())
-		return
 	}
 	assert.Equal(t, string(golden.Get(t)), stdout.String())
 	assert.Equal(t, stderrResult, stderr.String())

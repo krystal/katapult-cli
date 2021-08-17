@@ -53,7 +53,6 @@ func Test_genericOutput_JSON(t *testing.T) {
 			assert.NoError(t, g.JSON(buf))
 			if golden.Update() {
 				golden.Set(t, buf.Bytes())
-				return
 			}
 			assert.Equal(t, golden.Get(t), buf.Bytes())
 		})
@@ -98,7 +97,6 @@ func Test_genericOutput_YAML(t *testing.T) {
 			assert.NoError(t, g.YAML(buf))
 			if golden.Update() {
 				golden.Set(t, buf.Bytes())
-				return
 			}
 			assert.Equal(t, golden.Get(t), buf.Bytes())
 		})
@@ -142,7 +140,6 @@ func Test_genericOutput_Text(t *testing.T) {
 			assert.NoError(t, err)
 			if golden.Update() {
 				golden.Set(t, buf.Bytes())
-				return
 			}
 			assert.Equal(t, buf.Bytes(), golden.Get(t))
 		})

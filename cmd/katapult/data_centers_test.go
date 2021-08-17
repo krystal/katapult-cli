@@ -114,7 +114,6 @@ func TestDataCenters_List(t *testing.T) {
 
 			if golden.Update() {
 				golden.Set(t, stdout.Bytes())
-				return
 			}
 			assert.Equal(t, string(golden.Get(t)), stdout.String())
 			assert.Equal(t, tt.stderr, stderr.String())
