@@ -1236,10 +1236,11 @@ func TestVMs_Create(t *testing.T) {
 				ipAddressesClient, sshKeysClient, tags, vmBuilderClient, mockTerminal)
 			cmd.SetIn(stdin)
 			cmd.SetArgs([]string{"create"})
-			stdout := "-- STDOUT --\n\n" + assertCobraCommandReturnStdout(t, cmd, tt.wantErr, tt.stderr)
+			stdout := assertCobraCommandReturnStdout(t, cmd, tt.wantErr, tt.stderr)
 
 			// Create the resulting golden data and handle it.
 			buf := &bytes.Buffer{}
+			buf.WriteString("-- STDOUT --\n\n")
 			_, _ = mockTerminal.Buffer.WriteTo(buf)
 			buf.WriteString(stdout)
 			buf.WriteString("\n\n-- BUILD SPEC --\n\n")

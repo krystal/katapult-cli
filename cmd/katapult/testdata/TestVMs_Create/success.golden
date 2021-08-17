@@ -1,3 +1,5 @@
+-- STDOUT --
+
 [2J[32mWhich organization would you like to deploy the VM in? (Press ENTER to make your selection): [0m[34m[0m[34mLoge Enthusiasts / loge[0m
 [36mName                                                                                              Subdomain                                                                                         [0m
 [33mLoge Enthusiasts                                                                                  loge                                                                                              [0m
@@ -177,8 +179,6 @@ Ubuntu 20.04
 
 
 
-
--- STDOUT --
 
 [36mWhat would you like the virtual machine to be called?[0m [36mIf you want a hostname, what do you want it to be?[0m [36mIf you want a description, what do you want it to be?[0m 
 
