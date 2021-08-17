@@ -110,6 +110,9 @@ func Test_renderTemplate(t *testing.T) {
 	assert.Equal(t, "Hello World!", buf.String())
 }
 
+const forMapTpl = `{{ range $key, $value := . }}{{ $key }}{{ $value }}{{ end }}
+`
+
 func Test_genericOutput_Text(t *testing.T) {
 	tests := []struct {
 		name string

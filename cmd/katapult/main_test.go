@@ -30,6 +30,3 @@ func assertCobraCommand(t *testing.T, cmd *cobra.Command, errResult, stderrResul
 	assert.Equal(t, string(golden.Get(t)), stdout.String())
 	assert.Equal(t, stderrResult, stderr.String())
 }
-
-const forMapTpl = `{{ range $key, $value := . }}{{ $key }}{{ $value }}{{ end }}
-`
