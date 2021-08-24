@@ -49,7 +49,7 @@ func run() error {
 	rootFlags.StringVarP(&outputFlag, "output", "o", "", "output type (yaml, json, text)")
 	rootFlags.StringVar(&templateFlag, "format", "", "defines the output template for text")
 
-	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
+	rootFlags.StringVar(&configFileFlag, "config-path", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
 
 	rootFlags.StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
