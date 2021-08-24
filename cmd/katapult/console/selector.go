@@ -99,8 +99,10 @@ func getQueryMatches(query string, hasColumns bool, items interface{}) (interfac
 }
 
 // Formats the user prompt. Returns the rough line count.
-func formatUserPrompt(length, highlightIndex int, hasColumns bool, matched interface{},
-	query, queryLower string, terminal TerminalInterface) int {
+func formatUserPrompt(
+	length, highlightIndex int, hasColumns bool, matched interface{},
+	query, queryLower string, terminal TerminalInterface,
+) int {
 	var suggestionLen int
 	if length == 0 {
 		// There's no matches, we should just just print the users input.
