@@ -125,8 +125,23 @@ func formatUserPrompt(
 	return suggestionLen
 }
 
+// Set the highlight type.
+type highlight int
+
+// Defines the highlight items.
+const (
+	// No highlighting.
+	highlightNone = highlight(iota)
+
+	// Content highlighting.
+	highlightContent
+
+	// Title highlighting.
+	highlightTitle
+)
+
 // Handles column rendering.
-func renderColumns(row []string, offset, highlight, width int, terminal TerminalInterface) {
+func renderColumns(row []string, offset int, highlight highlight, width int, terminal TerminalInterface) {
 	// Get the remaining width by subtracting the offset from the console width.
 	remainingWidth := width
 	if offset > 0 {
@@ -158,10 +173,12 @@ func renderColumns(row []string, offset, highlight, width int, terminal Terminal
 		}
 	}
 	switch highlight {
-	case 1:
+	case highlightNone:
+		// Leave the content as is.
+	case highlightContent:
 		// Content highlight
 		content = goterm.Color(content, goterm.YELLOW)
-	case 2:
+	case highlightTitle:
 		// Title highlight
 		content = goterm.Color(content, goterm.CYAN)
 	}
@@ -283,9 +300,9 @@ func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *i
 func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}, terminal TerminalInterface) {
 	if hasColumn {
 		// Handle column rendering.
-		highlightValue := 0
+		highlightValue := highlightNone
 		if i == highlightIndex {
-			highlightValue = 1
+			highlightValue = highlightContent
 		}
 		renderColumns(v.([]string), -2, highlightValue, width, terminal)
 		return
@@ -396,7 +413,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 				// If there is multiple items, we want to offset the items by the checkbox size.
 				offset = 4
 			}
-			renderColumns(columns, offset, 2, width, terminal)
+			renderColumns(columns, offset, highlightTitle, width, terminal)
 			usableItemRows--
 		}
 
