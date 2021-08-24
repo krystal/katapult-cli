@@ -25,5 +25,5 @@ $ brew tap krystal/tap
 $ brew install krystal/tap/katapult-cli
 ```
 
-### Manual Installation (Windows/desupported Linux distros)
+### Manual Installation (Windows/other Linux distros)
 For manual installation, you can download the binary from the GitHub release.

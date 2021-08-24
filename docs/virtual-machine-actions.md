@@ -1,7 +1,7 @@
 # Virtual Machine Actions
 
 ## Listing
-Lists all of the current virtual machines. You can do this with `vms list`. Takes either `--id` or a subdomain for the organization:
+Lists all of the current virtual machines for the user. You can do this with `vms list`. Takes either `--id` or a subdomain for the organization:
 
 ```
 $ katapult vms list debug-inc
