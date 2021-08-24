@@ -1,0 +1,16 @@
+-- STDOUT --
+
+Usage:
+  vm create [flags]
+
+Flags:
+  -h, --help   help for create
+
+
+
+-- BUILD SPEC --
+
+{
+  "OrgResult": {},
+  "SpecResult": null
+}

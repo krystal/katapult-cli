@@ -92,7 +92,17 @@ func run() error {
 		dataCentersCmd(core.NewDataCentersClient(cl)),
 		networksCmd(core.NewNetworksClient(cl)),
 		organizationsCmd(core.NewOrganizationsClient(cl)),
-		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
+		virtualMachinesCmd(
+			core.NewVirtualMachinesClient(cl),
+			core.NewOrganizationsClient(cl),
+			core.NewDataCentersClient(cl),
+			core.NewVirtualMachinePackagesClient(cl),
+			core.NewDiskTemplatesClient(cl),
+			core.NewIPAddressesClient(cl),
+			core.NewSSHKeysClient(cl),
+			core.NewTagsClient(cl),
+			core.NewVirtualMachineBuildsClient(cl),
+			nil),
 	)
 
 	return rootCmd.Execute()

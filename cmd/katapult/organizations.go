@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type organizationsClient interface {
+type organisationsListClient interface {
 	List(
 		ctx context.Context,
 	) ([]*core.Organization, *katapult.Response, error)
@@ -16,7 +16,7 @@ type organizationsClient interface {
 
 const organizationsListFormat = `{{ Table (StringSlice "Name" "Subdomain") (MultipleRows . "Name" "SubDomain") }}`
 
-func organizationsCmd(client organizationsClient) *cobra.Command {
+func organizationsCmd(client organisationsListClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "org",
 		Aliases: []string{"orgs", "organization", "organizations"},
