@@ -89,6 +89,7 @@ func (c *Config) BindPFlags(flags *pflag.FlagSet) error {
 }
 
 func (c *Config) WriteConfig() error {
+	//nolint:errorlint
 	switch err := c.viper.WriteConfig().(type) {
 	case nil:
 		return nil
@@ -98,11 +99,11 @@ func (c *Config) WriteConfig() error {
 			return e
 		}
 		fp := filepath.Join(homedir, ".katapult")
-		if err := os.MkdirAll(fp, 0777); err != nil {
+		if err := os.MkdirAll(fp, 0o777); err != nil {
 			return err
 		}
 		fp = filepath.Join(fp, "katapult.yaml")
-		if err := ioutil.WriteFile(fp, []byte{}, 0666); err != nil {
+		if err := ioutil.WriteFile(fp, []byte{}, 0o600); err != nil {
 			return err
 		}
 		return c.WriteConfig()
