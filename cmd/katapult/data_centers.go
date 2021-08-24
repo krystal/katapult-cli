@@ -15,28 +15,29 @@ type dataCentersClient interface {
 	Get(ctx context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error)
 }
 
+//nolint:lll
+const dataCentersFormat = `{{ Table (StringSlice "Name" "Permalink" "Country Name") (MultipleRows . "Name" "Permalink" "Country.Name") }}`
+
+//nolint:lll
+const getDataCenterFormat = `{{ Table (StringSlice "Name" "Permalink" "Country Name") (SingleRow .Name .Permalink .Country.Name) }}`
+
 func listDataCentersCmd(client dataCentersClient) *cobra.Command {
 	return &cobra.Command{
 		Use:     "list",
 		Aliases: []string{"ls"},
 		Short:   "List data centers",
 		Long:    "List data centers.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			dcs, _, err := client.List(cmd.Context())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			for _, dc := range dcs {
-				_, _ = fmt.Fprintf(
-					cmd.OutOrStdout(),
-					" - %s (%s) [%s] / %s\n",
-					dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
-				)
-			}
-
-			return nil
-		},
+			return &genericOutput{
+				item:                dcs,
+				defaultTextTemplate: dataCentersFormat,
+			}, nil
+		}),
 	}
 }
 
@@ -46,23 +47,17 @@ func getDataCenterCmd(client dataCentersClient) *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		Short: "Get details for a data center",
 		Long:  "Get details for a data center.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			dc, _, err := client.Get(cmd.Context(), core.DataCenterRef{Permalink: args[0]})
 			if err != nil {
 				if errors.Is(err, katapult.ErrNotFound) {
-					return fmt.Errorf("unknown datacentre")
+					return nil, fmt.Errorf("unknown datacentre")
 				}
-				return err
+				return nil, err
 			}
 
-			_, _ = fmt.Fprintf(
-				cmd.OutOrStdout(),
-				"%s (%s) [%s] / %s\n",
-				dc.Name, dc.Permalink, dc.ID, dc.Country.Name,
-			)
-
-			return nil
-		},
+			return &genericOutput{item: dc, defaultTextTemplate: getDataCenterFormat}, nil
+		}),
 	}
 }
 

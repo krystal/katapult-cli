@@ -2,20 +2,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/core"
 	"github.com/spf13/cobra"
 )
 
-type organizationsClient interface {
+type organisationsListClient interface {
 	List(
 		ctx context.Context,
 	) ([]*core.Organization, *katapult.Response, error)
 }
 
-func organizationsCmd(client organizationsClient) *cobra.Command {
+const organizationsListFormat = `{{ Table (StringSlice "Name" "Subdomain") (MultipleRows . "Name" "SubDomain") }}`
+
+func organizationsCmd(client organisationsListClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "org",
 		Aliases: []string{"orgs", "organization", "organizations"},
@@ -28,19 +29,17 @@ func organizationsCmd(client organizationsClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "Get list of organizations",
 		Long:    "Get list of organizations.",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: outputWrapper(func(cmd *cobra.Command, args []string) (Output, error) {
 			orgs, _, err := client.List(cmd.Context())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			out := cmd.OutOrStdout()
-			for _, org := range orgs {
-				fmt.Fprintf(out, " - %s (%s) [%s]\n", org.Name, org.SubDomain, org.ID)
-			}
-
-			return nil
-		},
+			return &genericOutput{
+				item:                orgs,
+				defaultTextTemplate: organizationsListFormat,
+			}, nil
+		}),
 	}
 	cmd.AddCommand(list)
 
