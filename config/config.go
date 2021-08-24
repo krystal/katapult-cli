@@ -10,13 +10,13 @@ import (
 type Config struct {
 	viper *viper.Viper
 
-	APIURL string `mapstructure:"api_url"`
-	APIKey string `mapstructure:"api_key"`
+	APIURL   string `mapstructure:"api_url"`
+	APIToken string `mapstructure:"api_token"`
 }
 
 var Defaults = &Config{
-	APIURL: "",
-	APIKey: "",
+	APIURL:   "",
+	APIToken: "",
 }
 
 func New() (*Config, error) {
@@ -29,8 +29,8 @@ func New() (*Config, error) {
 		return nil, err
 	}
 
-	c.SetDefault("api_key", Defaults.APIKey)
-	if err := c.BindEnv("api_key"); err != nil {
+	c.SetDefault("api_token", Defaults.APIToken)
+	if err := c.BindEnv("api_token"); err != nil {
 		return nil, err
 	}
 

@@ -1,4 +1,4 @@
 {
-  "api_key": "testKey",
+  "api_token": "testKey",
   "api_url": "testURL"
 }
