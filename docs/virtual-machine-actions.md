@@ -20,6 +20,8 @@ There are various power actions you can perform with VM's:
 - `vms stop <--fqdn or --id>`: Stops a virtual machine.
 - `vms reset <--fqdn or --id>`: Reset a virtual machine.
 
+The parameter `<--fqdn or --id>` is either a FQDN or virtual machine ID that is passed through with either `--fqdn=X` or `--id=X` respectively.
+
 ## Creation Wizard
 TODO: Params
 
