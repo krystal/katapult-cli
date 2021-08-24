@@ -12,7 +12,7 @@ func run() error {
 	var (
 		configFileFlag string
 		configURLFlag  string
-		configAPIKey   string
+		configAPIToken string
 	)
 
 	conf, err := config.New()
@@ -60,11 +60,11 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	tokenDefault := config.Defaults.APIKey
+	tokenDefault := config.Defaults.APIToken
 	if tokenDefault != "" {
 		tokenDefault = " (default: " + tokenDefault + ")"
 	}
-	rootFlags.StringVar(&configAPIKey, "api-token", "", "Katapult API Token"+tokenDefault)
+	rootFlags.StringVar(&configAPIToken, "api-token", "", "Katapult API Token"+tokenDefault)
 	err = conf.BindPFlag("api_token", rootFlags.Lookup("api-token"))
 	if err != nil {
 		return err

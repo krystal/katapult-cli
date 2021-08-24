@@ -13,13 +13,13 @@ func Test_newClient(t *testing.T) {
 	tests := []struct {
 		name string
 
-		apiKey  string
-		apiURL  string
-		wantErr string
+		apiToken string
+		apiURL   string
+		wantErr  string
 	}{
 		{
-			name:   "empty API URL",
-			apiKey: "test",
+			name:     "empty API URL",
+			apiToken: "test",
 		},
 		{
 			name:    "invalid URL",
@@ -27,15 +27,15 @@ func Test_newClient(t *testing.T) {
 			apiURL:  "@@:",
 		},
 		{
-			name:   "both values",
-			apiKey: "test",
-			apiURL: "https://example.com",
+			name:     "both values",
+			apiToken: "test",
+			apiURL:   "https://example.com",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c, err := newClient(&config.Config{
-				APIKey: tt.apiKey,
+				APIToken: tt.apiToken,
 				APIURL: tt.apiURL,
 			})
 
@@ -45,7 +45,7 @@ func Test_newClient(t *testing.T) {
 			}
 			require.NoError(t, err)
 
-			assert.Equal(t, tt.apiKey, c.(*katapult.Client).APIKey)
+			assert.Equal(t, tt.apiToken, c.(*katapult.Client).APIKey)
 			var apiURL string
 			if c.(*katapult.Client).BaseURL != nil {
 				apiURL = c.(*katapult.Client).BaseURL.String()
