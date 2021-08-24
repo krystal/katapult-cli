@@ -5,10 +5,7 @@ Lists all of the current organizations for the user. You can do this with `orgs 
 
 ```
 $ katapult orgs list
-+-----------+-----------+
-|   NAME    | SUBDOMAIN |
-+-----------+-----------+
-| Debug Inc | debug-inc |
-+-----------+-----------+
+NAME            SUBDOMAIN      
+Hello World     testing
 ```
 

@@ -5,12 +5,9 @@ Lists all of the current virtual machines for the user. You can do this with `vm
 
 ```
 $ katapult vms list debug-inc
-+-------+--------------------------------+
-| NAME  |              FQDN              |
-+-------+--------------------------------+
-| demo  | testing.debug-inc.st.kpult.com |
-| hello | world.debug-inc.st.kpult.com   |
-+-------+--------------------------------+
+NAME            FQDN                                   
+hello-1         hello-1.debug-inc.katapult.cloud  
+hello-2         hello-2.debug-inc.katapult.cloud 
 ```
 
 ## Power Actions
