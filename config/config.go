@@ -15,7 +15,7 @@ type Config struct {
 }
 
 var Defaults = &Config{
-	APIURL: "",
+	APIURL:   "",
 	APIToken: "",
 }
 

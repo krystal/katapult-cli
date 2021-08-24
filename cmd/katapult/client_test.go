@@ -36,7 +36,7 @@ func Test_newClient(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			c, err := newClient(&config.Config{
 				APIToken: tt.apiToken,
-				APIURL: tt.apiURL,
+				APIURL:   tt.apiURL,
 			})
 
 			if tt.wantErr != "" {
