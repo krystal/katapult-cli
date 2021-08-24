@@ -106,27 +106,27 @@ func TestNetworks_List(t *testing.T) {
 		name string
 
 		args    []string
-		want    string
+		output  string
 		stderr  string
 		wantErr string
 	}{
 		{
-			name: "Test listing pog-id",
+			name: "Test listing pog-id human readable",
 			args: []string{"ls", "--id", "pog-id"},
-			want: `Networks:
- - Pognet 1 [pognet]
- - Pognet 2 [pognet2]
-Virtual Networks:
- - Pognet Virtual Network 1 [pognet-virtual-1]
-`,
 		},
 		{
-			name: "Test listing pog-subdomain",
+			name:   "Test listing pog-id json",
+			args:   []string{"ls", "--id", "pog-id"},
+			output: "json",
+		},
+		{
+			name: "Test listing pog-subdomain human readable",
 			args: []string{"ls", "--subdomain", "pog-subdomain"},
-			want: `Networks:
- - Pognet 3 [pognet3]
- - Pognet 4 [pognet4]
-`,
+		},
+		{
+			name:   "Test listing pog-subdomain json",
+			args:   []string{"ls", "--subdomain", "pog-subdomain"},
+			output: "json",
 		},
 		{
 			name:    "No flags provided",
@@ -140,7 +140,9 @@ Virtual Networks:
 		t.Run(tt.name, func(t *testing.T) {
 			cmd := networksCmd(mockNetworkList{})
 			cmd.SetArgs(tt.args)
-			assertCobraCommand(t, cmd, tt.wantErr, tt.want, tt.stderr)
+			outputFlag = tt.output
+			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
+			outputFlag = ""
 		})
 	}
 }

@@ -16,6 +16,11 @@ type networksListClient interface {
 	) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error)
 }
 
+const networksListFormat = `Networks:
+{{ Table (StringSlice "Name" "ID") (MultipleRows .networks "Name" "ID") }}Virtual Networks:
+{{ Table (StringSlice "Name" "ID") (MultipleRows .virtual_networks "Name" "ID") }}
+`
+
 func networksCmd(client networksListClient) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "networks",
@@ -29,37 +34,33 @@ func networksCmd(client networksListClient) *cobra.Command {
 		Aliases: []string{"ls"},
 		Short:   "Get list of networks available to a Organization",
 		Long:    "Get list of networks available to a Organization.",
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: outputWrapper(func(cmd *cobra.Command, _ []string) (Output, error) {
 			id := cmd.Flag("id").Value.String()
 			ref := core.OrganizationRef{ID: id}
 			if id == "" {
 				subdomain := cmd.Flag("subdomain").Value.String()
 				if subdomain == "" {
-					return fmt.Errorf("both ID and subdomain are unset")
+					return nil, fmt.Errorf("both ID and subdomain are unset")
 				}
 				ref = core.OrganizationRef{SubDomain: subdomain}
 			}
 
 			nets, vnets, _, err := client.List(cmd.Context(), ref)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			out := cmd.OutOrStdout()
-			_, _ = fmt.Fprintln(out, "Networks:")
-			for _, net := range nets {
-				_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
+			if vnets == nil {
+				vnets = []*core.VirtualNetwork{}
 			}
-
-			if len(vnets) > 0 {
-				_, _ = fmt.Fprintln(out, "Virtual Networks:")
-				for _, net := range vnets {
-					_, _ = fmt.Fprintf(out, " - %s [%s]\n", net.Name, net.ID)
-				}
-			}
-
-			return nil
-		},
+			return &genericOutput{
+				item: map[string]interface{}{
+					"networks":         nets,
+					"virtual_networks": vnets,
+				},
+				defaultTextTemplate: networksListFormat,
+			}, nil
+		}),
 	}
 	listFlags := list.PersistentFlags()
 	listFlags.String("id", "", "The ID of the organization. Preferred over subdomain for lookups.")

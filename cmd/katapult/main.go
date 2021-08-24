@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/krystal/go-katapult/core"
@@ -22,6 +21,7 @@ func run() error {
 		return err
 	}
 
+	var help bool
 	rootCmd := &cobra.Command{
 		Use:   "katapult",
 		Short: "katapult CLI tool",
@@ -29,9 +29,25 @@ func run() error {
 		FParseErrWhitelist: cobra.FParseErrWhitelist{
 			UnknownFlags: true,
 		},
+		PersistentPreRunE: func(cmd *cobra.Command, _ []string) error {
+			if help {
+				err = cmd.Usage()
+				if err != nil {
+					return err
+				}
+				os.Exit(0)
+			}
+			return nil
+		},
+		SilenceUsage: true,
 	}
 
 	rootFlags := rootCmd.PersistentFlags()
+
+	rootFlags.BoolVarP(&help, "help", "h", false, "Display the help for the command/root.")
+
+	rootFlags.StringVarP(&outputFlag, "output", "o", "", "output type (yaml, json, text)")
+	rootFlags.StringVar(&templateFlag, "format", "", "defines the output template for text")
 
 	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
@@ -76,7 +92,17 @@ func run() error {
 		dataCentersCmd(core.NewDataCentersClient(cl)),
 		networksCmd(core.NewNetworksClient(cl)),
 		organizationsCmd(core.NewOrganizationsClient(cl)),
-		virtualMachinesCmd(core.NewVirtualMachinesClient(cl)),
+		virtualMachinesCmd(
+			core.NewVirtualMachinesClient(cl),
+			core.NewOrganizationsClient(cl),
+			core.NewDataCentersClient(cl),
+			core.NewVirtualMachinePackagesClient(cl),
+			core.NewDiskTemplatesClient(cl),
+			core.NewIPAddressesClient(cl),
+			core.NewSSHKeysClient(cl),
+			core.NewTagsClient(cl),
+			core.NewVirtualMachineBuildsClient(cl),
+			nil),
 	)
 
 	return rootCmd.Execute()
@@ -85,7 +111,7 @@ func run() error {
 func main() {
 	err := run()
 	if err != nil {
-		log.Printf("A fatal error occurred: %s", err)
+		// Ensure we exit with status code 1. The actual printing is done by Cobra.
 		os.Exit(1)
 	}
 }
