@@ -59,10 +59,10 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	rootFlags.StringVar(&configAPIKey, "api-key", "", fmt.Sprintf(
-		"Katapult API Key (default: %s)", config.Defaults.APIKey,
+	rootFlags.StringVar(&configAPIKey, "api-token", "", fmt.Sprintf(
+		"Katapult API Token (default: %s)", config.Defaults.APIKey,
 	))
-	err = conf.BindPFlag("api_key", rootFlags.Lookup("api-key"))
+	err = conf.BindPFlag("api_token", rootFlags.Lookup("api-token"))
 	if err != nil {
 		return err
 	}
