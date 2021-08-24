@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/krystal/go-katapult/core"
@@ -52,16 +51,20 @@ func run() error {
 	rootFlags.StringVar(&configFileFlag, "config-path", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
 
-	rootFlags.StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
-		"URL for Katapult API (default: %s)", config.Defaults.APIURL,
-	))
+	apiURLDefault := config.Defaults.APIURL
+	if apiURLDefault != "" {
+		apiURLDefault = " (default: " + apiURLDefault + ")"
+	}
+	rootFlags.StringVar(&configURLFlag, "api-url", "", "URL for Katapult API"+apiURLDefault)
 	err = conf.BindPFlag("api_url", rootFlags.Lookup("api-url"))
 	if err != nil {
 		return err
 	}
-	rootFlags.StringVar(&configAPIKey, "api-token", "", fmt.Sprintf(
-		"Katapult API Token (default: %s)", config.Defaults.APIKey,
-	))
+	tokenDefault := config.Defaults.APIKey
+	if tokenDefault != "" {
+		tokenDefault = " (default: " + tokenDefault + ")"
+	}
+	rootFlags.StringVar(&configAPIKey, "api-token", "", "Katapult API Token"+tokenDefault)
 	err = conf.BindPFlag("api_token", rootFlags.Lookup("api-token"))
 	if err != nil {
 		return err
