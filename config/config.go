@@ -91,8 +91,6 @@ func (c *Config) BindPFlags(flags *pflag.FlagSet) error {
 func (c *Config) WriteConfig() error {
 	//nolint:errorlint
 	switch err := c.viper.WriteConfig().(type) {
-	case nil:
-		return nil
 	case viper.ConfigFileNotFoundError:
 		homedir, e := os.UserHomeDir()
 		if e != nil {
