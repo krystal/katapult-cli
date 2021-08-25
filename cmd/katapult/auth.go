@@ -6,6 +6,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const authFormat = `Successfully authenticated. Here is your current list of organizations:
+{{ Table (StringSlice "Name" "Subdomain") (MultipleRows . "Name" "SubDomain") }}`
+
 func authCommand(conf *config.Config) *cobra.Command {
 	return &cobra.Command{
 		Use:   "auth",
@@ -25,7 +28,8 @@ func authCommand(conf *config.Config) *cobra.Command {
 			if err != nil {
 				return nil, err
 			}
-			if _, _, err = core.NewDataCentersClient(c).List(cmd.Context()); err != nil {
+			orgs, _, err := core.NewOrganizationsClient(c).List(cmd.Context())
+			if err != nil {
 				return nil, err
 			}
 
@@ -37,8 +41,8 @@ func authCommand(conf *config.Config) *cobra.Command {
 
 			// Return the output.
 			return &genericOutput{
-				item:                map[string]bool{"success": true},
-				defaultTextTemplate: "Successfully authenticated.\n",
+				item:                orgs,
+				defaultTextTemplate: authFormat,
 			}, nil
 		}),
 	}
