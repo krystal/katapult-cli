@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/krystal/go-katapult/core"
@@ -13,7 +12,7 @@ func run() error {
 	var (
 		configFileFlag string
 		configURLFlag  string
-		configAPIKey   string
+		configAPIToken string
 	)
 
 	conf, err := config.New()
@@ -49,20 +48,24 @@ func run() error {
 	rootFlags.StringVarP(&outputFlag, "output", "o", "", "output type (yaml, json, text)")
 	rootFlags.StringVar(&templateFlag, "format", "", "defines the output template for text")
 
-	rootFlags.StringVarP(&configFileFlag, "config", "c", "",
+	rootFlags.StringVar(&configFileFlag, "config-path", "",
 		"config file (default: $HOME/.katapult/katapult.yaml)")
 
-	rootFlags.StringVar(&configURLFlag, "api-url", "", fmt.Sprintf(
-		"URL for Katapult API (default: %s)", config.Defaults.APIURL,
-	))
+	apiURLDefault := config.Defaults.APIURL
+	if apiURLDefault != "" {
+		apiURLDefault = " (default: " + apiURLDefault + ")"
+	}
+	rootFlags.StringVar(&configURLFlag, "api-url", "", "URL for Katapult API"+apiURLDefault)
 	err = conf.BindPFlag("api_url", rootFlags.Lookup("api-url"))
 	if err != nil {
 		return err
 	}
-	rootFlags.StringVar(&configAPIKey, "api-key", "", fmt.Sprintf(
-		"Katapult API Key (default: %s)", config.Defaults.APIKey,
-	))
-	err = conf.BindPFlag("api_key", rootFlags.Lookup("api-key"))
+	tokenDefault := config.Defaults.APIToken
+	if tokenDefault != "" {
+		tokenDefault = " (default: " + tokenDefault + ")"
+	}
+	rootFlags.StringVar(&configAPIToken, "api-token", "", "Katapult API Token"+tokenDefault)
+	err = conf.BindPFlag("api_token", rootFlags.Lookup("api-token"))
 	if err != nil {
 		return err
 	}
