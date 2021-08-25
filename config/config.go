@@ -2,6 +2,9 @@ package config
 
 import (
 	"errors"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -83,6 +86,28 @@ func (c *Config) BindPFlag(key string, flag *pflag.Flag) error {
 
 func (c *Config) BindPFlags(flags *pflag.FlagSet) error {
 	return c.viper.BindPFlags(flags)
+}
+
+func (c *Config) WriteConfig() error {
+	//nolint:errorlint
+	switch err := c.viper.WriteConfig().(type) {
+	case viper.ConfigFileNotFoundError:
+		homedir, e := os.UserHomeDir()
+		if e != nil {
+			return e
+		}
+		fp := filepath.Join(homedir, ".katapult")
+		if err := os.MkdirAll(fp, 0o777); err != nil {
+			return err
+		}
+		fp = filepath.Join(fp, "katapult.yaml")
+		if err := ioutil.WriteFile(fp, []byte{}, 0o600); err != nil {
+			return err
+		}
+		return c.WriteConfig()
+	default:
+		return err
+	}
 }
 
 func newViper() *viper.Viper {

@@ -79,8 +79,7 @@ func run() error {
 		conf.SetConfigFile(configFileFlag)
 	}
 
-	err = conf.Load()
-	if err != nil {
+	if err = conf.Load(); err != nil {
 		return err
 	}
 
@@ -90,6 +89,7 @@ func run() error {
 	}
 
 	rootCmd.AddCommand(
+		authCommand(conf),
 		versionCommand(),
 		configCommand(conf),
 		dataCentersCmd(core.NewDataCentersClient(cl)),
