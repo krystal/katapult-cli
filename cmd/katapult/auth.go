@@ -34,7 +34,7 @@ func authCommand(conf *config.Config) *cobra.Command {
 			}
 
 			// Write the config.
-			conf.SetDefault("api_token", token)
+			conf.Set("api_token", token)
 			if err = conf.WriteConfig(); err != nil {
 				return nil, err
 			}
