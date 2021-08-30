@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"fmt"
 	"strconv"
 
-	"github.com/buger/goterm"
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/buildspec"
 	"github.com/krystal/go-katapult/core"
@@ -515,24 +513,24 @@ func virtualMachinesCreateCmd(
 				}
 			}
 
-			// Clear the terminal.
-			goterm.Clear()
-			goterm.Flush()
-
-			// Get the buffered stdin.
-			bufferedStdin := bufio.NewReader(cmd.InOrStdin())
-
-			// Ask for the name.
-			name := console.Question(
-				"What would you like the virtual machine to be called?", false, bufferedStdin, cmd.OutOrStdout())
-
-			// Ask for the hostname.
-			hostname := console.Question(
-				"If you want a hostname, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
-
-			// Ask for the description.
-			description := console.Question(
-				"If you want a description, what do you want it to be?", true, bufferedStdin, cmd.OutOrStdout())
+			// Ask for the remainder of the information.
+			results := console.MultiInput([]console.InputField{
+				{
+					Optional:    false,
+					Name:        "Name",
+					Description: "The name of the virtual machine in Katapult.",
+				},
+				{
+					Optional:    true,
+					Name:        "Hostname",
+					Description: "The hostname of the virtual machine in Katapult.",
+				},
+				{
+					Optional:    true,
+					Name:        "Description",
+					Description: "The description of the virtual machine.",
+				},
+			}, cmd.InOrStdin(), terminal)
 
 			// Build the virtual machine spec.
 			ifaces := make([]*buildspec.NetworkInterface, len(selectedIps))
@@ -560,9 +558,9 @@ func virtualMachinesCreateCmd(
 					},
 				}},
 				NetworkInterfaces: ifaces,
-				Hostname:          hostname,
-				Name:              name,
-				Description:       description,
+				Hostname:          results[0],
+				Name:              results[1],
+				Description:       results[2],
 				AuthorizedKeys:    &buildspec.AuthorizedKeys{SSHKeys: keyIds},
 				Tags:              tagIds,
 			}

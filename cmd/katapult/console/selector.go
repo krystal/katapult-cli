@@ -4,12 +4,10 @@ import (
 	"container/list"
 	"io"
 	"math"
-	"os"
 	"strings"
 
-	"github.com/krystal/katapult-cli/internal/keystrokes"
-
 	"github.com/buger/goterm"
+	"github.com/krystal/katapult-cli/internal/keystrokes"
 	"golang.org/x/term"
 )
 
@@ -20,18 +18,6 @@ const (
 	// Clarification string for multiple items.
 	clarificationStringMultiple = " (Press ENTER to select items and ESC when you are done with your selections): "
 )
-
-// TerminalInterface defines a interface for a compatible terminal. Used for unit testing.
-type TerminalInterface interface {
-	Height() int
-	Width() int
-	Print(items ...interface{}) (int, error)
-	Println(items ...interface{}) (int, error)
-	Clear()
-	Flush()
-	SignalInterrupt()
-	MakeRaw() (*term.State, error)
-}
 
 func intMin(x, y int) int {
 	if x > y {
@@ -186,7 +172,7 @@ func renderColumns(row []string, offset int, highlight highlight, width int, ter
 }
 
 // Handle a standard input.
-func handleStandardInput(
+func handleSelectorStandardInput(
 	buf []byte, matchedLen int, multiple, hasColumns bool,
 	highlightIndex *int, selectedItems *list.List, matched interface{}, query *string,
 	terminal TerminalInterface,
@@ -274,7 +260,7 @@ func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *i
 	matched interface{}, terminal TerminalInterface) interface{} {
 	if n == 1 {
 		// Standard input.
-		return handleStandardInput(buf, matchedLen, multiple, hasColumns, highlightIndex,
+		return handleSelectorStandardInput(buf, matchedLen, multiple, hasColumns, highlightIndex,
 			selectedItems, matched, query, terminal)
 	}
 
@@ -316,40 +302,6 @@ func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}, 
 		// Print the item.
 		_, _ = terminal.Println(v)
 	}
-}
-
-type gotermTerminal struct{}
-
-func (gotermTerminal) Height() int {
-	return goterm.Height()
-}
-
-func (gotermTerminal) Width() int {
-	return goterm.Width()
-}
-
-func (gotermTerminal) Print(items ...interface{}) (int, error) {
-	return goterm.Print(items...)
-}
-
-func (gotermTerminal) Clear() {
-	goterm.Clear()
-}
-
-func (gotermTerminal) Println(items ...interface{}) (int, error) {
-	return goterm.Println(items...)
-}
-
-func (gotermTerminal) Flush() {
-	goterm.Flush()
-}
-
-func (gotermTerminal) SignalInterrupt() {
-	os.Exit(1)
-}
-
-func (gotermTerminal) MakeRaw() (*term.State, error) {
-	return term.MakeRaw(0)
 }
 
 // items is either []string or [][]string (if columns isn't nil).

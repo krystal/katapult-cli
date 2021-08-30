@@ -1042,7 +1042,7 @@ func TestVMs_Create(t *testing.T) {
 				// Tag selection.
 				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
 
-				// Name prompt.
+				// Name field.
 				{'n'},
 				{'a'},
 				{'m'},
@@ -1051,9 +1051,9 @@ func TestVMs_Create(t *testing.T) {
 				{'e'},
 				{'s'},
 				{'t'},
-				{'\n'},
+				keystrokes.DownArrow,
 
-				// Hostname prompt.
+				// Hostname field.
 				{'h'},
 				{'o'},
 				{'s'},
@@ -1062,9 +1062,9 @@ func TestVMs_Create(t *testing.T) {
 				{'e'},
 				{'s'},
 				{'t'},
-				{'\n'},
+				keystrokes.DownArrow,
 
-				// Description prompt.
+				// Description field.
 				{'d'},
 				{'e'},
 				{'s'},
@@ -1073,7 +1073,7 @@ func TestVMs_Create(t *testing.T) {
 				{'e'},
 				{'s'},
 				{'t'},
-				{'\n'},
+				keystrokes.Enter,
 			},
 		},
 
@@ -1159,9 +1159,7 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.Enter, keystrokes.Enter, keystrokes.Enter,
 				keystrokes.Enter,
 				{'a'},
-				{'\n'},
-				{'\n'},
-				{'\n'},
+				keystrokes.Enter,
 			},
 		},
 	}

@@ -7,10 +7,23 @@ import (
 	"golang.org/x/term"
 )
 
+// TerminalInterface defines a interface for a compatible terminal. Used for unit testing.
+type TerminalInterface interface {
+	Height() int
+	Width() int
+	Print(items ...interface{}) (int, error)
+	Println(items ...interface{}) (int, error)
+	Clear()
+	Flush()
+	SignalInterrupt()
+	MakeRaw() (*term.State, error)
+}
+
 // MockTerminal is used to define a terminal mock for unit tests.
 type MockTerminal struct {
 	Buffer bytes.Buffer
 
+	CustomWidth  int
 	ExitSignaled bool
 }
 
@@ -21,7 +34,10 @@ func (m *MockTerminal) Height() int {
 
 // Width implements TerminalInterface.
 func (m *MockTerminal) Width() int {
-	return 200
+	if m.CustomWidth == 0 {
+		return 200
+	}
+	return m.CustomWidth
 }
 
 // Print implements TerminalInterface.
