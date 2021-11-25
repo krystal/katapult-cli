@@ -1126,7 +1126,6 @@ func TestVMs_Create(t *testing.T) {
 		wantErr string
 	}{
 		// Successes
-
 		{
 			name:          "success with no env",
 			orgs:          fixtureOrganizations,
@@ -1137,7 +1136,7 @@ func TestVMs_Create(t *testing.T) {
 			ipIDPages:     successIpPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
-			inputs:        [][]byte{
+			inputs: [][]byte{
 				// Organization selection.
 				keystrokes.DownArrow, keystrokes.Enter,
 
@@ -1160,21 +1159,42 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
 
 				// Name field.
-				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'n'},
+				{'a'},
+				{'m'},
+				{'e'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Hostname field.
-				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'h'},
+				{'o'},
+				{'s'},
+				{'t'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Description field.
-				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'d'},
+				{'e'},
+				{'s'},
+				{'c'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.Enter,
 			},
 		},
 		{
-			name:          "success with org name env",
-			envs:		   map[string]string{
+			name: "success with org name env",
+			envs: map[string]string{
 				"KATAPULT_ORG_NAME": "Loge Enthusiasts",
 			},
 			orgs:          fixtureOrganizations,
@@ -1185,7 +1205,7 @@ func TestVMs_Create(t *testing.T) {
 			ipIDPages:     successIpPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
-			inputs:        [][]byte{
+			inputs: [][]byte{
 				// Data center selection.
 				keystrokes.DownArrow, keystrokes.Enter,
 
@@ -1205,21 +1225,42 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
 
 				// Name field.
-				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'n'},
+				{'a'},
+				{'m'},
+				{'e'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Hostname field.
-				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'h'},
+				{'o'},
+				{'s'},
+				{'t'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Description field.
-				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'d'},
+				{'e'},
+				{'s'},
+				{'c'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.Enter,
 			},
 		},
 		{
-			name:          "success with dc name env",
-			envs:		   map[string]string{
+			name: "success with dc name env",
+			envs: map[string]string{
 				"KATAPULT_DC_NAME": "hello",
 			},
 			orgs:          fixtureOrganizations,
@@ -1230,7 +1271,7 @@ func TestVMs_Create(t *testing.T) {
 			ipIDPages:     successIpPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
-			inputs:        [][]byte{
+			inputs: [][]byte{
 				// Organization selection.
 				keystrokes.DownArrow, keystrokes.Enter,
 
@@ -1250,21 +1291,42 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
 
 				// Name field.
-				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'n'},
+				{'a'},
+				{'m'},
+				{'e'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Hostname field.
-				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'h'},
+				{'o'},
+				{'s'},
+				{'t'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Description field.
-				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'d'},
+				{'e'},
+				{'s'},
+				{'c'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.Enter,
 			},
 		},
 		{
-			name:          "success with package name env",
-			envs:		   map[string]string{
+			name: "success with package name env",
+			envs: map[string]string{
 				"KATAPULT_PACKAGE_NAME": "Test",
 			},
 			orgs:          fixtureOrganizations,
@@ -1275,7 +1337,7 @@ func TestVMs_Create(t *testing.T) {
 			ipIDPages:     successIpPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
-			inputs:        [][]byte{
+			inputs: [][]byte{
 				// Organization selection.
 				keystrokes.DownArrow, keystrokes.Enter,
 
@@ -1295,21 +1357,42 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
 
 				// Name field.
-				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'n'},
+				{'a'},
+				{'m'},
+				{'e'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Hostname field.
-				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'h'},
+				{'o'},
+				{'s'},
+				{'t'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Description field.
-				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'d'},
+				{'e'},
+				{'s'},
+				{'c'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.Enter,
 			},
 		},
 		{
-			name:          "success with distribution name env",
-			envs:		   map[string]string{
+			name: "success with distribution name env",
+			envs: map[string]string{
 				"KATAPULT_DISTRIBUTION_NAME": "Ubuntu 20.04",
 			},
 			orgs:          fixtureOrganizations,
@@ -1320,7 +1403,7 @@ func TestVMs_Create(t *testing.T) {
 			ipIDPages:     successIpPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
-			inputs:        [][]byte{
+			inputs: [][]byte{
 				// Organization selection.
 				keystrokes.DownArrow, keystrokes.Enter,
 
@@ -1340,26 +1423,47 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
 
 				// Name field.
-				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'n'},
+				{'a'},
+				{'m'},
+				{'e'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Hostname field.
-				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'h'},
+				{'o'},
+				{'s'},
+				{'t'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.DownArrow,
 
 				// Description field.
-				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				{'d'},
+				{'e'},
+				{'s'},
+				{'c'},
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
 				keystrokes.Enter,
 			},
 		},
 		{
-			name:          "success from full env",
-			envs:		   map[string]string{
+			name: "success from full env",
+			envs: map[string]string{
 				"KATAPULT_ORG_SUBDOMAIN":        "loge",
 				"KATAPULT_DC_ID":                "dc_9UVoPiUQoI1cqtRd",
 				"KATAPULT_PACKAGE_ID":           "vmpkg_9UVoPiUQoI1cqtRd",
 				"KATAPULT_DISTRIBUTION_ID":      "Ubuntu-20-04",
-				"KATAPULT_IP_ADDRESSES":	     "1.1.1.1,1.1.1.2,1.1.1.3",
+				"KATAPULT_IP_ADDRESSES":         "1.1.1.1,1.1.1.2,1.1.1.3",
 				"KATAPULT_SSH_KEY_IDS":          "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
 				"KATAPULT_SSH_KEY_NAMES":        "testing,testing1",
 				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c,27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
@@ -1379,13 +1483,13 @@ func TestVMs_Create(t *testing.T) {
 			tagIDPages:    successTagPages,
 		},
 		{
-			name:          "success from full minus hostname env",
-			envs:		   map[string]string{
+			name: "success from full minus hostname env",
+			envs: map[string]string{
 				"KATAPULT_ORG_SUBDOMAIN":        "loge",
 				"KATAPULT_DC_ID":                "dc_9UVoPiUQoI1cqtRd",
 				"KATAPULT_PACKAGE_ID":           "vmpkg_9UVoPiUQoI1cqtRd",
 				"KATAPULT_DISTRIBUTION_ID":      "Ubuntu-20-04",
-				"KATAPULT_IP_ADDRESSES":	     "1.1.1.1,1.1.1.2,1.1.1.3",
+				"KATAPULT_IP_ADDRESSES":         "1.1.1.1,1.1.1.2,1.1.1.3",
 				"KATAPULT_SSH_KEY_IDS":          "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
 				"KATAPULT_SSH_KEY_NAMES":        "testing,testing1",
 				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c,27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
@@ -1402,8 +1506,14 @@ func TestVMs_Create(t *testing.T) {
 			ipIDPages:     successIpPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
-			inputs:        [][]byte{
-				{'t'}, {'e'}, {'s'}, {'t'}, {'i'}, {'n'}, {'g'},
+			inputs: [][]byte{
+				{'t'},
+				{'e'},
+				{'s'},
+				{'t'},
+				{'i'},
+				{'n'},
+				{'g'},
 				keystrokes.Enter,
 			},
 		},
@@ -1533,7 +1643,7 @@ func TestVMs_Create(t *testing.T) {
 			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
 			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
 			packages: []*core.VirtualMachinePackage{},
-			envs:     map[string]string{
+			envs: map[string]string{
 				"KATAPULT_ORG_NAME":   "test",
 				"KATAPULT_DC_NAME":    "dc",
 				"KATAPULT_PACKAGE_ID": "package",
@@ -1545,7 +1655,7 @@ func TestVMs_Create(t *testing.T) {
 			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
 			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
 			packages: []*core.VirtualMachinePackage{},
-			envs:     map[string]string{
+			envs: map[string]string{
 				"KATAPULT_ORG_NAME":     "test",
 				"KATAPULT_DC_NAME":      "dc",
 				"KATAPULT_PACKAGE_NAME": "package",
@@ -1553,13 +1663,13 @@ func TestVMs_Create(t *testing.T) {
 			wantErr: "the package name/slug in your package env variable not attached to your user",
 		},
 		{
-			name:     "distro name error",
-			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
-			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
-			packages: []*core.VirtualMachinePackage{{ID: "package"}},
+			name:          "distro name error",
+			orgs:          []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:           []*core.DataCenter{{Name: "dc", ID: "dc"}},
+			packages:      []*core.VirtualMachinePackage{{ID: "package"}},
 			diskTemplates: []*core.DiskTemplate{},
-			expectedRef: core.OrganizationRef{ID: "org"},
-			envs:     map[string]string{
+			expectedRef:   core.OrganizationRef{ID: "org"},
+			envs: map[string]string{
 				"KATAPULT_ORG_NAME":        "test",
 				"KATAPULT_DC_NAME":         "dc",
 				"KATAPULT_PACKAGE_ID":      "package",
@@ -1568,16 +1678,16 @@ func TestVMs_Create(t *testing.T) {
 			wantErr: "the distribution name/slug in your distribution env variables not attached to your user",
 		},
 		{
-			name:     "distro id error",
-			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
-			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
-			packages: []*core.VirtualMachinePackage{{ID: "package"}},
+			name:          "distro id error",
+			orgs:          []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:           []*core.DataCenter{{Name: "dc", ID: "dc"}},
+			packages:      []*core.VirtualMachinePackage{{ID: "package"}},
 			diskTemplates: []*core.DiskTemplate{},
-			expectedRef: core.OrganizationRef{ID: "org"},
-			envs:     map[string]string{
-				"KATAPULT_ORG_NAME":     "test",
-				"KATAPULT_DC_NAME":      "dc",
-				"KATAPULT_PACKAGE_ID":   "package",
+			expectedRef:   core.OrganizationRef{ID: "org"},
+			envs: map[string]string{
+				"KATAPULT_ORG_NAME":          "test",
+				"KATAPULT_DC_NAME":           "dc",
+				"KATAPULT_PACKAGE_ID":        "package",
 				"KATAPULT_DISTRIBUTION_NAME": "testing",
 			},
 			wantErr: "the distribution name/slug in your distribution env variables not attached to your user",

@@ -21,27 +21,22 @@ type virtualMachinesClient interface {
 		org core.OrganizationRef,
 		opts *core.ListOptions,
 	) ([]*core.VirtualMachine, *katapult.Response, error)
-
 	Delete(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
 	) (*core.TrashObject, *katapult.Response, error)
-
 	Shutdown(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
 	) (*core.Task, *katapult.Response, error)
-
 	Start(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
 	) (*core.Task, *katapult.Response, error)
-
 	Stop(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
 	) (*core.Task, *katapult.Response, error)
-
 	Reset(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
@@ -368,10 +363,10 @@ func spnz(heystack, needle string) []string {
 	nonBlank := make([]string, 0, len(s))
 	for _, v := range s {
 		v = strings.TrimSpace(v)
-        if v != "" {
-            nonBlank = append(nonBlank, v)
-        }
-    }
+		if v != "" {
+			nonBlank = append(nonBlank, v)
+		}
+	}
 	return nonBlank
 }
 
@@ -379,7 +374,7 @@ type envGetter interface {
 	Get(key string) string
 }
 
-type osGetter struct {}
+type osGetter struct{}
 
 func (osGetter) Get(key string) string {
 	return os.Getenv(key)
@@ -445,14 +440,14 @@ func virtualMachinesCreateCmd(
 				for _, potentialOrg := range orgs {
 					if subdomain {
 						if potentialOrg.SubDomain == orgSubDomainEnv {
-                            org = potentialOrg
-                            break
-                        }
+							org = potentialOrg
+							break
+						}
 					} else {
 						if potentialOrg.Name == orgNameEnv {
-                            org = potentialOrg
-                            break
-                        }
+							org = potentialOrg
+							break
+						}
 					}
 				}
 				if org == nil {
@@ -486,10 +481,10 @@ func virtualMachinesCreateCmd(
 						dc = potentialDC
 						break
 					}
-                }
-                if dc == nil {
-                    return errors.New("the dc name/id in your dc env variable not attached to your user")
-                }
+				}
+				if dc == nil {
+					return errors.New("the dc name/id in your dc env variable not attached to your user")
+				}
 			}
 
 			// Select the package.
@@ -509,20 +504,20 @@ func virtualMachinesCreateCmd(
 					}
 				}
 				packageArr := console.FuzzyTableSelector(
-                    "Which package would you like to deploy the VM in?",
-                    []string{"Name", "CPU Cores", "Memory"}, packageRows, cmd.InOrStdin(), terminal)
-                index := getArrayIndex(packageArr, packageRows)
-                packageResult = packages[index]
-            } else {
-                for _, potentialPackage := range packages {
-                    if potentialPackage.Name == vmPackageNameEnv || potentialPackage.ID == vmPackageIdEnv {
-                        packageResult = potentialPackage
-                        break
-                    }
-                }
-                if packageResult == nil {
-                    return errors.New("the package name/slug in your package env variable not attached to your user")
-                }
+					"Which package would you like to deploy the VM in?",
+					[]string{"Name", "CPU Cores", "Memory"}, packageRows, cmd.InOrStdin(), terminal)
+				index := getArrayIndex(packageArr, packageRows)
+				packageResult = packages[index]
+			} else {
+				for _, potentialPackage := range packages {
+					if potentialPackage.Name == vmPackageNameEnv || potentialPackage.ID == vmPackageIdEnv {
+						packageResult = potentialPackage
+						break
+					}
+				}
+				if packageResult == nil {
+					return errors.New("the package name/slug in your package env variable not attached to your user")
+				}
 			}
 
 			// Ask about the distribution.
@@ -536,25 +531,25 @@ func virtualMachinesCreateCmd(
 			var distribution *core.DiskTemplate
 			if distributionNameEnv == "" && distributionIdEnv == "" {
 				distributionStrs := make([]string, len(distributions))
-                for i, distributionItem := range distributions {
+				for i, distributionItem := range distributions {
 					distributionStrs[i] = distributionItem.Name
-                }
-                distributionStr := console.FuzzySelector(
-                    "Which distribution would you like to deploy the VM in?",
-                    distributionStrs, cmd.InOrStdin(), terminal)
+				}
+				distributionStr := console.FuzzySelector(
+					"Which distribution would you like to deploy the VM in?",
+					distributionStrs, cmd.InOrStdin(), terminal)
 				index := getStringIndex(distributionStr, distributionStrs)
 				distribution = distributions[index]
-            } else {
-                for _, potentialDistribution := range distributions {
-                    if potentialDistribution.Name == distributionNameEnv || potentialDistribution.ID == distributionIdEnv {
-                        distribution = potentialDistribution
-                        break
-                    }
-                }
-                if distribution == nil {
-                    return errors.New("the distribution name/slug in your distribution env variables not attached to your user")
-                }
-            }
+			} else {
+				for _, potentialDistribution := range distributions {
+					if potentialDistribution.Name == distributionNameEnv || potentialDistribution.ID == distributionIdEnv {
+						distribution = potentialDistribution
+						break
+					}
+				}
+				if distribution == nil {
+					return errors.New("the distribution name/slug in your distribution env variables not attached to your user")
+				}
+			}
 
 			// Handle networking if there's IP addresses.
 			ips, err := listAllIPAddresses(cmd.Context(), core.OrganizationRef{ID: org.ID}, ipAddressesClient)
@@ -586,13 +581,13 @@ func virtualMachinesCreateCmd(
 				}
 			} else {
 				for _, ipStr := range spnz(ipsEnv, ",") {
-                    for _, ip := range ips {
-                        if ip.Address == ipStr {
-                            selectedIps = append(selectedIps, ip)
-                            break
-                        }
-                    }
-                }
+					for _, ip := range ips {
+						if ip.Address == ipStr {
+							selectedIps = append(selectedIps, ip)
+							break
+						}
+					}
+				}
 			}
 
 			// List the SSH keys.
@@ -635,14 +630,14 @@ func virtualMachinesCreateCmd(
 					}
 
 					for _, x := range sshKeyNamesEnvSplit {
-                        if key.Name == x {
-                            keyIds = append(keyIds, key.ID)
-                            goto endOfKeys
-                        }
-                    }
+						if key.Name == x {
+							keyIds = append(keyIds, key.ID)
+							goto endOfKeys
+						}
+					}
 
 					// This is more efficient than using a boolean here, even if it looks a bit weird.
-					endOfKeys:
+				endOfKeys:
 				}
 			}
 
@@ -686,7 +681,7 @@ func virtualMachinesCreateCmd(
 					return fmt.Errorf("the tag with the ID %s doesn't exist", id)
 
 					// This is past the error ready for the next iteration.
-					endOfTagIds:
+				endOfTagIds:
 				}
 
 				// Go through the tag names environment variable.
@@ -702,7 +697,7 @@ func virtualMachinesCreateCmd(
 					return fmt.Errorf("the tag with the name %s doesn't exist", name)
 
 					// This is past the error ready for the next iteration.
-					endOfTagNames:
+				endOfTagNames:
 				}
 			}
 

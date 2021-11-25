@@ -13,8 +13,8 @@ type chunk struct {
 }
 
 type chunkReader struct {
-	chunks	   []chunk
- 	pendingErr error
+	chunks     []chunk
+	pendingErr error
 	pipe       io.Reader
 	stopLoop   uintptr
 	m          sync.Mutex

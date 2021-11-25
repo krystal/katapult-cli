@@ -1,12 +1,13 @@
 package console
 
 import (
-	"github.com/buger/goterm"
-	"github.com/krystal/katapult-cli/internal/keystrokes"
 	"io"
 	"math"
 	"strings"
 	"time"
+
+	"github.com/buger/goterm"
+	"github.com/krystal/katapult-cli/internal/keystrokes"
 )
 
 // InputField is used to define a field which users can input text into.

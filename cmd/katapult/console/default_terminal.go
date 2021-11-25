@@ -1,10 +1,11 @@
 package console
 
 import (
-	"github.com/buger/goterm"
-	"golang.org/x/term"
 	"os"
 	"sync"
+
+	"github.com/buger/goterm"
+	"golang.org/x/term"
 )
 
 type gotermTerminal struct {

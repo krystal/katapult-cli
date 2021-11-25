@@ -20,7 +20,6 @@ func TestSelector(t *testing.T) {
 		result     interface{}
 	}{
 		// Non-row selection
-
 		{
 			name: "display non-row selection menu",
 			inputs: [][]byte{
