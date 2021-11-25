@@ -335,7 +335,7 @@ func TestSelector(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdin := &StdinDripFeeder{Inputs: tt.inputs}
+			stdin := &StdinDripFeeder{T: t, Inputs: tt.inputs}
 			stdout := &MockTerminal{}
 			res := selectorComponent("test", tt.columns, tt.items, stdin, tt.multiple, stdout)
 			if tt.shouldExit {

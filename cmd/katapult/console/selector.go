@@ -8,7 +8,6 @@ import (
 
 	"github.com/buger/goterm"
 	"github.com/krystal/katapult-cli/internal/keystrokes"
-	"golang.org/x/term"
 )
 
 const (
@@ -91,7 +90,7 @@ func formatUserPrompt(
 ) int {
 	var suggestionLen int
 	if length == 0 {
-		// There's no matches, we should just just print the users input.
+		// There's no matches, we should just print the users input.
 		_, _ = terminal.Println(query)
 		suggestionLen = len(query)
 	} else {
@@ -185,6 +184,8 @@ func handleSelectorStandardInput(
 			return [][]string{}
 		}
 		return []string{}
+	case 9:
+		// Ignore this. It is the tab key.
 	case 13:
 		// Enter
 		if matchedLen != 0 {
@@ -412,14 +413,12 @@ func selectorComponent(question string, columns []string, items interface{}, std
 		terminal.Flush()
 
 		// Wait for user input.
-		raw, err := terminal.MakeRaw()
+		err := terminal.MakeRaw()
 		if err != nil {
 			panic(err)
 		}
 		n, _ := stdin.Read(buf)
-		if raw != nil {
-			_ = term.Restore(0, raw)
-		}
+		_ = terminal.Unraw()
 		if x := handleInput(buf, multiple, matchedLen,
 			n, &highlightIndex, columns != nil, selectedItems, &query, matched, terminal); x != nil {
 			return x
@@ -430,7 +429,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 // FuzzySelector is used to create a selector. If terminal is nil, we will default to goterm.
 func FuzzySelector(question string, items []string, stdin io.Reader, terminal TerminalInterface) string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, nil, items, stdin, false, terminal).([]string)[0]
 }
@@ -438,7 +437,7 @@ func FuzzySelector(question string, items []string, stdin io.Reader, terminal Te
 // FuzzyMultiSelector is used to create a selector with multiple items.
 func FuzzyMultiSelector(question string, items []string, stdin io.Reader, terminal TerminalInterface) []string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, nil, items, stdin, true, terminal).([]string)
 }
@@ -447,7 +446,7 @@ func FuzzyMultiSelector(question string, items []string, stdin io.Reader, termin
 func FuzzyTableSelector(question string, columns []string, items [][]string,
 	stdin io.Reader, terminal TerminalInterface) []string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, columns, items, stdin, false, terminal).([][]string)[0]
 }
@@ -456,7 +455,7 @@ func FuzzyTableSelector(question string, columns []string, items [][]string,
 func FuzzyTableMultiSelector(question string, columns []string, items [][]string,
 	stdin io.Reader, terminal TerminalInterface) [][]string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, columns, items, stdin, true, terminal).([][]string)
 }

@@ -1,13 +1,12 @@
 package console
 
 import (
+	"github.com/buger/goterm"
+	"github.com/krystal/katapult-cli/internal/keystrokes"
 	"io"
 	"math"
 	"strings"
-
-	"github.com/buger/goterm"
-	"github.com/krystal/katapult-cli/internal/keystrokes"
-	"golang.org/x/term"
+	"time"
 )
 
 // InputField is used to define a field which users can input text into.
@@ -213,6 +212,13 @@ func handleKeypress(buf []byte, n, activeIndex int, fields []InputField,
 			// CTRL+C
 			terminal.SignalInterrupt()
 			return activeIndex, true
+		case 9:
+			// Tab
+			activeIndex++
+			if activeIndex == len(fields) {
+				// Loop to the start.
+				activeIndex = 0
+			}
 		case 13:
 			// Enter
 			for i, v := range fields {
@@ -331,7 +337,13 @@ func chunkForConsole(renderedFields [][]string, usableItemRows int) []consoleChu
 func MultiInput(fields []InputField, stdin io.Reader, terminal TerminalInterface) []string {
 	// Ensure the terminal isn't nil.
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
+	}
+
+	// Make sure the terminal is in raw mode.
+	err := terminal.MakeRaw()
+	if err != nil {
+		panic(err)
 	}
 
 	// Defines the active index.
@@ -343,8 +355,14 @@ func MultiInput(fields []InputField, stdin io.Reader, terminal TerminalInterface
 	// Defines the content for all fields.
 	fieldsContent := make([]string, len(fields))
 
+	// Create a chunk reader.
+	var r *chunkReader
+	if terminal.BufferInputs() {
+		r = newChunkReader(stdin)
+		defer r.close()
+	}
+
 	// Loop until we are done.
-	buf := make([]byte, 3)
 	for {
 		// Get the usable item rows.
 		usableItemRows := terminal.Height() - 1
@@ -378,40 +396,61 @@ func MultiInput(fields []InputField, stdin io.Reader, terminal TerminalInterface
 			}
 			return false
 		}
+		block := ""
 		for _, chunk := range consoleSizedChunks {
 			// First pass will work for most use cases where console is reasonably sized.
 			if containsInt(chunk.fullyContains, activeIndex) {
-				_, _ = terminal.Print(chunk.content)
-				_, _ = terminal.Print(strings.Repeat("\n", usableItemRows-chunk.lines))
+				block += chunk.content
+				block += strings.Repeat("\n", usableItemRows-chunk.lines)
 				goto postChunkPrint
 			}
 		}
 		for _, chunk := range consoleSizedChunks {
 			// Second pass will work in poorly sized consoles.
 			if containsInt(chunk.partiallyContains, activeIndex) {
-				_, _ = terminal.Print(chunk.content)
-				_, _ = terminal.Print(strings.Repeat("\n", usableItemRows-chunk.lines))
+				block += chunk.content
+				block += strings.Repeat("\n", usableItemRows-chunk.lines)
 				break
 			}
 		}
 
 	postChunkPrint:
 		// Flush out the output.
-		terminal.Flush()
+		terminal.Sync(block)
 
 		// Handle keypresses.
-		raw, err := terminal.MakeRaw()
-		if err != nil {
-			panic(err)
-		}
-		n, _ := stdin.Read(buf)
-		if raw != nil {
-			_ = term.Restore(0, raw)
-		}
-		var ret bool
-		activeIndex, ret = handleKeypress(buf, n, activeIndex, fields, highlightedIndexes, fieldsContent, terminal)
-		if ret {
-			return fieldsContent
+		if terminal.BufferInputs() {
+			for {
+				// The 15ms cooldown is here to give the terminal time to catch up.
+				// For some reason, whilst Ubuntu's terminal seems fine without this, some (e.g.: iterm, goland) fail.
+				time.Sleep(time.Millisecond * 15)
+
+				// Flush the buffer and check what we have.
+				a := r.flush()
+				if len(a) != 0 {
+					for _, v := range a {
+						var ret bool
+						activeIndex, ret = handleKeypress(v.a, v.n, activeIndex, fields, highlightedIndexes, fieldsContent, terminal)
+						if ret {
+							_ = terminal.Unraw()
+							return fieldsContent
+						}
+					}
+					break
+				}
+			}
+		} else {
+			buf := make([]byte, 3)
+			n, err := stdin.Read(buf)
+			if err != nil {
+				return nil
+			}
+			var ret bool
+			activeIndex, ret = handleKeypress(buf, n, activeIndex, fields, highlightedIndexes, fieldsContent, terminal)
+			if ret {
+				_ = terminal.Unraw()
+				return fieldsContent
+			}
 		}
 	}
 }

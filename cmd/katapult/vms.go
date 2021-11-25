@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/krystal/go-katapult"
 	"github.com/krystal/go-katapult/buildspec"
@@ -360,6 +362,40 @@ type virtualMachinesBuilderClient interface {
 	) (*core.VirtualMachineBuild, *katapult.Response, error)
 }
 
+// a function for splitting strings but disallowing empty strings
+func spnz(heystack, needle string) []string {
+	s := strings.Split(heystack, needle)
+	nonBlank := make([]string, 0, len(s))
+	for _, v := range s {
+		v = strings.TrimSpace(v)
+        if v != "" {
+            nonBlank = append(nonBlank, v)
+        }
+    }
+	return nonBlank
+}
+
+type envGetter interface {
+	Get(key string) string
+}
+
+type osGetter struct {}
+
+func (osGetter) Get(key string) string {
+	return os.Getenv(key)
+}
+
+type mapGetter struct {
+	m map[string]string
+}
+
+func (m mapGetter) Get(key string) string {
+	if m.m == nil {
+		return ""
+	}
+	return m.m[key]
+}
+
 //nolint:funlen,gocyclo
 func virtualMachinesCreateCmd(
 	orgsClient organisationsListClient,
@@ -371,14 +407,19 @@ func virtualMachinesCreateCmd(
 	tagsClient tagsClient,
 	vmBuilderClient virtualMachinesBuilderClient,
 	terminal console.TerminalInterface,
+	envs envGetter,
 ) *cobra.Command {
+	// Handle the env getter.
+	if envs == nil {
+		envs = osGetter{}
+	}
+
+	// Defines the command.
 	cmd := &cobra.Command{
 		Use:   "create",
 		Short: "Allows you to create a VM.",
 		Long:  "Allows you to create a VM.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			// TODO: Accept argument from env var.
-
 			// List the organizations.
 			orgs, _, err := orgsClient.List(cmd.Context())
 			if err != nil {
@@ -386,15 +427,38 @@ func virtualMachinesCreateCmd(
 			}
 
 			// Create a fuzzy searcher for organizations.
-			orgRows := make([][]string, len(orgs))
-			for i, org := range orgs {
-				orgRows[i] = []string{org.Name, org.SubDomain}
+			var org *core.Organization
+			orgNameEnv := envs.Get("KATAPULT_ORG_NAME")
+			orgSubDomainEnv := envs.Get("KATAPULT_ORG_SUBDOMAIN")
+			if orgNameEnv == "" && orgSubDomainEnv == "" {
+				orgRows := make([][]string, len(orgs))
+				for i, potentialOrg := range orgs {
+					orgRows[i] = []string{potentialOrg.Name, potentialOrg.SubDomain}
+				}
+				orgArr := console.FuzzyTableSelector(
+					"Which organization would you like to deploy the VM in?",
+					[]string{"Name", "Subdomain"}, orgRows, cmd.InOrStdin(), terminal)
+				index := getArrayIndex(orgArr, orgRows)
+				org = orgs[index]
+			} else {
+				subdomain := orgNameEnv == ""
+				for _, potentialOrg := range orgs {
+					if subdomain {
+						if potentialOrg.SubDomain == orgSubDomainEnv {
+                            org = potentialOrg
+                            break
+                        }
+					} else {
+						if potentialOrg.Name == orgNameEnv {
+                            org = potentialOrg
+                            break
+                        }
+					}
+				}
+				if org == nil {
+					return errors.New("the org name/subdomain in your org env variable not attached to your user")
+				}
 			}
-			orgArr := console.FuzzyTableSelector(
-				"Which organization would you like to deploy the VM in?",
-				[]string{"Name", "Subdomain"}, orgRows, cmd.InOrStdin(), terminal)
-			index := getArrayIndex(orgArr, orgRows)
-			org := orgs[index]
 
 			// List the datacenters.
 			dcs, _, err := dcsClient.List(cmd.Context())
@@ -403,33 +467,63 @@ func virtualMachinesCreateCmd(
 			}
 
 			// Create a fuzzy searcher for data centers.
-			dcRows := make([][]string, len(dcs))
-			for i, dc := range dcs {
-				dcRows[i] = []string{dc.Name, dc.Country.Name}
+			dcNameEnv := envs.Get("KATAPULT_DC_NAME")
+			dcIdEnv := envs.Get("KATAPULT_DC_ID")
+			var dc *core.DataCenter
+			if dcNameEnv == "" && dcIdEnv == "" {
+				dcRows := make([][]string, len(dcs))
+				for i, dc := range dcs {
+					dcRows[i] = []string{dc.Name, dc.Country.Name}
+				}
+				dcArr := console.FuzzyTableSelector(
+					"Which DC would you like to deploy the VM in?", []string{"Name", "Country"}, dcRows,
+					cmd.InOrStdin(), terminal)
+				index := getArrayIndex(dcArr, dcRows)
+				dc = dcs[index]
+			} else {
+				for _, potentialDC := range dcs {
+					if potentialDC.Name == dcNameEnv || potentialDC.ID == dcIdEnv {
+						dc = potentialDC
+						break
+					}
+                }
+                if dc == nil {
+                    return errors.New("the dc name/id in your dc env variable not attached to your user")
+                }
 			}
-			dcArr := console.FuzzyTableSelector(
-				"Which DC would you like to deploy the VM in?", []string{"Name", "Country"}, dcRows,
-				cmd.InOrStdin(), terminal)
-			index = getArrayIndex(dcArr, dcRows)
-			dc := dcs[index]
 
-			// List the packages.
+			// Select the package.
 			packages, err := listAllVMPackages(cmd.Context(), vmPackagesClient)
 			if err != nil {
 				return err
 			}
-			packageRows := make([][]string, len(packages))
-			for i, packageItem := range packages {
-				packageRows[i] = []string{
-					packageItem.Name, strconv.Itoa(packageItem.CPUCores),
-					strconv.Itoa(packageItem.MemoryInGB) + "GB",
+			vmPackageNameEnv := envs.Get("KATAPULT_PACKAGE_NAME")
+			vmPackageIdEnv := envs.Get("KATAPULT_PACKAGE_ID")
+			var packageResult *core.VirtualMachinePackage
+			if vmPackageNameEnv == "" && vmPackageIdEnv == "" {
+				packageRows := make([][]string, len(packages))
+				for i, packageItem := range packages {
+					packageRows[i] = []string{
+						packageItem.Name, strconv.Itoa(packageItem.CPUCores),
+						strconv.Itoa(packageItem.MemoryInGB) + "GB",
+					}
 				}
+				packageArr := console.FuzzyTableSelector(
+                    "Which package would you like to deploy the VM in?",
+                    []string{"Name", "CPU Cores", "Memory"}, packageRows, cmd.InOrStdin(), terminal)
+                index := getArrayIndex(packageArr, packageRows)
+                packageResult = packages[index]
+            } else {
+                for _, potentialPackage := range packages {
+                    if potentialPackage.Name == vmPackageNameEnv || potentialPackage.ID == vmPackageIdEnv {
+                        packageResult = potentialPackage
+                        break
+                    }
+                }
+                if packageResult == nil {
+                    return errors.New("the package name/slug in your package env variable not attached to your user")
+                }
 			}
-			packageArr := console.FuzzyTableSelector(
-				"Which VM package would you like?", []string{"Name", "CPU Cores", "RAM"}, packageRows,
-				cmd.InOrStdin(), terminal)
-			index = getArrayIndex(packageArr, packageRows)
-			packageResult := packages[index]
 
 			// Ask about the distribution.
 			distributions, err := listAllDiskTemplates(
@@ -437,15 +531,30 @@ func virtualMachinesCreateCmd(
 			if err != nil {
 				return err
 			}
-			distributionStrs := make([]string, len(distributions))
-			for i, distribution := range distributions {
-				distributionStrs[i] = distribution.Name
-			}
-			distributionStr := console.FuzzySelector(
-				"Which distribution would you like?", distributionStrs,
-				cmd.InOrStdin(), terminal)
-			index = getStringIndex(distributionStr, distributionStrs)
-			distribution := distributions[index]
+			distributionNameEnv := envs.Get("KATAPULT_DISTRIBUTION_NAME")
+			distributionIdEnv := envs.Get("KATAPULT_DISTRIBUTION_ID")
+			var distribution *core.DiskTemplate
+			if distributionNameEnv == "" && distributionIdEnv == "" {
+				distributionStrs := make([]string, len(distributions))
+                for i, distributionItem := range distributions {
+					distributionStrs[i] = distributionItem.Name
+                }
+                distributionStr := console.FuzzySelector(
+                    "Which distribution would you like to deploy the VM in?",
+                    distributionStrs, cmd.InOrStdin(), terminal)
+				index := getStringIndex(distributionStr, distributionStrs)
+				distribution = distributions[index]
+            } else {
+                for _, potentialDistribution := range distributions {
+                    if potentialDistribution.Name == distributionNameEnv || potentialDistribution.ID == distributionIdEnv {
+                        distribution = potentialDistribution
+                        break
+                    }
+                }
+                if distribution == nil {
+                    return errors.New("the distribution name/slug in your distribution env variables not attached to your user")
+                }
+            }
 
 			// Handle networking if there's IP addresses.
 			ips, err := listAllIPAddresses(cmd.Context(), core.OrganizationRef{ID: org.ID}, ipAddressesClient)
@@ -454,24 +563,36 @@ func virtualMachinesCreateCmd(
 			}
 			allIps := ips
 			ips = make([]*core.IPAddress, 0)
+			selectedIps := []*core.IPAddress{}
 			for _, v := range allIps {
 				if v.AllocationID == "" {
 					ips = append(ips, v)
 				}
 			}
-			selectedIps := []*core.IPAddress{}
-			if len(ips) != 0 {
-				ipRows := make([][]string, len(ips))
-				for i, ip := range ips {
-					ipRows[i] = []string{ip.Address, ip.ReverseDNS}
+			ipsEnv := envs.Get("KATAPULT_IP_ADDRESSES")
+			if ipsEnv == "" {
+				if len(ips) != 0 {
+					ipRows := make([][]string, len(ips))
+					for i, ip := range ips {
+						ipRows[i] = []string{ip.Address, ip.ReverseDNS}
+					}
+					selectedIPRows := console.FuzzyTableMultiSelector(
+						"Please select any IP addresses you wish to add.",
+						[]string{"Address", "Reverse DNS"}, ipRows, cmd.InOrStdin(), terminal)
+					selectedIps = make([]*core.IPAddress, len(selectedIPRows))
+					for i, arr := range selectedIPRows {
+						selectedIps[i] = ips[getArrayIndex(arr, ipRows)]
+					}
 				}
-				selectedIPRows := console.FuzzyTableMultiSelector(
-					"Please select any IP addresses you wish to add.",
-					[]string{"Address", "Reverse DNS"}, ipRows, cmd.InOrStdin(), terminal)
-				selectedIps = make([]*core.IPAddress, len(selectedIPRows))
-				for i, arr := range selectedIPRows {
-					selectedIps[i] = ips[getArrayIndex(arr, ipRows)]
-				}
+			} else {
+				for _, ipStr := range spnz(ipsEnv, ",") {
+                    for _, ip := range ips {
+                        if ip.Address == ipStr {
+                            selectedIps = append(selectedIps, ip)
+                            break
+                        }
+                    }
+                }
 			}
 
 			// List the SSH keys.
@@ -480,17 +601,48 @@ func virtualMachinesCreateCmd(
 				return err
 			}
 			keyIds := []string{}
-			if len(keys) != 0 {
-				keyRows := make([][]string, len(keys))
-				for i, key := range keys {
-					keyRows[i] = []string{key.Name, key.Fingerprint}
+			sshKeyIdsEnvSplit := spnz(envs.Get("KATAPULT_SSH_KEY_IDS"), ",")
+			sshKeyNamesEnvSplit := spnz(envs.Get("KATAPULT_SSH_KEY_NAMES"), ",")
+			sshKeyFingerprintsEnvSplit := spnz(envs.Get("KATAPULT_SSH_KEY_FINGERPRINTS"), ",")
+			if len(sshKeyIdsEnvSplit) == 0 && len(sshKeyNamesEnvSplit) == 0 {
+				if len(keys) != 0 {
+					keyRows := make([][]string, len(keys))
+					for i, key := range keys {
+						keyRows[i] = []string{key.Name, key.Fingerprint}
+					}
+					selectedKeys := console.FuzzyTableMultiSelector(
+						"Which organization SSH keys do you wish to add?", []string{"Name", "Fingerprint"},
+						keyRows, cmd.InOrStdin(), terminal)
+					keyIds = make([]string, len(selectedKeys))
+					for i, arr := range selectedKeys {
+						keyIds[i] = keys[getArrayIndex(arr, keyRows)].ID
+					}
 				}
-				selectedKeys := console.FuzzyTableMultiSelector(
-					"Which organization SSH keys do you wish to add?", []string{"Name", "Fingerprint"},
-					keyRows, cmd.InOrStdin(), terminal)
-				keyIds = make([]string, len(selectedKeys))
-				for i, arr := range selectedKeys {
-					keyIds[i] = keys[getArrayIndex(arr, keyRows)].ID
+			} else {
+				for _, key := range keys {
+					for _, x := range sshKeyIdsEnvSplit {
+						if key.ID == x {
+							keyIds = append(keyIds, key.ID)
+							goto endOfKeys
+						}
+					}
+
+					for _, x := range sshKeyFingerprintsEnvSplit {
+						if key.Fingerprint == x {
+							keyIds = append(keyIds, key.ID)
+							goto endOfKeys
+						}
+					}
+
+					for _, x := range sshKeyNamesEnvSplit {
+                        if key.Name == x {
+                            keyIds = append(keyIds, key.ID)
+                            goto endOfKeys
+                        }
+                    }
+
+					// This is more efficient than using a boolean here, even if it looks a bit weird.
+					endOfKeys:
 				}
 			}
 
@@ -499,38 +651,126 @@ func virtualMachinesCreateCmd(
 			if err != nil {
 				return err
 			}
-			tagStrs := make([]string, len(tags))
-			for i, v := range tags {
-				tagStrs[i] = v.Name
-			}
 			tagIds := []string{}
-			if len(tags) != 0 {
-				selectedTags := console.FuzzyMultiSelector(
-					"Do you wish to add any tags?", tagStrs, cmd.InOrStdin(), terminal)
-				tagIds = make([]string, len(selectedTags))
-				for i, tagName := range selectedTags {
-					tagIds[i] = tags[getStringIndex(tagName, selectedTags)].ID
+			tagNamesEnvSplit := spnz(envs.Get("KATAPULT_TAG_NAMES"), ",")
+			tagIdsEnvSplit := spnz(envs.Get("KATAPULT_TAG_IDS"), ",")
+			if len(tagNamesEnvSplit) == 0 && len(tagIdsEnvSplit) == 0 {
+				if len(tags) != 0 {
+					tagStrs := make([]string, len(tags))
+					for i, v := range tags {
+						tagStrs[i] = v.Name
+					}
+					selectedTags := console.FuzzyMultiSelector(
+						"Do you wish to add any tags?", tagStrs, cmd.InOrStdin(), terminal)
+					tagIds = make([]string, len(selectedTags))
+					for i, tagName := range selectedTags {
+						for _, v := range tags {
+							if v.Name == tagName {
+								tagIds[i] = v.ID
+								break
+							}
+						}
+					}
+				}
+			} else {
+				// Go through the tag ID's environment variable.
+				for _, id := range tagIdsEnvSplit {
+					for _, t := range tags {
+						if t.ID == id {
+							// The tag exists. Jump to the end post the error.
+							goto endOfTagIds
+						}
+					}
+
+					// Handle if a tag doesn't exist.
+					return fmt.Errorf("the tag with the ID %s doesn't exist", id)
+
+					// This is past the error ready for the next iteration.
+					endOfTagIds:
+				}
+
+				// Go through the tag names environment variable.
+				for _, name := range tagNamesEnvSplit {
+					for _, t := range tags {
+						if t.Name == name {
+							// The tag exists. Jump to the end post the error.
+							goto endOfTagNames
+						}
+					}
+
+					// Handle if a tag doesn't exist.
+					return fmt.Errorf("the tag with the name %s doesn't exist", name)
+
+					// This is past the error ready for the next iteration.
+					endOfTagNames:
 				}
 			}
 
-			// Ask for the remainder of the information.
-			results := console.MultiInput([]console.InputField{
-				{
-					Optional:    false,
+			// Figure out all the fields we need.
+			fields := make([]console.InputField, 0, 3)
+			type tracked int
+			const (
+				nameTrack = tracked(1 << iota)
+				hostnameTrack
+				descriptionTrack
+			)
+			var tracker tracked
+
+			// Check if we need to allow input of the name.
+			name := envs.Get("KATAPULT_NAME")
+			if name == "" {
+				tracker |= nameTrack
+				fields = append(fields, console.InputField{
+					Optional:    true,
 					Name:        "Name",
-					Description: "The name of the virtual machine in Katapult.",
-				},
-				{
+					Description: "The name of the virtual machine.",
+				})
+			}
+
+			// Check if we need to allow input of the description.
+			hostname := envs.Get("KATAPULT_HOSTNAME")
+			if hostname == "" {
+				tracker |= hostnameTrack
+				fields = append(fields, console.InputField{
 					Optional:    true,
 					Name:        "Hostname",
-					Description: "The hostname of the virtual machine in Katapult.",
-				},
-				{
+					Description: "The hostname of the virtual machine.",
+				})
+			}
+
+			// Check if we need to allow input of the description.
+			desc := envs.Get("KATAPULT_DESCRIPTION")
+			if desc == "" {
+				tracker |= descriptionTrack
+				fields = append(fields, console.InputField{
 					Optional:    true,
 					Name:        "Description",
 					Description: "The description of the virtual machine.",
-				},
-			}, cmd.InOrStdin(), terminal)
+				})
+			}
+
+			// Ask for the remainder of the information.
+			if len(fields) != 0 {
+				results := console.MultiInput(fields, cmd.InOrStdin(), terminal)
+				if results == nil {
+					os.Exit(1)
+				}
+				index := 0
+				pluck := func() string {
+					x := results[index]
+					index++
+					return x
+				}
+				if tracker&nameTrack != 0 {
+					name = pluck()
+				}
+				if tracker&hostnameTrack != 0 {
+					hostname = pluck()
+				}
+				if tracker&descriptionTrack != 0 {
+					desc = pluck()
+				}
+			}
 
 			// Build the virtual machine spec.
 			ifaces := make([]*buildspec.NetworkInterface, len(selectedIps))
@@ -558,14 +798,15 @@ func virtualMachinesCreateCmd(
 					},
 				}},
 				NetworkInterfaces: ifaces,
-				Hostname:          results[0],
-				Name:              results[1],
-				Description:       results[2],
+				Name:              name,
+				Hostname:          hostname,
+				Description:       desc,
 				AuthorizedKeys:    &buildspec.AuthorizedKeys{SSHKeys: keyIds},
 				Tags:              tagIds,
 			}
 
 			// ✨ Build the virtual machine.
+			// TODO: add wait
 			_, _, err = vmBuilderClient.CreateFromSpec(cmd.Context(), core.OrganizationRef{ID: org.ID}, spec)
 			if err != nil {
 				return err
@@ -588,7 +829,8 @@ func virtualMachinesCmd(vmClient virtualMachinesClient,
 	sshKeysClient sshKeysListClient,
 	tagsClient tagsClient,
 	vmBuilderClient virtualMachinesBuilderClient,
-	terminal console.TerminalInterface) *cobra.Command {
+	terminal console.TerminalInterface,
+	envs envGetter) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "vm",
 		Aliases: []string{"vms", "virtual-machines", "virtual_machines"},
@@ -604,7 +846,7 @@ func virtualMachinesCmd(vmClient virtualMachinesClient,
 		virtualMachinesResetCmd(vmClient),
 		virtualMachinesCreateCmd(orgsClient, dcsClient, vmPackagesClient,
 			diskTemplatesClient, ipAddressesClient, sshKeysClient,
-			tagsClient, vmBuilderClient, terminal))
+			tagsClient, vmBuilderClient, terminal, envs))
 
 	return cmd
 }

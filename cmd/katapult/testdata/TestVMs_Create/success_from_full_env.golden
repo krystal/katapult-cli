@@ -1,0 +1,84 @@
+-- STDOUT --
+
+
+
+-- BUILD SPEC --
+
+{
+  "OrgResult": {
+    "id": "loge"
+  },
+  "SpecResult": {
+    "data_center": {
+      "id": "dc_9UVoPiUQoI1cqtRd"
+    },
+    "resources": {
+      "package": {
+        "id": "DO_NOT_PICK_IGNORE_THIS_ONE"
+      }
+    },
+    "disk_template": {
+      "id": "DO_NOT_PICK_IGNORE_THIS_ONE",
+      "options": [
+        {
+          "key": "install_agent",
+          "value": "true"
+        }
+      ]
+    },
+    "network_interfaces": [
+      {
+        "network": {
+          "id": "test"
+        },
+        "ip_address_allocations": [
+          {
+            "type": "existing",
+            "ip_address": {
+              "id": "ip_VVoPiUQoI1cqtRf5"
+            }
+          }
+        ]
+      },
+      {
+        "network": {
+          "id": "test"
+        },
+        "ip_address_allocations": [
+          {
+            "type": "existing",
+            "ip_address": {
+              "id": "ip_VVoPiUQoI1cqtRf5"
+            }
+          }
+        ]
+      },
+      {
+        "network": {
+          "id": "test"
+        },
+        "ip_address_allocations": [
+          {
+            "type": "existing",
+            "ip_address": {
+              "id": "ip_VVoPiUQoI1cqtRf5"
+            }
+          }
+        ]
+      }
+    ],
+    "hostname": "testing",
+    "name": "test",
+    "description": "123",
+    "authorized_keys": {
+      "ssh_keys": [
+        "key_PiUQoI1cqt43Dkf",
+        "key_PiUQoI1cqt43Dkg",
+        "key_PiUQoI1cqt43Dkd",
+        "key_PiUQoI1cqt43Dkc",
+        "key_PiUQoI1cqt43Dkb",
+        "key_PiUQoI1cqt43Dka"
+      ]
+    }
+  }
+}

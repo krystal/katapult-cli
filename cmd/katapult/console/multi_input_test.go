@@ -507,7 +507,7 @@ func TestMultiInput(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			stdin := &StdinDripFeeder{Inputs: tt.inputs}
+			stdin := &StdinDripFeeder{T: t, Inputs: tt.inputs}
 			stdout := &MockTerminal{CustomWidth: 50}
 			res := MultiInput(tt.fields, stdin, stdout)
 			if tt.shouldExit {
@@ -517,7 +517,6 @@ func TestMultiInput(t *testing.T) {
 			}
 			if golden.Update() {
 				golden.Set(t, stdout.Buffer.Bytes())
-				return
 			}
 			assert.Equal(t, string(golden.Get(t)), stdout.Buffer.String())
 		})

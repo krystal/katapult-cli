@@ -3,8 +3,8 @@ package console
 import (
 	"bytes"
 	"fmt"
-
-	"golang.org/x/term"
+	"io"
+	"testing"
 )
 
 // TerminalInterface defines a interface for a compatible terminal. Used for unit testing.
@@ -12,11 +12,14 @@ type TerminalInterface interface {
 	Height() int
 	Width() int
 	Print(items ...interface{}) (int, error)
+	Sync(s string) error
 	Println(items ...interface{}) (int, error)
 	Clear()
 	Flush()
 	SignalInterrupt()
-	MakeRaw() (*term.State, error)
+	MakeRaw() error
+	Unraw() error
+	BufferInputs() bool
 }
 
 // MockTerminal is used to define a terminal mock for unit tests.
@@ -45,6 +48,12 @@ func (m *MockTerminal) Print(items ...interface{}) (int, error) {
 	return fmt.Fprint(&m.Buffer, items...)
 }
 
+// Sync implements TerminalInterface.
+func (m *MockTerminal) Sync(s string) error {
+	_, err := m.Buffer.WriteString(s)
+	return err
+}
+
 // Println implements TerminalInterface.
 func (m *MockTerminal) Println(items ...interface{}) (int, error) {
 	return fmt.Fprintln(&m.Buffer, items...)
@@ -66,18 +75,35 @@ func (m *MockTerminal) SignalInterrupt() {
 }
 
 // MakeRaw implements TerminalInterface.
-func (m *MockTerminal) MakeRaw() (*term.State, error) {
-	return nil, nil
+func (m *MockTerminal) MakeRaw() error {
+	return nil
+}
+
+// Unraw implements TerminalInterface.
+func (m *MockTerminal) Unraw() error {
+	return nil
+}
+
+// BufferInputs implements TerminalInterface.
+func (m *MockTerminal) BufferInputs() bool {
+	return false
 }
 
 // StdinDripFeeder is used to define a io.Reader designed to drip feed in different inputs.
 type StdinDripFeeder struct {
+	T *testing.T
+
 	Inputs [][]byte
 	Index  int
 }
 
 // Read implements io.Reader.
 func (s *StdinDripFeeder) Read(b []byte) (int, error) {
+	s.T.Helper()
+	if s.Index == len(s.Inputs) {
+		s.T.Fatal("Unexpected call to Read")
+		return 0, io.EOF
+	}
 	copy(b, s.Inputs[s.Index])
 	l := len(s.Inputs[s.Index])
 	s.Index++

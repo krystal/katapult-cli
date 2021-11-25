@@ -297,7 +297,7 @@ func TestVMs_List(t *testing.T) {
 			cmd := virtualMachinesCmd(
 				&vmsClient{organizationIDPages: tt.id, organizationSubdomainPages: tt.subdomains}, nil,
 				nil, nil, nil, nil, nil,
-				nil, nil, nil)
+				nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 		})
@@ -390,7 +390,7 @@ func TestVMs_Poweroff(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
@@ -486,7 +486,7 @@ func TestVMs_Stop(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
@@ -582,7 +582,7 @@ func TestVMs_Start(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
@@ -678,7 +678,7 @@ func TestVMs_Reset(t *testing.T) {
 			if tt.poweredDown != nil {
 				client.togglePowerState(tt.poweredDown.key, tt.poweredDown.fqdn)
 			}
-			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+			cmd := virtualMachinesCmd(client, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
 			cmd.SetArgs(tt.args)
 			assertCobraCommand(t, cmd, tt.wantErr, tt.stderr)
 			if tt.validate != nil {
@@ -893,9 +893,208 @@ func (m *mockVMBuilderClient) CreateFromSpec(_ context.Context, org core.Organiz
 	return nil, nil, nil
 }
 
+var successPackages = []*core.VirtualMachinePackage{
+	{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
+	{
+		ID:            "vmpkg_9UVoPiUQoI1cqtRd",
+		Name:          "Test",
+		Permalink:     "testing",
+		CPUCores:      100,
+		IPv4Addresses: 10,
+		MemoryInGB:    1000,
+		StorageInGB:   20,
+	},
+}
+
+var successDiskTemplates = []*core.DiskTemplate{
+	{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
+	{
+		ID:          "disk_9UVoPiUQoI1cqtRd",
+		Name:        "Ubuntu 20.04",
+		Description: "testing",
+		Permalink:   "ubuntu-20-04",
+		Universal:   true,
+		LatestVersion: &core.DiskTemplateVersion{
+			ID:       "versopn+9UVoPiUQoI1cqtRd",
+			Number:   1,
+			Stable:   true,
+			SizeInGB: 5,
+		},
+		OperatingSystem: &core.OperatingSystem{
+			ID:   "ubuntu",
+			Name: "Ubuntu",
+		},
+	},
+}
+
+var mockIpPages = ipPages{
+	{
+		{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
+	},
+	{
+		{ID: "DO_NOT_PICK_IGNORE_THIS_ONE_2"},
+		{
+			ID:              "ip_UVoPiUQoI1cqtRf5",
+			Address:         "8.8.8.8",
+			ReverseDNS:      "ip-8-8-8-8.test.katapult.cloud",
+			VIP:             true,
+			Label:           "testing",
+			AddressWithMask: "8.8.8.8",
+			Network: &core.Network{
+				ID:         "test",
+				Name:       "testing",
+				Permalink:  "testing-123",
+				DataCenter: fixtureDataCenters[1],
+			},
+		},
+		{
+			ID:              "ip_VVoPiUQoI1cqtRf5",
+			Address:         "1.1.1.1",
+			ReverseDNS:      "ip-1-1-1-1.test.katapult.cloud",
+			VIP:             true,
+			Label:           "testing2",
+			AddressWithMask: "1.1.1.1",
+			Network: &core.Network{
+				ID:         "test",
+				Name:       "testing",
+				Permalink:  "testing-123",
+				DataCenter: fixtureDataCenters[1],
+			},
+		},
+		{
+			ID:              "ip_VVoPiUQoI1cqtRf5",
+			Address:         "1.1.1.2",
+			ReverseDNS:      "ip-1-1-1-2.test.katapult.cloud",
+			VIP:             true,
+			Label:           "testing3",
+			AddressWithMask: "1.1.1.2",
+			Network: &core.Network{
+				ID:         "test",
+				Name:       "testing",
+				Permalink:  "testing-123",
+				DataCenter: fixtureDataCenters[1],
+			},
+		},
+		{
+			ID:              "ip_VVoPiUQoI1cqtRf5",
+			Address:         "1.1.1.3",
+			ReverseDNS:      "ip-1-1-1-3.test.katapult.cloud",
+			VIP:             true,
+			Label:           "testing4",
+			AddressWithMask: "1.1.1.3",
+			Network: &core.Network{
+				ID:         "test",
+				Name:       "testing",
+				Permalink:  "testing-123",
+				DataCenter: fixtureDataCenters[1],
+			},
+		},
+	},
+}
+
+var successIpPages = map[string]ipPages{
+	"testing": mockIpPages,
+	"loge":    mockIpPages,
+}
+
+var mockSshPages = sshPages{
+	{
+		{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
+	},
+	{
+		{ID: "DO_NOT_PICK_IGNORE_THIS_ONE_2"},
+		{
+			ID:          "key_PiUQoI1cqt43Dkf",
+			Name:        "testing",
+			Fingerprint: "22:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+		},
+		{
+			ID:          "key_PiUQoI1cqt43Dkg",
+			Name:        "testing1",
+			Fingerprint: "23:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+		},
+		{
+			ID:          "key_PiUQoI1cqt43Dke",
+			Name:        "testing2",
+			Fingerprint: "24:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+		},
+		{
+			ID:          "key_PiUQoI1cqt43Dkd",
+			Name:        "testing3",
+			Fingerprint: "25:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+		},
+		{
+			ID:          "key_PiUQoI1cqt43Dkc",
+			Name:        "testing4",
+			Fingerprint: "26:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+		},
+		{
+			ID:          "key_PiUQoI1cqt43Dkb",
+			Name:        "testing5",
+			Fingerprint: "27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+		},
+		{
+			ID:          "key_PiUQoI1cqt43Dka",
+			Name:        "testing6",
+			Fingerprint: "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+		},
+	},
+}
+
+var successKeyPages = map[string]sshPages{
+	"testing": mockSshPages,
+	"loge":    mockSshPages,
+}
+
+var mockTagPages = tagPages{
+	{
+		{Name: "A", ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
+	},
+	{
+		{Name: "B", ID: "DO_NOT_PICK_IGNORE_THIS_ONE_2"},
+		{
+			ID:        "tag_PiUQoI1cqt43gei",
+			Name:      "Testing",
+			Color:     "fffff",
+			CreatedAt: timestamp.Unix(1, 0),
+		},
+		{
+			ID:        "tag_PiUQoI1cqt43gea",
+			Name:      "Testing 1",
+			Color:     "fffff",
+			CreatedAt: timestamp.Unix(1, 0),
+		},
+		{
+			ID:        "tag_PiUQoI1cqt43geb",
+			Name:      "Testing 2",
+			Color:     "fffff",
+			CreatedAt: timestamp.Unix(1, 0),
+		},
+		{
+			ID:        "tag_PiUQoI1cqt43gec",
+			Name:      "Testing 3",
+			Color:     "fffff",
+			CreatedAt: timestamp.Unix(1, 0),
+		},
+		{
+			ID:        "tag_PiUQoI1cqt43ged",
+			Name:      "Testing 4",
+			Color:     "fffff",
+			CreatedAt: timestamp.Unix(1, 0),
+		},
+	},
+}
+
+var successTagPages = map[string]tagPages{
+	"testing": mockTagPages,
+	"loge":    mockTagPages,
+}
+
 func TestVMs_Create(t *testing.T) {
 	tests := []struct {
 		name string
+
+		envs map[string]string
 
 		orgs       []*core.Organization
 		orgsThrows string
@@ -926,101 +1125,19 @@ func TestVMs_Create(t *testing.T) {
 		stderr  string
 		wantErr string
 	}{
-		// Success
+		// Successes
 
 		{
-			name: "success",
-			orgs: fixtureOrganizations,
-			dcs:  fixtureDataCenters,
-			packages: []*core.VirtualMachinePackage{
-				{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
-				{
-					ID:            "vmpkg_9UVoPiUQoI1cqtRd",
-					Name:          "Test",
-					Permalink:     "testing",
-					CPUCores:      100,
-					IPv4Addresses: 10,
-					MemoryInGB:    1000,
-					StorageInGB:   20,
-				},
-			},
-			expectedRef: core.OrganizationRef{ID: "testing"},
-			diskTemplates: []*core.DiskTemplate{
-				{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
-				{
-					ID:          "disk_9UVoPiUQoI1cqtRd",
-					Name:        "Ubuntu 20.04",
-					Description: "testing",
-					Permalink:   "ubuntu-20-04",
-					Universal:   true,
-					LatestVersion: &core.DiskTemplateVersion{
-						ID:       "versopn+9UVoPiUQoI1cqtRd",
-						Number:   1,
-						Stable:   true,
-						SizeInGB: 5,
-					},
-					OperatingSystem: &core.OperatingSystem{
-						ID:   "ubuntu",
-						Name: "Ubuntu",
-					},
-				},
-			},
-			ipIDPages: map[string]ipPages{
-				"testing": {
-					{
-						{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
-					},
-					{
-						{ID: "DO_NOT_PICK_IGNORE_THIS_ONE_2"},
-						{
-							ID:              "ip_UVoPiUQoI1cqtRf5",
-							Address:         "8.8.8.8",
-							ReverseDNS:      "ip-8-8-8-8.test.katapult.cloud",
-							VIP:             true,
-							Label:           "testing",
-							AddressWithMask: "8.8.8.8",
-							Network: &core.Network{
-								ID:         "test",
-								Name:       "testing",
-								Permalink:  "testing-123",
-								DataCenter: fixtureDataCenters[1],
-							},
-						},
-					},
-				},
-			},
-			keysIDPages: map[string]sshPages{
-				"testing": {
-					{
-						{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
-					},
-					{
-						{ID: "DO_NOT_PICK_IGNORE_THIS_ONE_2"},
-						{
-							ID:          "key_PiUQoI1cqt43Dkf",
-							Name:        "testing",
-							Fingerprint: "22:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
-						},
-					},
-				},
-			},
-			tagIDPages: map[string]tagPages{
-				"testing": {
-					{
-						{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
-					},
-					{
-						{ID: "DO_NOT_PICK_IGNORE_THIS_ONE_2"},
-						{
-							ID:        "tag_PiUQoI1cqt43gei",
-							Name:      "Testing",
-							Color:     "fffff",
-							CreatedAt: timestamp.Unix(1, 0),
-						},
-					},
-				},
-			},
-			inputs: [][]byte{
+			name:          "success with no env",
+			orgs:          fixtureOrganizations,
+			dcs:           fixtureDataCenters,
+			packages:      successPackages,
+			expectedRef:   core.OrganizationRef{ID: "testing"},
+			diskTemplates: successDiskTemplates,
+			ipIDPages:     successIpPages,
+			keysIDPages:   successKeyPages,
+			tagIDPages:    successTagPages,
+			inputs:        [][]byte{
 				// Organization selection.
 				keystrokes.DownArrow, keystrokes.Enter,
 
@@ -1043,41 +1160,255 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
 
 				// Name field.
-				{'n'},
-				{'a'},
-				{'m'},
-				{'e'},
-				{'t'},
-				{'e'},
-				{'s'},
-				{'t'},
+				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
 				keystrokes.DownArrow,
 
 				// Hostname field.
-				{'h'},
-				{'o'},
-				{'s'},
-				{'t'},
-				{'t'},
-				{'e'},
-				{'s'},
-				{'t'},
+				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
 				keystrokes.DownArrow,
 
 				// Description field.
-				{'d'},
-				{'e'},
-				{'s'},
-				{'c'},
-				{'t'},
-				{'e'},
-				{'s'},
-				{'t'},
+				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.Enter,
+			},
+		},
+		{
+			name:          "success with org name env",
+			envs:		   map[string]string{
+				"KATAPULT_ORG_NAME": "Loge Enthusiasts",
+			},
+			orgs:          fixtureOrganizations,
+			dcs:           fixtureDataCenters,
+			packages:      successPackages,
+			expectedRef:   core.OrganizationRef{ID: "loge"},
+			diskTemplates: successDiskTemplates,
+			ipIDPages:     successIpPages,
+			keysIDPages:   successKeyPages,
+			tagIDPages:    successTagPages,
+			inputs:        [][]byte{
+				// Data center selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Package selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Distro selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// IP address selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Key selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Tag selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Name field.
+				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Hostname field.
+				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Description field.
+				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.Enter,
+			},
+		},
+		{
+			name:          "success with dc name env",
+			envs:		   map[string]string{
+				"KATAPULT_DC_NAME": "hello",
+			},
+			orgs:          fixtureOrganizations,
+			dcs:           fixtureDataCenters,
+			packages:      successPackages,
+			expectedRef:   core.OrganizationRef{ID: "testing"},
+			diskTemplates: successDiskTemplates,
+			ipIDPages:     successIpPages,
+			keysIDPages:   successKeyPages,
+			tagIDPages:    successTagPages,
+			inputs:        [][]byte{
+				// Organization selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Package selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Distro selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// IP address selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Key selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Tag selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Name field.
+				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Hostname field.
+				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Description field.
+				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.Enter,
+			},
+		},
+		{
+			name:          "success with package name env",
+			envs:		   map[string]string{
+				"KATAPULT_PACKAGE_NAME": "Test",
+			},
+			orgs:          fixtureOrganizations,
+			dcs:           fixtureDataCenters,
+			packages:      successPackages,
+			expectedRef:   core.OrganizationRef{ID: "testing"},
+			diskTemplates: successDiskTemplates,
+			ipIDPages:     successIpPages,
+			keysIDPages:   successKeyPages,
+			tagIDPages:    successTagPages,
+			inputs:        [][]byte{
+				// Organization selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Data center selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Distro selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// IP address selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Key selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Tag selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Name field.
+				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Hostname field.
+				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Description field.
+				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.Enter,
+			},
+		},
+		{
+			name:          "success with distribution name env",
+			envs:		   map[string]string{
+				"KATAPULT_DISTRIBUTION_NAME": "Ubuntu 20.04",
+			},
+			orgs:          fixtureOrganizations,
+			dcs:           fixtureDataCenters,
+			packages:      successPackages,
+			expectedRef:   core.OrganizationRef{ID: "testing"},
+			diskTemplates: successDiskTemplates,
+			ipIDPages:     successIpPages,
+			keysIDPages:   successKeyPages,
+			tagIDPages:    successTagPages,
+			inputs:        [][]byte{
+				// Organization selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Data center selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// Package selection.
+				keystrokes.DownArrow, keystrokes.Enter,
+
+				// IP address selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Key selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Tag selection.
+				keystrokes.DownArrow, keystrokes.DownArrow, keystrokes.Enter, keystrokes.Escape,
+
+				// Name field.
+				{'n'}, {'a'}, {'m'}, {'e'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Hostname field.
+				{'h'}, {'o'}, {'s'}, {'t'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.DownArrow,
+
+				// Description field.
+				{'d'}, {'e'}, {'s'}, {'c'}, {'t'}, {'e'}, {'s'}, {'t'},
+				keystrokes.Enter,
+			},
+		},
+		{
+			name:          "success from full env",
+			envs:		   map[string]string{
+				"KATAPULT_ORG_SUBDOMAIN":        "loge",
+				"KATAPULT_DC_ID":                "dc_9UVoPiUQoI1cqtRd",
+				"KATAPULT_PACKAGE_ID":           "vmpkg_9UVoPiUQoI1cqtRd",
+				"KATAPULT_DISTRIBUTION_ID":      "Ubuntu-20-04",
+				"KATAPULT_IP_ADDRESSES":	     "1.1.1.1,1.1.1.2,1.1.1.3",
+				"KATAPULT_SSH_KEY_IDS":          "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
+				"KATAPULT_SSH_KEY_NAMES":        "testing,testing1",
+				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c,27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+				"KATAPULT_TAG_NAMES":            "Testing 2,Testing 3",
+				"KATAPULT_TAG_IDS":              "tag_PiUQoI1cqt43gea,tag_PiUQoI1cqt43geb",
+				"KATAPULT_NAME":                 "test",
+				"KATAPULT_HOSTNAME":             "testing",
+				"KATAPULT_DESCRIPTION":          "123",
+			},
+			orgs:          fixtureOrganizations,
+			dcs:           fixtureDataCenters,
+			packages:      successPackages,
+			expectedRef:   core.OrganizationRef{ID: "loge"},
+			diskTemplates: successDiskTemplates,
+			ipIDPages:     successIpPages,
+			keysIDPages:   successKeyPages,
+			tagIDPages:    successTagPages,
+		},
+		{
+			name:          "success from full minus hostname env",
+			envs:		   map[string]string{
+				"KATAPULT_ORG_SUBDOMAIN":        "loge",
+				"KATAPULT_DC_ID":                "dc_9UVoPiUQoI1cqtRd",
+				"KATAPULT_PACKAGE_ID":           "vmpkg_9UVoPiUQoI1cqtRd",
+				"KATAPULT_DISTRIBUTION_ID":      "Ubuntu-20-04",
+				"KATAPULT_IP_ADDRESSES":	     "1.1.1.1,1.1.1.2,1.1.1.3",
+				"KATAPULT_SSH_KEY_IDS":          "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
+				"KATAPULT_SSH_KEY_NAMES":        "testing,testing1",
+				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c,27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+				"KATAPULT_TAG_NAMES":            "Testing 2,Testing 3",
+				"KATAPULT_TAG_IDS":              "tag_PiUQoI1cqt43gea,tag_PiUQoI1cqt43geb",
+				"KATAPULT_NAME":                 "test",
+				"KATAPULT_DESCRIPTION":          "123",
+			},
+			orgs:          fixtureOrganizations,
+			dcs:           fixtureDataCenters,
+			packages:      successPackages,
+			expectedRef:   core.OrganizationRef{ID: "loge"},
+			diskTemplates: successDiskTemplates,
+			ipIDPages:     successIpPages,
+			keysIDPages:   successKeyPages,
+			tagIDPages:    successTagPages,
+			inputs:        [][]byte{
+				{'t'}, {'e'}, {'s'}, {'t'}, {'i'}, {'n'}, {'g'},
 				keystrokes.Enter,
 			},
 		},
 
-		// Error throwing
+		// Client error throwing
 
 		{
 			name:       "orgs throws error",
@@ -1162,11 +1493,100 @@ func TestVMs_Create(t *testing.T) {
 				keystrokes.Enter,
 			},
 		},
+
+		// Env validation handling
+
+		{
+			name:    "org name error",
+			orgs:    []*core.Organization{},
+			envs:    map[string]string{"KATAPULT_ORG_NAME": "test"},
+			wantErr: "the org name/subdomain in your org env variable not attached to your user",
+		},
+		{
+			name:    "org subdomain error",
+			orgs:    []*core.Organization{},
+			envs:    map[string]string{"KATAPULT_ORG_SUBDOMAIN": "test"},
+			wantErr: "the org name/subdomain in your org env variable not attached to your user",
+		},
+		{
+			name: "dc id error",
+			orgs: []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:  []*core.DataCenter{},
+			envs: map[string]string{
+				"KATAPULT_ORG_NAME": "test",
+				"KATAPULT_DC_ID":    "dc",
+			},
+			wantErr: "the dc name/id in your dc env variable not attached to your user",
+		},
+		{
+			name: "dc name error",
+			orgs: []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:  []*core.DataCenter{},
+			envs: map[string]string{
+				"KATAPULT_ORG_NAME": "test",
+				"KATAPULT_DC_NAME":  "dc",
+			},
+			wantErr: "the dc name/id in your dc env variable not attached to your user",
+		},
+		{
+			name:     "package id error",
+			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
+			packages: []*core.VirtualMachinePackage{},
+			envs:     map[string]string{
+				"KATAPULT_ORG_NAME":   "test",
+				"KATAPULT_DC_NAME":    "dc",
+				"KATAPULT_PACKAGE_ID": "package",
+			},
+			wantErr: "the package name/slug in your package env variable not attached to your user",
+		},
+		{
+			name:     "package name error",
+			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
+			packages: []*core.VirtualMachinePackage{},
+			envs:     map[string]string{
+				"KATAPULT_ORG_NAME":     "test",
+				"KATAPULT_DC_NAME":      "dc",
+				"KATAPULT_PACKAGE_NAME": "package",
+			},
+			wantErr: "the package name/slug in your package env variable not attached to your user",
+		},
+		{
+			name:     "distro name error",
+			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
+			packages: []*core.VirtualMachinePackage{{ID: "package"}},
+			diskTemplates: []*core.DiskTemplate{},
+			expectedRef: core.OrganizationRef{ID: "org"},
+			envs:     map[string]string{
+				"KATAPULT_ORG_NAME":        "test",
+				"KATAPULT_DC_NAME":         "dc",
+				"KATAPULT_PACKAGE_ID":      "package",
+				"KATAPULT_DISTRIBUTION_ID": "testing",
+			},
+			wantErr: "the distribution name/slug in your distribution env variables not attached to your user",
+		},
+		{
+			name:     "distro id error",
+			orgs:     []*core.Organization{{Name: "test", SubDomain: "testing", ID: "org"}},
+			dcs:      []*core.DataCenter{{Name: "dc", ID: "dc"}},
+			packages: []*core.VirtualMachinePackage{{ID: "package"}},
+			diskTemplates: []*core.DiskTemplate{},
+			expectedRef: core.OrganizationRef{ID: "org"},
+			envs:     map[string]string{
+				"KATAPULT_ORG_NAME":     "test",
+				"KATAPULT_DC_NAME":      "dc",
+				"KATAPULT_PACKAGE_ID":   "package",
+				"KATAPULT_DISTRIBUTION_NAME": "testing",
+			},
+			wantErr: "the distribution name/slug in your distribution env variables not attached to your user",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Defines stdin.
-			stdin := &console.StdinDripFeeder{Inputs: tt.inputs}
+			stdin := &console.StdinDripFeeder{T: t, Inputs: tt.inputs}
 
 			// Defines the mock terminal.
 			mockTerminal := &console.MockTerminal{}
@@ -1208,7 +1628,8 @@ func TestVMs_Create(t *testing.T) {
 			// Create the command.
 			cmd := virtualMachinesCmd(
 				nil, orgsClient, dcsClient, vmPackagesClient, diskTemplatesClient,
-				ipAddressesClient, sshKeysClient, tags, vmBuilderClient, mockTerminal)
+				ipAddressesClient, sshKeysClient, tags, vmBuilderClient, mockTerminal,
+				mapGetter{m: tt.envs})
 			cmd.SetIn(stdin)
 			cmd.SetArgs([]string{"create"})
 			stdout := assertCobraCommandReturnStdout(t, cmd, tt.wantErr, tt.stderr)
@@ -1226,7 +1647,6 @@ func TestVMs_Create(t *testing.T) {
 			}
 			if golden.Update() {
 				golden.Set(t, buf.Bytes())
-				return
 			}
 			assert.Equal(t, string(golden.Get(t)), buf.String())
 		})
