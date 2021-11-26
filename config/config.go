@@ -64,6 +64,10 @@ func (c *Config) SetDefault(key string, value interface{}) {
 	c.viper.SetDefault(key, value)
 }
 
+func (c *Config) Set(key string, value interface{}) {
+	c.viper.Set(key, value)
+}
+
 func (c *Config) SetConfigFile(file string) {
 	c.viper.SetConfigFile(file)
 }
