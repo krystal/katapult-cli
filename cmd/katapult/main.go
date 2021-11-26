@@ -105,7 +105,7 @@ func run() error {
 			core.NewSSHKeysClient(cl),
 			core.NewTagsClient(cl),
 			core.NewVirtualMachineBuildsClient(cl),
-			nil),
+			nil, nil),
 	)
 
 	return rootCmd.Execute()

@@ -4,13 +4,10 @@ import (
 	"container/list"
 	"io"
 	"math"
-	"os"
 	"strings"
 
-	"github.com/krystal/katapult-cli/internal/keystrokes"
-
 	"github.com/buger/goterm"
-	"golang.org/x/term"
+	"github.com/krystal/katapult-cli/internal/keystrokes"
 )
 
 const (
@@ -20,18 +17,6 @@ const (
 	// Clarification string for multiple items.
 	clarificationStringMultiple = " (Press ENTER to select items and ESC when you are done with your selections): "
 )
-
-// TerminalInterface defines a interface for a compatible terminal. Used for unit testing.
-type TerminalInterface interface {
-	Height() int
-	Width() int
-	Print(items ...interface{}) (int, error)
-	Println(items ...interface{}) (int, error)
-	Clear()
-	Flush()
-	SignalInterrupt()
-	MakeRaw() (*term.State, error)
-}
 
 func intMin(x, y int) int {
 	if x > y {
@@ -105,7 +90,7 @@ func formatUserPrompt(
 ) int {
 	var suggestionLen int
 	if length == 0 {
-		// There's no matches, we should just just print the users input.
+		// There's no matches, we should just print the users input.
 		_, _ = terminal.Println(query)
 		suggestionLen = len(query)
 	} else {
@@ -186,7 +171,7 @@ func renderColumns(row []string, offset int, highlight highlight, width int, ter
 }
 
 // Handle a standard input.
-func handleStandardInput(
+func handleSelectorStandardInput(
 	buf []byte, matchedLen int, multiple, hasColumns bool,
 	highlightIndex *int, selectedItems *list.List, matched interface{}, query *string,
 	terminal TerminalInterface,
@@ -199,6 +184,8 @@ func handleStandardInput(
 			return [][]string{}
 		}
 		return []string{}
+	case 9:
+		// Ignore this. It is the tab key.
 	case 13:
 		// Enter
 		if matchedLen != 0 {
@@ -274,7 +261,7 @@ func handleInput(buf []byte, multiple bool, matchedLen, n int, highlightIndex *i
 	matched interface{}, terminal TerminalInterface) interface{} {
 	if n == 1 {
 		// Standard input.
-		return handleStandardInput(buf, matchedLen, multiple, hasColumns, highlightIndex,
+		return handleSelectorStandardInput(buf, matchedLen, multiple, hasColumns, highlightIndex,
 			selectedItems, matched, query, terminal)
 	}
 
@@ -316,40 +303,6 @@ func renderRowItem(hasColumn bool, highlightIndex, i, width int, v interface{}, 
 		// Print the item.
 		_, _ = terminal.Println(v)
 	}
-}
-
-type gotermTerminal struct{}
-
-func (gotermTerminal) Height() int {
-	return goterm.Height()
-}
-
-func (gotermTerminal) Width() int {
-	return goterm.Width()
-}
-
-func (gotermTerminal) Print(items ...interface{}) (int, error) {
-	return goterm.Print(items...)
-}
-
-func (gotermTerminal) Clear() {
-	goterm.Clear()
-}
-
-func (gotermTerminal) Println(items ...interface{}) (int, error) {
-	return goterm.Println(items...)
-}
-
-func (gotermTerminal) Flush() {
-	goterm.Flush()
-}
-
-func (gotermTerminal) SignalInterrupt() {
-	os.Exit(1)
-}
-
-func (gotermTerminal) MakeRaw() (*term.State, error) {
-	return term.MakeRaw(0)
 }
 
 // items is either []string or [][]string (if columns isn't nil).
@@ -460,14 +413,12 @@ func selectorComponent(question string, columns []string, items interface{}, std
 		terminal.Flush()
 
 		// Wait for user input.
-		raw, err := terminal.MakeRaw()
+		err := terminal.MakeRaw()
 		if err != nil {
 			panic(err)
 		}
 		n, _ := stdin.Read(buf)
-		if raw != nil {
-			_ = term.Restore(0, raw)
-		}
+		_ = terminal.Unraw()
 		if x := handleInput(buf, multiple, matchedLen,
 			n, &highlightIndex, columns != nil, selectedItems, &query, matched, terminal); x != nil {
 			return x
@@ -478,7 +429,7 @@ func selectorComponent(question string, columns []string, items interface{}, std
 // FuzzySelector is used to create a selector. If terminal is nil, we will default to goterm.
 func FuzzySelector(question string, items []string, stdin io.Reader, terminal TerminalInterface) string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, nil, items, stdin, false, terminal).([]string)[0]
 }
@@ -486,7 +437,7 @@ func FuzzySelector(question string, items []string, stdin io.Reader, terminal Te
 // FuzzyMultiSelector is used to create a selector with multiple items.
 func FuzzyMultiSelector(question string, items []string, stdin io.Reader, terminal TerminalInterface) []string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, nil, items, stdin, true, terminal).([]string)
 }
@@ -495,7 +446,7 @@ func FuzzyMultiSelector(question string, items []string, stdin io.Reader, termin
 func FuzzyTableSelector(question string, columns []string, items [][]string,
 	stdin io.Reader, terminal TerminalInterface) []string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, columns, items, stdin, false, terminal).([][]string)[0]
 }
@@ -504,7 +455,7 @@ func FuzzyTableSelector(question string, columns []string, items [][]string,
 func FuzzyTableMultiSelector(question string, columns []string, items [][]string,
 	stdin io.Reader, terminal TerminalInterface) [][]string {
 	if terminal == nil {
-		terminal = gotermTerminal{}
+		terminal = &gotermTerminal{}
 	}
 	return selectorComponent(question, columns, items, stdin, true, terminal).([][]string)
 }
