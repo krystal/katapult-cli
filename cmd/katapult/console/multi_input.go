@@ -335,6 +335,7 @@ func chunkForConsole(renderedFields [][]string, usableItemRows int) []consoleChu
 }
 
 // MultiInput is used to format multiple input slots to the display.
+//nolint:funlen
 func MultiInput(fields []InputField, stdin io.Reader, terminal TerminalInterface) []string {
 	// Ensure the terminal isn't nil.
 	if terminal == nil {
@@ -417,7 +418,7 @@ func MultiInput(fields []InputField, stdin io.Reader, terminal TerminalInterface
 
 	postChunkPrint:
 		// Flush out the output.
-		terminal.Sync(block)
+		_ = terminal.Sync(block)
 
 		// Handle keypresses.
 		if terminal.BufferInputs() {
@@ -431,7 +432,8 @@ func MultiInput(fields []InputField, stdin io.Reader, terminal TerminalInterface
 				if len(a) != 0 {
 					for _, v := range a {
 						var ret bool
-						activeIndex, ret = handleKeypress(v.a, v.n, activeIndex, fields, highlightedIndexes, fieldsContent, terminal)
+						activeIndex, ret = handleKeypress(
+							v.a, v.n, activeIndex, fields, highlightedIndexes, fieldsContent, terminal)
 						if ret {
 							_ = terminal.Unraw()
 							return fieldsContent

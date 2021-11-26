@@ -357,9 +357,9 @@ type virtualMachinesBuilderClient interface {
 	) (*core.VirtualMachineBuild, *katapult.Response, error)
 }
 
-// a function for splitting strings but disallowing empty strings
-func spnz(heystack, needle string) []string {
-	s := strings.Split(heystack, needle)
+// a function for splitting strings by comma but disallowing empty strings.
+func scnz(heystack string) []string {
+	s := strings.Split(heystack, ",")
 	nonBlank := make([]string, 0, len(s))
 	for _, v := range s {
 		v = strings.TrimSpace(v)
@@ -463,9 +463,9 @@ func virtualMachinesCreateCmd(
 
 			// Create a fuzzy searcher for data centers.
 			dcNameEnv := envs.Get("KATAPULT_DC_NAME")
-			dcIdEnv := envs.Get("KATAPULT_DC_ID")
+			dcIDEnv := envs.Get("KATAPULT_DC_ID")
 			var dc *core.DataCenter
-			if dcNameEnv == "" && dcIdEnv == "" {
+			if dcNameEnv == "" && dcIDEnv == "" {
 				dcRows := make([][]string, len(dcs))
 				for i, dc := range dcs {
 					dcRows[i] = []string{dc.Name, dc.Country.Name}
@@ -477,7 +477,7 @@ func virtualMachinesCreateCmd(
 				dc = dcs[index]
 			} else {
 				for _, potentialDC := range dcs {
-					if potentialDC.Name == dcNameEnv || potentialDC.ID == dcIdEnv {
+					if potentialDC.Name == dcNameEnv || potentialDC.ID == dcIDEnv {
 						dc = potentialDC
 						break
 					}
@@ -493,9 +493,9 @@ func virtualMachinesCreateCmd(
 				return err
 			}
 			vmPackageNameEnv := envs.Get("KATAPULT_PACKAGE_NAME")
-			vmPackageIdEnv := envs.Get("KATAPULT_PACKAGE_ID")
+			vmPackageIDEnv := envs.Get("KATAPULT_PACKAGE_ID")
 			var packageResult *core.VirtualMachinePackage
-			if vmPackageNameEnv == "" && vmPackageIdEnv == "" {
+			if vmPackageNameEnv == "" && vmPackageIDEnv == "" {
 				packageRows := make([][]string, len(packages))
 				for i, packageItem := range packages {
 					packageRows[i] = []string{
@@ -510,7 +510,7 @@ func virtualMachinesCreateCmd(
 				packageResult = packages[index]
 			} else {
 				for _, potentialPackage := range packages {
-					if potentialPackage.Name == vmPackageNameEnv || potentialPackage.ID == vmPackageIdEnv {
+					if potentialPackage.Name == vmPackageNameEnv || potentialPackage.ID == vmPackageIDEnv {
 						packageResult = potentialPackage
 						break
 					}
@@ -527,9 +527,9 @@ func virtualMachinesCreateCmd(
 				return err
 			}
 			distributionNameEnv := envs.Get("KATAPULT_DISTRIBUTION_NAME")
-			distributionIdEnv := envs.Get("KATAPULT_DISTRIBUTION_ID")
+			distributionIDEnv := envs.Get("KATAPULT_DISTRIBUTION_ID")
 			var distribution *core.DiskTemplate
-			if distributionNameEnv == "" && distributionIdEnv == "" {
+			if distributionNameEnv == "" && distributionIDEnv == "" {
 				distributionStrs := make([]string, len(distributions))
 				for i, distributionItem := range distributions {
 					distributionStrs[i] = distributionItem.Name
@@ -541,13 +541,15 @@ func virtualMachinesCreateCmd(
 				distribution = distributions[index]
 			} else {
 				for _, potentialDistribution := range distributions {
-					if potentialDistribution.Name == distributionNameEnv || potentialDistribution.ID == distributionIdEnv {
+					if potentialDistribution.Name == distributionNameEnv ||
+						potentialDistribution.ID == distributionIDEnv {
 						distribution = potentialDistribution
 						break
 					}
 				}
 				if distribution == nil {
-					return errors.New("the distribution name/slug in your distribution env variables not attached to your user")
+					return errors.New("the distribution name/slug in your distribution env variables not " +
+						"attached to your user")
 				}
 			}
 
@@ -580,7 +582,7 @@ func virtualMachinesCreateCmd(
 					}
 				}
 			} else {
-				for _, ipStr := range spnz(ipsEnv, ",") {
+				for _, ipStr := range scnz(ipsEnv) {
 					for _, ip := range ips {
 						if ip.Address == ipStr {
 							selectedIps = append(selectedIps, ip)
@@ -596,9 +598,9 @@ func virtualMachinesCreateCmd(
 				return err
 			}
 			keyIds := []string{}
-			sshKeyIdsEnvSplit := spnz(envs.Get("KATAPULT_SSH_KEY_IDS"), ",")
-			sshKeyNamesEnvSplit := spnz(envs.Get("KATAPULT_SSH_KEY_NAMES"), ",")
-			sshKeyFingerprintsEnvSplit := spnz(envs.Get("KATAPULT_SSH_KEY_FINGERPRINTS"), ",")
+			sshKeyIdsEnvSplit := scnz(envs.Get("KATAPULT_SSH_KEY_IDS"))
+			sshKeyNamesEnvSplit := scnz(envs.Get("KATAPULT_SSH_KEY_NAMES"))
+			sshKeyFingerprintsEnvSplit := scnz(envs.Get("KATAPULT_SSH_KEY_FINGERPRINTS"))
 			if len(sshKeyIdsEnvSplit) == 0 && len(sshKeyNamesEnvSplit) == 0 {
 				if len(keys) != 0 {
 					keyRows := make([][]string, len(keys))
@@ -647,8 +649,8 @@ func virtualMachinesCreateCmd(
 				return err
 			}
 			tagIds := []string{}
-			tagNamesEnvSplit := spnz(envs.Get("KATAPULT_TAG_NAMES"), ",")
-			tagIdsEnvSplit := spnz(envs.Get("KATAPULT_TAG_IDS"), ",")
+			tagNamesEnvSplit := scnz(envs.Get("KATAPULT_TAG_NAMES"))
+			tagIdsEnvSplit := scnz(envs.Get("KATAPULT_TAG_IDS"))
 			if len(tagNamesEnvSplit) == 0 && len(tagIdsEnvSplit) == 0 {
 				if len(tags) != 0 {
 					tagStrs := make([]string, len(tags))

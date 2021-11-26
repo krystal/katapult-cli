@@ -927,7 +927,7 @@ var successDiskTemplates = []*core.DiskTemplate{
 	},
 }
 
-var mockIpPages = ipPages{
+var mockIPPages = ipPages{
 	{
 		{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
 	},
@@ -992,12 +992,12 @@ var mockIpPages = ipPages{
 	},
 }
 
-var successIpPages = map[string]ipPages{
-	"testing": mockIpPages,
-	"loge":    mockIpPages,
+var successIPPages = map[string]ipPages{
+	"testing": mockIPPages,
+	"loge":    mockIPPages,
 }
 
-var mockSshPages = sshPages{
+var mockSSHPages = sshPages{
 	{
 		{ID: "DO_NOT_PICK_IGNORE_THIS_ONE"},
 	},
@@ -1042,8 +1042,8 @@ var mockSshPages = sshPages{
 }
 
 var successKeyPages = map[string]sshPages{
-	"testing": mockSshPages,
-	"loge":    mockSshPages,
+	"testing": mockSSHPages,
+	"loge":    mockSSHPages,
 }
 
 var mockTagPages = tagPages{
@@ -1133,7 +1133,7 @@ func TestVMs_Create(t *testing.T) {
 			packages:      successPackages,
 			expectedRef:   core.OrganizationRef{ID: "testing"},
 			diskTemplates: successDiskTemplates,
-			ipIDPages:     successIpPages,
+			ipIDPages:     successIPPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
 			inputs: [][]byte{
@@ -1202,7 +1202,7 @@ func TestVMs_Create(t *testing.T) {
 			packages:      successPackages,
 			expectedRef:   core.OrganizationRef{ID: "loge"},
 			diskTemplates: successDiskTemplates,
-			ipIDPages:     successIpPages,
+			ipIDPages:     successIPPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
 			inputs: [][]byte{
@@ -1268,7 +1268,7 @@ func TestVMs_Create(t *testing.T) {
 			packages:      successPackages,
 			expectedRef:   core.OrganizationRef{ID: "testing"},
 			diskTemplates: successDiskTemplates,
-			ipIDPages:     successIpPages,
+			ipIDPages:     successIPPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
 			inputs: [][]byte{
@@ -1334,7 +1334,7 @@ func TestVMs_Create(t *testing.T) {
 			packages:      successPackages,
 			expectedRef:   core.OrganizationRef{ID: "testing"},
 			diskTemplates: successDiskTemplates,
-			ipIDPages:     successIpPages,
+			ipIDPages:     successIPPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
 			inputs: [][]byte{
@@ -1400,7 +1400,7 @@ func TestVMs_Create(t *testing.T) {
 			packages:      successPackages,
 			expectedRef:   core.OrganizationRef{ID: "testing"},
 			diskTemplates: successDiskTemplates,
-			ipIDPages:     successIpPages,
+			ipIDPages:     successIPPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
 			inputs: [][]byte{
@@ -1459,51 +1459,53 @@ func TestVMs_Create(t *testing.T) {
 		{
 			name: "success from full env",
 			envs: map[string]string{
-				"KATAPULT_ORG_SUBDOMAIN":        "loge",
-				"KATAPULT_DC_ID":                "dc_9UVoPiUQoI1cqtRd",
-				"KATAPULT_PACKAGE_ID":           "vmpkg_9UVoPiUQoI1cqtRd",
-				"KATAPULT_DISTRIBUTION_ID":      "Ubuntu-20-04",
-				"KATAPULT_IP_ADDRESSES":         "1.1.1.1,1.1.1.2,1.1.1.3",
-				"KATAPULT_SSH_KEY_IDS":          "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
-				"KATAPULT_SSH_KEY_NAMES":        "testing,testing1",
-				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c,27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
-				"KATAPULT_TAG_NAMES":            "Testing 2,Testing 3",
-				"KATAPULT_TAG_IDS":              "tag_PiUQoI1cqt43gea,tag_PiUQoI1cqt43geb",
-				"KATAPULT_NAME":                 "test",
-				"KATAPULT_HOSTNAME":             "testing",
-				"KATAPULT_DESCRIPTION":          "123",
+				"KATAPULT_ORG_SUBDOMAIN":   "loge",
+				"KATAPULT_DC_ID":           "dc_9UVoPiUQoI1cqtRd",
+				"KATAPULT_PACKAGE_ID":      "vmpkg_9UVoPiUQoI1cqtRd",
+				"KATAPULT_DISTRIBUTION_ID": "Ubuntu-20-04",
+				"KATAPULT_IP_ADDRESSES":    "1.1.1.1,1.1.1.2,1.1.1.3",
+				"KATAPULT_SSH_KEY_IDS":     "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
+				"KATAPULT_SSH_KEY_NAMES":   "testing,testing1",
+				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c," +
+					"27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+				"KATAPULT_TAG_NAMES":   "Testing 2,Testing 3",
+				"KATAPULT_TAG_IDS":     "tag_PiUQoI1cqt43gea,tag_PiUQoI1cqt43geb",
+				"KATAPULT_NAME":        "test",
+				"KATAPULT_HOSTNAME":    "testing",
+				"KATAPULT_DESCRIPTION": "123",
 			},
 			orgs:          fixtureOrganizations,
 			dcs:           fixtureDataCenters,
 			packages:      successPackages,
 			expectedRef:   core.OrganizationRef{ID: "loge"},
 			diskTemplates: successDiskTemplates,
-			ipIDPages:     successIpPages,
+			ipIDPages:     successIPPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
 		},
 		{
 			name: "success from full minus hostname env",
 			envs: map[string]string{
-				"KATAPULT_ORG_SUBDOMAIN":        "loge",
-				"KATAPULT_DC_ID":                "dc_9UVoPiUQoI1cqtRd",
-				"KATAPULT_PACKAGE_ID":           "vmpkg_9UVoPiUQoI1cqtRd",
-				"KATAPULT_DISTRIBUTION_ID":      "Ubuntu-20-04",
-				"KATAPULT_IP_ADDRESSES":         "1.1.1.1,1.1.1.2,1.1.1.3",
-				"KATAPULT_SSH_KEY_IDS":          "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
-				"KATAPULT_SSH_KEY_NAMES":        "testing,testing1",
-				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c,27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
-				"KATAPULT_TAG_NAMES":            "Testing 2,Testing 3",
-				"KATAPULT_TAG_IDS":              "tag_PiUQoI1cqt43gea,tag_PiUQoI1cqt43geb",
-				"KATAPULT_NAME":                 "test",
-				"KATAPULT_DESCRIPTION":          "123",
+				"KATAPULT_ORG_SUBDOMAIN":   "loge",
+				"KATAPULT_DC_ID":           "dc_9UVoPiUQoI1cqtRd",
+				"KATAPULT_PACKAGE_ID":      "vmpkg_9UVoPiUQoI1cqtRd",
+				"KATAPULT_DISTRIBUTION_ID": "Ubuntu-20-04",
+				"KATAPULT_IP_ADDRESSES":    "1.1.1.1,1.1.1.2,1.1.1.3",
+				"KATAPULT_SSH_KEY_IDS":     "key_PiUQoI1cqt43Dkc,key_PiUQoI1cqt43Dkd",
+				"KATAPULT_SSH_KEY_NAMES":   "testing,testing1",
+				"KATAPULT_SSH_KEY_FINGERPRINTS": "28:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c," +
+					"27:57:25:0d:8a:ad:00:d0:91:a2:23:7d:7b:70:39:0c",
+				"KATAPULT_TAG_NAMES":   "Testing 2,Testing 3",
+				"KATAPULT_TAG_IDS":     "tag_PiUQoI1cqt43gea,tag_PiUQoI1cqt43geb",
+				"KATAPULT_NAME":        "test",
+				"KATAPULT_DESCRIPTION": "123",
 			},
 			orgs:          fixtureOrganizations,
 			dcs:           fixtureDataCenters,
 			packages:      successPackages,
 			expectedRef:   core.OrganizationRef{ID: "loge"},
 			diskTemplates: successDiskTemplates,
-			ipIDPages:     successIpPages,
+			ipIDPages:     successIPPages,
 			keysIDPages:   successKeyPages,
 			tagIDPages:    successTagPages,
 			inputs: [][]byte{
