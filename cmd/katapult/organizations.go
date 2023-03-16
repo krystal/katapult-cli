@@ -11,6 +11,7 @@ import (
 type organisationsListClient interface {
 	List(
 		ctx context.Context,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.Organization, *katapult.Response, error)
 }
 

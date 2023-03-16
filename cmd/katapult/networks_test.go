@@ -89,7 +89,7 @@ var idVirtualNetworks = []*core.VirtualNetwork{
 type mockNetworkList struct{}
 
 func (mockNetworkList) List(
-	_ context.Context, org core.OrganizationRef,
+	_ context.Context, org core.OrganizationRef, reqOpts ...katapult.RequestOption,
 ) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error) {
 	switch {
 	case org.SubDomain == "pog-subdomain":

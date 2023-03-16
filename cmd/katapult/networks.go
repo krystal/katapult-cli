@@ -13,6 +13,7 @@ type networksListClient interface {
 	List(
 		ctx context.Context,
 		org core.OrganizationRef,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.Network, []*core.VirtualNetwork, *katapult.Response, error)
 }
 
