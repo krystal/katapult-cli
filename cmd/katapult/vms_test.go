@@ -56,7 +56,7 @@ func (v *vmsClient) togglePowerState(key string, fqdn bool) bool {
 	return state
 }
 
-func (v *vmsClient) List(_ context.Context, org core.OrganizationRef, opts *core.ListOptions) (
+func (v *vmsClient) List(_ context.Context, org core.OrganizationRef, opts *core.ListOptions, reqOpts ...katapult.RequestOption) (
 	[]*core.VirtualMachine, *katapult.Response, error,
 ) {
 	// Defines the pages.
@@ -96,7 +96,7 @@ func (v *vmsClient) ensureFound(ref core.VirtualMachineRef) error {
 	return nil
 }
 
-func (v *vmsClient) Shutdown(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+func (v *vmsClient) Shutdown(_ context.Context, ref core.VirtualMachineRef, reqOpts ...katapult.RequestOption) (*core.Task, *katapult.Response, error) {
 	// Pre-execution checks.
 	if err := v.ensureFound(ref); err != nil {
 		return nil, nil, err
@@ -122,12 +122,12 @@ func (v *vmsClient) Shutdown(_ context.Context, ref core.VirtualMachineRef) (*co
 	return &core.Task{}, nil, nil
 }
 
-func (v *vmsClient) Stop(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+func (v *vmsClient) Stop(_ context.Context, ref core.VirtualMachineRef, reqOpts ...katapult.RequestOption) (*core.Task, *katapult.Response, error) {
 	// Basically acts the same as far as event mocking logic goes.
 	return v.Shutdown(context.TODO(), ref)
 }
 
-func (v *vmsClient) Start(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+func (v *vmsClient) Start(_ context.Context, ref core.VirtualMachineRef, reqOpts ...katapult.RequestOption) (*core.Task, *katapult.Response, error) {
 	// Pre-execution checks.
 	if err := v.ensureFound(ref); err != nil {
 		return nil, nil, err
@@ -153,7 +153,7 @@ func (v *vmsClient) Start(_ context.Context, ref core.VirtualMachineRef) (*core.
 	return &core.Task{}, nil, nil
 }
 
-func (v *vmsClient) Reset(_ context.Context, ref core.VirtualMachineRef) (*core.Task, *katapult.Response, error) {
+func (v *vmsClient) Reset(_ context.Context, ref core.VirtualMachineRef, reqOpts ...katapult.RequestOption) (*core.Task, *katapult.Response, error) {
 	// Pre-execution checks.
 	if err := v.ensureFound(ref); err != nil {
 		return nil, nil, err
@@ -180,7 +180,7 @@ func (v *vmsClient) Reset(_ context.Context, ref core.VirtualMachineRef) (*core.
 	return nil, nil, nil
 }
 
-func (v *vmsClient) Delete(_ context.Context, ref core.VirtualMachineRef) (
+func (v *vmsClient) Delete(_ context.Context, ref core.VirtualMachineRef, reqOpts ...katapult.RequestOption) (
 	*core.TrashObject, *katapult.Response, error,
 ) {
 	// Pre-execution checks.
@@ -703,7 +703,7 @@ type mockSSHKeysClient struct {
 
 func (v mockSSHKeysClient) List(
 	_ context.Context, org core.OrganizationRef,
-	opts *core.ListOptions) ([]*core.AuthSSHKey, *katapult.Response, error) {
+	opts *core.ListOptions, reqOpts ...katapult.RequestOption) ([]*core.AuthSSHKey, *katapult.Response, error) {
 	// Handle throwing errors.
 	if v.throws != "" {
 		return nil, nil, errors.New(v.throws)
@@ -753,7 +753,7 @@ type mockTagsClient struct {
 }
 
 func (v mockTagsClient) List(_ context.Context, org core.OrganizationRef,
-	opts *core.ListOptions) ([]*core.Tag, *katapult.Response, error) {
+	opts *core.ListOptions, reqOpts ...katapult.RequestOption) ([]*core.Tag, *katapult.Response, error) {
 	// Handle throwing errors.
 	if v.throws != "" {
 		return nil, nil, errors.New(v.throws)
@@ -794,7 +794,7 @@ type mockVMPackagesClient struct {
 	throws   string
 }
 
-func (m mockVMPackagesClient) List(context.Context, *core.ListOptions) (
+func (m mockVMPackagesClient) List(context.Context, *core.ListOptions, ...katapult.RequestOption) (
 	[]*core.VirtualMachinePackage, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
@@ -811,7 +811,7 @@ type mockDiskTemplatesClient struct {
 }
 
 func (m mockDiskTemplatesClient) List(_ context.Context, org core.OrganizationRef,
-	opts *core.DiskTemplateListOptions) ([]*core.DiskTemplate, *katapult.Response, error) {
+	opts *core.DiskTemplateListOptions, reqOpts ...katapult.RequestOption) ([]*core.DiskTemplate, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
 	}
@@ -840,7 +840,7 @@ type mockIPAddressClient struct {
 }
 
 func (v mockIPAddressClient) List(_ context.Context, org core.OrganizationRef,
-	opts *core.ListOptions) ([]*core.IPAddress, *katapult.Response, error) {
+	opts *core.ListOptions, reqOpts ...katapult.RequestOption) ([]*core.IPAddress, *katapult.Response, error) {
 	// Handle throwing errors.
 	if v.throws != "" {
 		return nil, nil, errors.New(v.throws)
@@ -884,7 +884,7 @@ type mockVMBuilderClient struct {
 }
 
 func (m *mockVMBuilderClient) CreateFromSpec(_ context.Context, org core.OrganizationRef,
-	spec *buildspec.VirtualMachineSpec) (*core.VirtualMachineBuild, *katapult.Response, error) {
+	spec *buildspec.VirtualMachineSpec, reqOpts ...katapult.RequestOption) (*core.VirtualMachineBuild, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
 	}

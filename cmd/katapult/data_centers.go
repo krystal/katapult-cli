@@ -11,8 +11,8 @@ import (
 )
 
 type dataCentersClient interface {
-	List(ctx context.Context) ([]*core.DataCenter, *katapult.Response, error)
-	Get(ctx context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error)
+	List(ctx context.Context, reqOpts ...katapult.RequestOption) ([]*core.DataCenter, *katapult.Response, error)
+	Get(ctx context.Context, ref core.DataCenterRef, reqOpts ...katapult.RequestOption) (*core.DataCenter, *katapult.Response, error)
 }
 
 //nolint:lll

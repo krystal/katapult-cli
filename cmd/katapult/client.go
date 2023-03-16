@@ -11,7 +11,7 @@ import (
 
 // Create a new Katapult client.
 func newClient(conf *config.Config) (core.RequestMaker, error) {
-	a := []katapult.Opt{katapult.WithAPIKey(conf.APIToken)}
+	a := []katapult.Option{katapult.WithAPIKey(conf.APIToken)}
 	if conf.APIURL != "" {
 		apiURL, err := url.Parse(conf.APIURL)
 		if err != nil {

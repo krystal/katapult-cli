@@ -59,7 +59,7 @@ type mockOrganizationsListClient struct {
 	throws string
 }
 
-func (m mockOrganizationsListClient) List(context.Context) ([]*core.Organization, *katapult.Response, error) {
+func (m mockOrganizationsListClient) List(context.Context, ...katapult.RequestOption) ([]*core.Organization, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
 	}
@@ -71,7 +71,7 @@ type mockDataCentersClient struct {
 	throws string
 }
 
-func (m mockDataCentersClient) List(context.Context) ([]*core.DataCenter, *katapult.Response, error) {
+func (m mockDataCentersClient) List(context.Context, ...katapult.RequestOption) ([]*core.DataCenter, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
 	}
@@ -79,7 +79,7 @@ func (m mockDataCentersClient) List(context.Context) ([]*core.DataCenter, *katap
 }
 
 func (m mockDataCentersClient) Get(
-	_ context.Context, ref core.DataCenterRef) (*core.DataCenter, *katapult.Response, error) {
+	_ context.Context, ref core.DataCenterRef, reqOpts ...katapult.RequestOption) (*core.DataCenter, *katapult.Response, error) {
 	if m.throws != "" {
 		return nil, nil, errors.New(m.throws)
 	}
@@ -124,3 +124,8 @@ var fixtureDataCenters = []*core.DataCenter{
 		},
 	},
 }
+
+var testRequestOption = katapult.RequestSetHeader(
+	"X-Clacks-Overhead",
+	"GNU CK",
+)

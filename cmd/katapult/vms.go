@@ -20,26 +20,32 @@ type virtualMachinesClient interface {
 		ctx context.Context,
 		org core.OrganizationRef,
 		opts *core.ListOptions,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.VirtualMachine, *katapult.Response, error)
 	Delete(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
+		reqOpts ...katapult.RequestOption,
 	) (*core.TrashObject, *katapult.Response, error)
 	Shutdown(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
+		reqOpts ...katapult.RequestOption,
 	) (*core.Task, *katapult.Response, error)
 	Start(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
+		reqOpts ...katapult.RequestOption,
 	) (*core.Task, *katapult.Response, error)
 	Stop(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
+		reqOpts ...katapult.RequestOption,
 	) (*core.Task, *katapult.Response, error)
 	Reset(
 		ctx context.Context,
 		ref core.VirtualMachineRef,
+		reqOpts ...katapult.RequestOption,
 	) (*core.Task, *katapult.Response, error)
 }
 
@@ -211,6 +217,7 @@ type virtualMachinePackagesClient interface {
 	List(
 		ctx context.Context,
 		opts *core.ListOptions,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.VirtualMachinePackage, *katapult.Response, error)
 }
 
@@ -253,6 +260,7 @@ type virtualMachineDiskTemplatesClient interface {
 		ctx context.Context,
 		org core.OrganizationRef,
 		opts *core.DiskTemplateListOptions,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.DiskTemplate, *katapult.Response, error)
 }
 
@@ -330,6 +338,7 @@ type virtualMachineIPAddressesClient interface {
 		ctx context.Context,
 		org core.OrganizationRef,
 		opts *core.ListOptions,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.IPAddress, *katapult.Response, error)
 }
 
@@ -338,6 +347,7 @@ type sshKeysListClient interface {
 		ctx context.Context,
 		org core.OrganizationRef,
 		opts *core.ListOptions,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.AuthSSHKey, *katapult.Response, error)
 }
 
@@ -346,6 +356,7 @@ type tagsClient interface {
 		ctx context.Context,
 		org core.OrganizationRef,
 		opts *core.ListOptions,
+		reqOpts ...katapult.RequestOption,
 	) ([]*core.Tag, *katapult.Response, error)
 }
 
@@ -354,6 +365,7 @@ type virtualMachinesBuilderClient interface {
 		ctx context.Context,
 		org core.OrganizationRef,
 		spec *buildspec.VirtualMachineSpec,
+		reqOpts ...katapult.RequestOption,
 	) (*core.VirtualMachineBuild, *katapult.Response, error)
 }
 
